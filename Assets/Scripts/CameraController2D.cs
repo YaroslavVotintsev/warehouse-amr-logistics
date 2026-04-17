@@ -68,14 +68,14 @@ public class CameraController2D : MonoBehaviour
     {
         if (!enablePan) return;
         
-        // Mouse drag panning (middle mouse button or right click)
-        if (Input.GetMouseButtonDown(2) || Input.GetMouseButtonDown(1))
+        // Mouse drag panning (left, middle, or right mouse button)
+        if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(2) || Input.GetMouseButtonDown(1))
         {
             dragOrigin = cam.ScreenToWorldPoint(Input.mousePosition);
             isDragging = true;
         }
-        
-        if (Input.GetMouseButtonUp(2) || Input.GetMouseButtonUp(1))
+
+        if (Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(2) || Input.GetMouseButtonUp(1))
         {
             isDragging = false;
         }
