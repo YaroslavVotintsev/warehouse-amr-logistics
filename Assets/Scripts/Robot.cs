@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class Robot : MonoBehaviour
 {
+    public int id = 0;
+
     public List<GraphVertex> path = new List<GraphVertex>();
     public float speed = 2f; // units per second
 
@@ -13,15 +15,12 @@ public class Robot : MonoBehaviour
 
     void Start()
     {
-        if (path == null || path.Count < 2)
-        {
-            Debug.LogError("Path must contain at least 2 vertices.");
-            enabled = false;
-            return;
-        }
-
         // Start at first vertex
-        transform.position = path[0].transform.position;
+        if (path != null && path.Count >= 1)
+        {
+            transform.position = path[0].transform.position;
+        }
+        
     }
 
     void Update()
@@ -31,6 +30,13 @@ public class Robot : MonoBehaviour
 
     void MoveAlongPath()
     {
+        if (path == null || path.Count < 2)
+        {
+            //Debug.LogError("Path must contain at least 2 vertices.");
+            //enabled = false;
+            return;
+        }
+
         GraphVertex currentVertex = path[currentIndex];
         GraphVertex nextVertex = path[nextIndex];
 
