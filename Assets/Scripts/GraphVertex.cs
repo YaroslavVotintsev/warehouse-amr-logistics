@@ -27,4 +27,10 @@ public class GraphVertex : MonoBehaviour
             connectedEdges.Add(edge);
         }
     }
+
+    public void ClearNeighbors()
+    {
+        connectedEdges.Clear();
+        neighborVertices.Clear();
+    }
 }

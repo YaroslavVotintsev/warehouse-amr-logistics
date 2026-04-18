@@ -24,26 +24,94 @@ public class GraphManager : MonoBehaviour
 
     private void FindVE()
     {
+        vertices.Clear();
+        edges.Clear();
+
         // find by objects by tags "Edge" and "Vertex"
         var temp = GameObject.FindGameObjectsWithTag("Vertex");
         for (int i = 0; i < temp.Length; i++)
         {
             var vertex = temp[i].GetComponent<GraphVertex>();
-            //vertex.id = i;
-            vertices.Add(vertex.GetComponent<GraphVertex>());
+            if (vertex != null)
+            {
+                vertices.Add(vertex);
+            }
         }
         temp = GameObject.FindGameObjectsWithTag("Edge");
         for (int i = 0; i < temp.Length; i++)
         {
             var edge = temp[i].GetComponent<GraphEdge>();
-            //edge.id = i;
-            edges.Add(edge.GetComponent<GraphEdge>());
+            if (edge != null)
+            {
+                edges.Add(edge);
+            }
         }
+
+        // Keep discovery deterministic so planning behavior does not depend on
+        // the arbitrary scene enumeration order returned by tag lookups.
+        vertices.Sort((first, second) =>
+        {
+            if (first == null && second == null)
+            {
+                return 0;
+            }
+
+            if (first == null)
+            {
+                return 1;
+            }
+
+            if (second == null)
+            {
+                return -1;
+            }
+
+            int idComparison = first.id.CompareTo(second.id);
+            return idComparison != 0
+                ? idComparison
+                : string.CompareOrdinal(first.gameObject.name, second.gameObject.name);
+        });
+
+        edges.Sort((first, second) =>
+        {
+            if (first == null && second == null)
+            {
+                return 0;
+            }
+
+            if (first == null)
+            {
+                return 1;
+            }
+
+            if (second == null)
+            {
+                return -1;
+            }
+
+            int idComparison = first.id.CompareTo(second.id);
+            return idComparison != 0
+                ? idComparison
+                : string.CompareOrdinal(first.gameObject.name, second.gameObject.name);
+        });
     }
     void BuildGraphStructure()
     {
+        for (int i = 0; i < vertices.Count; i++)
+        {
+            if (vertices[i] != null)
+            {
+                vertices[i].ClearNeighbors();
+            }
+        }
+
         foreach (var edge in edges)
         {
+            if (edge == null || edge.vertexA == null || edge.vertexB == null)
+            {
+                continue;
+            }
+
             var v1 = edge.vertexA.GetComponent<GraphVertex>();
             var v2 = edge.vertexB.GetComponent<GraphVertex>();
 

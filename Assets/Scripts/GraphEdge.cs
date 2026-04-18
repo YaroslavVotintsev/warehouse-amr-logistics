@@ -13,6 +13,12 @@ public class GraphEdge : MonoBehaviour
 
     void Start()
     {
+        if (vertexA == null || vertexB == null)
+        {
+            Debug.LogError("GraphEdge '" + gameObject.name + "' requires both endpoint transforms.");
+            return;
+        }
+
         // check for LineRenderer and add if does not exist
         lineRenderer = GetComponent<LineRenderer>();
         if (lineRenderer == null)
