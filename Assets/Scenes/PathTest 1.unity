@@ -13056,7 +13056,7 @@ MonoBehaviour:
   planOnStart: 1
   autoReplan: 1
   replanInterval: 1
-  autoReplanOnlyAtVertices: 1
+  autoReplanOnlyAtVertices: 0
   logPlanningResult: 1
 --- !u!4 &1571057450
 Transform:

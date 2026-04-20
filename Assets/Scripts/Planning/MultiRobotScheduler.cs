@@ -20,7 +20,9 @@ public class MultiRobotScheduler : MonoBehaviour
 
     private readonly ContinuousMultiRobotPlanner planner = new ContinuousMultiRobotPlanner();
     private float nextReplanTime = 0f;
+    private float nextDeferredEdgeLogTime = 0f;
     private const float DeferredReplanDelay = 0.1f;
+    private const float DeferredEdgeLogInterval = 2f;
 
     void Start()
     {
@@ -81,22 +83,30 @@ public class MultiRobotScheduler : MonoBehaviour
             return;
         }
 
-        if (autoReplan && autoReplanOnlyAtVertices && HasRobotOnEdge(robotStates))
+        Dictionary<int, RobotPlanningState> robotStatesById = IndexRobotStatesById(robotStates);
+
+        if (autoReplan &&
+            autoReplanOnlyAtVertices &&
+            HasRobotOnEdge(robotStates) &&
+            !HasVertexReadyRobotNeedingReplan(robotStatesById))
         {
             // In this model a robot can only choose to wait or reverse after it
             // reaches a vertex. Replanning in the middle of an edge often turns
             // a previously valid plan into an artificial dead-end because the
             // current traversal is treated as committed.
-            if (logPlanningResult)
+            if (logPlanningResult && Time.time >= nextDeferredEdgeLogTime)
             {
                 Debug.Log(
                     "MultiRobotScheduler deferred replanning because at least one robot is still on an edge.\n" +
                     PlanningDebugUtility.FormatRobotStates(robotStates, graph));
+                nextDeferredEdgeLogTime = Time.time + DeferredEdgeLogInterval;
             }
 
             nextReplanTime = Time.time + DeferredReplanDelay;
             return;
         }
+
+        nextDeferredEdgeLogTime = 0f;
 
         ContinuousPlanningResult result = planner.Plan(graph, robotStates);
         if (!result.success && !result.partialSuccess)
@@ -112,7 +122,6 @@ public class MultiRobotScheduler : MonoBehaviour
             return;
         }
 
-        Dictionary<int, RobotPlanningState> robotStatesById = IndexRobotStatesById(robotStates);
         for (int i = 0; i < robots.Count; i++)
         {
             Robot robot = robots[i];
@@ -214,6 +223,33 @@ public class MultiRobotScheduler : MonoBehaviour
             }
 
             if (robot.NeedsReplan())
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool HasVertexReadyRobotNeedingReplan(Dictionary<int, RobotPlanningState> robotStatesById)
+    {
+        if (robotStatesById == null || robots == null)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < robots.Count; i++)
+        {
+            Robot robot = robots[i];
+            if (robot == null || !robot.gameObject.activeInHierarchy || !robot.NeedsReplan())
+            {
+                continue;
+            }
+
+            RobotPlanningState robotState;
+            if (robotStatesById.TryGetValue(robot.id, out robotState) &&
+                robotState != null &&
+                robotState.IsAtVertex)
             {
                 return true;
             }
