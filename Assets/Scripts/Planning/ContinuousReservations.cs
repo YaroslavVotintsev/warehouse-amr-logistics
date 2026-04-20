@@ -43,7 +43,11 @@ public class ReservationTable
     // The padding is applied symmetrically around the touch time so that
     // "one arrives just before another departs" is still treated as a
     // bottleneck conflict instead of a visually-overlapping near miss.
-    private const float VertexEventPadding = 0.1f;
+    // This needs to be large enough to cover visible robot clearance at a
+    // junction, not just floating-point noise. A too-small value allows plans
+    // that are technically separated in time but still look like a collision
+    // in the scene because both robots visually occupy the node together.
+    private const float VertexEventPadding = 0.2f;
 
     private readonly Dictionary<int, List<VertexReservation>> vertexReservationsByVertexId =
         new Dictionary<int, List<VertexReservation>>();

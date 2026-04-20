@@ -554,14 +554,6 @@ public class ContinuousConflictBasedSearch
 
         if (conflict.type == ReservationConflictType.Vertex)
         {
-            constraints.Add(new ContinuousCbsConstraint
-            {
-                robotId = constrainedRobotId,
-                type = ReservationConflictType.Vertex,
-                interval = conflict.conflictInterval,
-                vertexId = conflict.vertexId
-            });
-
             int constrainedFromVertexId;
             int constrainedToVertexId;
             TimeInterval constrainedInterval;
@@ -578,53 +570,43 @@ public class ContinuousConflictBasedSearch
                 out otherToVertexId,
                 out otherInterval);
 
-            bool bothRobotsApproachSameVertex =
-                constrainedFromVertexId >= 0 &&
-                constrainedFromVertexId != conflict.vertexId &&
-                constrainedToVertexId == conflict.vertexId &&
-                otherFromVertexId >= 0 &&
-                otherFromVertexId != conflict.vertexId &&
-                otherToVertexId == conflict.vertexId;
-
-            if (bothRobotsApproachSameVertex)
+            int otherRobotId =
+                constrainedRobotId == conflict.robotAId ? conflict.robotBId : conflict.robotAId;
+            RobotSchedule otherRobotSchedule = null;
+            if (schedulesByRobotId != null)
             {
-                TimeInterval blockingInterval = GetMeaningfulInterval(
-                    otherInterval,
-                    conflict.conflictInterval);
+                schedulesByRobotId.TryGetValue(otherRobotId, out otherRobotSchedule);
+            }
 
-                RobotSchedule otherRobotSchedule;
-                if (schedulesByRobotId != null &&
-                    schedulesByRobotId.TryGetValue(
-                        constrainedRobotId == conflict.robotAId ? conflict.robotBId : conflict.robotAId,
-                        out otherRobotSchedule))
-                {
-                    TimeInterval extendedVertexControlInterval;
-                    if (TryGetExtendedVertexControlInterval(
-                        otherRobotSchedule,
-                        conflict.vertexId,
-                        otherFromVertexId,
-                        otherToVertexId,
-                        otherInterval,
-                        out extendedVertexControlInterval))
-                    {
-                        blockingInterval = extendedVertexControlInterval;
-                    }
-                }
+            TimeInterval blockingInterval = GetVertexBlockingInterval(
+                conflict.vertexId,
+                otherFromVertexId,
+                otherToVertexId,
+                otherInterval,
+                conflict.conflictInterval,
+                otherRobotSchedule);
 
+            constraints.Add(new ContinuousCbsConstraint
+            {
+                robotId = constrainedRobotId,
+                type = ReservationConflictType.Vertex,
+                interval = blockingInterval,
+                vertexId = conflict.vertexId
+            });
+
+            // Blocking only the vertex overlap is too weak when the robot is
+            // entering or leaving that vertex as part of a traversal. Adding
+            // the matching edge constraint forces the replan to wait or reroute
+            // earlier instead of recreating nearly the same vertex timing.
+            if (IsArrivalAtVertex(conflict.vertexId, constrainedFromVertexId, constrainedToVertexId) ||
+                IsDepartureFromVertex(conflict.vertexId, constrainedFromVertexId, constrainedToVertexId))
+            {
                 constraints.Add(new ContinuousCbsConstraint
                 {
                     robotId = constrainedRobotId,
                     type = ReservationConflictType.Edge,
                     interval = blockingInterval,
                     edgeKey = new PlanningEdgeKey(constrainedFromVertexId, constrainedToVertexId)
-                });
-
-                constraints.Add(new ContinuousCbsConstraint
-                {
-                    robotId = constrainedRobotId,
-                    type = ReservationConflictType.Vertex,
-                    interval = blockingInterval,
-                    vertexId = conflict.vertexId
                 });
             }
 
@@ -674,6 +656,58 @@ public class ContinuousConflictBasedSearch
                preferredInterval.endTime > preferredInterval.startTime + TimeComparisonEpsilon
             ? preferredInterval
             : fallbackInterval;
+    }
+
+    private TimeInterval GetVertexBlockingInterval(
+        int vertexId,
+        int otherFromVertexId,
+        int otherToVertexId,
+        TimeInterval otherInterval,
+        TimeInterval fallbackInterval,
+        RobotSchedule otherRobotSchedule)
+    {
+        TimeInterval blockingInterval = GetMeaningfulInterval(otherInterval, fallbackInterval);
+
+        if (IsWaitAtVertex(vertexId, otherFromVertexId, otherToVertexId))
+        {
+            return blockingInterval;
+        }
+
+        if (IsArrivalAtVertex(vertexId, otherFromVertexId, otherToVertexId))
+        {
+            TimeInterval extendedVertexControlInterval;
+            if (TryGetExtendedVertexControlInterval(
+                otherRobotSchedule,
+                vertexId,
+                otherFromVertexId,
+                otherToVertexId,
+                otherInterval,
+                out extendedVertexControlInterval))
+            {
+                return extendedVertexControlInterval;
+            }
+        }
+
+        return blockingInterval;
+    }
+
+    private bool IsWaitAtVertex(int vertexId, int fromVertexId, int toVertexId)
+    {
+        return fromVertexId == vertexId && toVertexId == vertexId;
+    }
+
+    private bool IsArrivalAtVertex(int vertexId, int fromVertexId, int toVertexId)
+    {
+        return fromVertexId >= 0 &&
+               fromVertexId != vertexId &&
+               toVertexId == vertexId;
+    }
+
+    private bool IsDepartureFromVertex(int vertexId, int fromVertexId, int toVertexId)
+    {
+        return fromVertexId == vertexId &&
+               toVertexId >= 0 &&
+               toVertexId != vertexId;
     }
 
     private bool TryGetExtendedVertexControlInterval(
@@ -844,15 +878,37 @@ public class ContinuousConflictBasedSearch
             return false;
         }
 
-        for (int i = 0; i < constraints.Count; i++)
+        var mergedConstraint = new ContinuousCbsConstraint
         {
-            if (AreSameConstraint(constraints[i], newConstraint))
+            robotId = newConstraint.robotId,
+            type = newConstraint.type,
+            interval = newConstraint.interval,
+            vertexId = newConstraint.vertexId,
+            edgeKey = newConstraint.edgeKey
+        };
+
+        for (int i = constraints.Count - 1; i >= 0; i--)
+        {
+            ContinuousCbsConstraint existingConstraint = constraints[i];
+            if (!IsSameConstraintResource(existingConstraint, mergedConstraint))
+            {
+                continue;
+            }
+
+            if (ContainsInterval(existingConstraint.interval, mergedConstraint.interval))
             {
                 return false;
             }
+
+            if (DoIntervalsOverlapOrTouch(existingConstraint.interval, mergedConstraint.interval))
+            {
+                mergedConstraint.interval =
+                    MergeIntervals(existingConstraint.interval, mergedConstraint.interval);
+                constraints.RemoveAt(i);
+            }
         }
 
-        constraints.Add(newConstraint);
+        constraints.Add(mergedConstraint);
         return true;
     }
 
@@ -868,6 +924,38 @@ public class ContinuousConflictBasedSearch
                first.vertexId == second.vertexId &&
                first.edgeKey.Equals(second.edgeKey) &&
                first.interval.Equals(second.interval);
+    }
+
+    private bool IsSameConstraintResource(ContinuousCbsConstraint first, ContinuousCbsConstraint second)
+    {
+        if (first == null || second == null)
+        {
+            return false;
+        }
+
+        return first.robotId == second.robotId &&
+               first.type == second.type &&
+               first.vertexId == second.vertexId &&
+               first.edgeKey.Equals(second.edgeKey);
+    }
+
+    private bool ContainsInterval(TimeInterval container, TimeInterval containee)
+    {
+        return container.startTime <= containee.startTime + TimeComparisonEpsilon &&
+               container.endTime >= containee.endTime - TimeComparisonEpsilon;
+    }
+
+    private bool DoIntervalsOverlapOrTouch(TimeInterval first, TimeInterval second)
+    {
+        return first.startTime <= second.endTime + TimeComparisonEpsilon &&
+               second.startTime <= first.endTime + TimeComparisonEpsilon;
+    }
+
+    private TimeInterval MergeIntervals(TimeInterval first, TimeInterval second)
+    {
+        float mergedStart = Mathf.Min(first.startTime, second.startTime);
+        float mergedEnd = Mathf.Max(first.endTime, second.endTime);
+        return new TimeInterval(mergedStart, mergedEnd);
     }
 
     private List<CorridorConflict> GetCorridorConflicts(

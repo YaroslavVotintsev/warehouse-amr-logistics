@@ -99,7 +99,7 @@ public class MultiRobotScheduler : MonoBehaviour
         }
 
         ContinuousPlanningResult result = planner.Plan(graph, robotStates);
-        if (!result.success)
+        if (!result.success && !result.partialSuccess)
         {
             if (logPlanningResult)
             {
@@ -112,6 +112,7 @@ public class MultiRobotScheduler : MonoBehaviour
             return;
         }
 
+        Dictionary<int, RobotPlanningState> robotStatesById = IndexRobotStatesById(robotStates);
         for (int i = 0; i < robots.Count; i++)
         {
             Robot robot = robots[i];
@@ -124,6 +125,27 @@ public class MultiRobotScheduler : MonoBehaviour
             if (result.schedulesByRobotId.TryGetValue(robot.id, out schedule))
             {
                 robot.SetSchedule(schedule, graph);
+                continue;
+            }
+
+            if (result.partialSuccess)
+            {
+                RobotPlanningState robotState;
+                if (robotStatesById.TryGetValue(robot.id, out robotState))
+                {
+                    if (robotState.IsAtVertex)
+                    {
+                        robot.ClearSchedule();
+                    }
+                    else
+                    {
+                        robot.SetRetryHoldSchedule(BuildHoldSchedule(robotState, graph), graph);
+                    }
+                }
+                else
+                {
+                    robot.ClearSchedule();
+                }
             }
         }
 
@@ -131,9 +153,20 @@ public class MultiRobotScheduler : MonoBehaviour
 
         if (logPlanningResult)
         {
-            Debug.Log(
-                "Planning succeeded for " + result.schedulesByRobotId.Count + " robots.\n" +
-                PlanningDebugUtility.FormatSchedules(result.schedulesByRobotId, 6, 3));
+            if (result.success)
+            {
+                Debug.Log(
+                    "Planning succeeded for " + result.schedulesByRobotId.Count + " robots.\n" +
+                    PlanningDebugUtility.FormatSchedules(result.schedulesByRobotId, 6, 3));
+            }
+            else
+            {
+                Debug.LogWarning(
+                    "Planning partially succeeded.\n" +
+                    result.failureReason +
+                    "\n" + PlanningDebugUtility.FormatSchedules(result.schedulesByRobotId, 6, 3) +
+                    "\nunscheduledRobotIds: " + FormatRobotIdList(result.unscheduledRobotIds));
+            }
         }
     }
 
@@ -206,6 +239,94 @@ public class MultiRobotScheduler : MonoBehaviour
         }
 
         return false;
+    }
+
+    private Dictionary<int, RobotPlanningState> IndexRobotStatesById(List<RobotPlanningState> robotStates)
+    {
+        var robotStatesById = new Dictionary<int, RobotPlanningState>();
+
+        if (robotStates == null)
+        {
+            return robotStatesById;
+        }
+
+        for (int i = 0; i < robotStates.Count; i++)
+        {
+            RobotPlanningState robotState = robotStates[i];
+            if (robotState == null)
+            {
+                continue;
+            }
+
+            robotStatesById[robotState.robotId] = robotState;
+        }
+
+        return robotStatesById;
+    }
+
+
+    private RobotSchedule BuildHoldSchedule(RobotPlanningState robotState, ContinuousPlanningGraph graph)
+    {
+        var schedule = new RobotSchedule
+        {
+            robotId = robotState != null ? robotState.robotId : -1
+        };
+
+        if (robotState == null || graph == null)
+        {
+            return schedule;
+        }
+
+        if (robotState.IsAtVertex)
+        {
+            schedule.segments.Add(ScheduleSegment.CreateWait(
+                robotState.currentVertexId,
+                0f,
+                float.PositiveInfinity));
+            return schedule;
+        }
+
+        float remainingTraversalTime = robotState.GetRemainingTravelTimeOnCurrentEdge(graph);
+        if (float.IsPositiveInfinity(remainingTraversalTime))
+        {
+            return schedule;
+        }
+
+        if (remainingTraversalTime > 0f)
+        {
+            schedule.segments.Add(ScheduleSegment.CreateTraversal(
+                robotState.edgeFromVertexId,
+                robotState.edgeToVertexId,
+                0f,
+                remainingTraversalTime));
+        }
+
+        schedule.segments.Add(ScheduleSegment.CreateWait(
+            robotState.edgeToVertexId,
+            Mathf.Max(0f, remainingTraversalTime),
+            float.PositiveInfinity));
+        return schedule;
+    }
+
+    private string FormatRobotIdList(IList<int> robotIds)
+    {
+        if (robotIds == null || robotIds.Count == 0)
+        {
+            return "<none>";
+        }
+
+        var builder = new System.Text.StringBuilder();
+        for (int i = 0; i < robotIds.Count; i++)
+        {
+            if (i > 0)
+            {
+                builder.Append(", ");
+            }
+
+            builder.Append(robotIds[i]);
+        }
+
+        return builder.ToString();
     }
 
     private void ScheduleNextAttempt()

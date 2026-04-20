@@ -32,6 +32,7 @@ public class Robot : MonoBehaviour
     private float scheduleStartTime = 0f;
     private Vector3 firstSegmentStartPosition;
     private int activeScheduleGoalVertexId = -1;
+    private bool requestReplanAtNextVertex = false;
 
     void Start()
     {
@@ -53,9 +54,13 @@ public class Robot : MonoBehaviour
 
     void Update()
     {
-        if (useSchedulerMovement && activeSchedule != null)
+        if (useSchedulerMovement)
         {
-            FollowSchedule();
+            if (activeSchedule != null)
+            {
+                FollowSchedule();
+            }
+
             return;
         }
 
@@ -113,6 +118,27 @@ public class Robot : MonoBehaviour
         scheduleStartTime = Time.time;
         firstSegmentStartPosition = transform.position;
         activeScheduleGoalVertexId = goalVertex != null ? goalVertex.id : -1;
+        requestReplanAtNextVertex = false;
+    }
+
+    public void SetRetryHoldSchedule(RobotSchedule schedule, ContinuousPlanningGraph graph)
+    {
+        activeSchedule = schedule;
+        activeGraph = graph;
+        scheduleStartTime = Time.time;
+        firstSegmentStartPosition = transform.position;
+        activeScheduleGoalVertexId = goalVertex != null ? goalVertex.id : -1;
+        requestReplanAtNextVertex = true;
+    }
+
+    public void ClearSchedule()
+    {
+        activeSchedule = null;
+        activeGraph = null;
+        scheduleStartTime = 0f;
+        firstSegmentStartPosition = transform.position;
+        activeScheduleGoalVertexId = goalVertex != null ? goalVertex.id : -1;
+        requestReplanAtNextVertex = false;
     }
 
     public bool NeedsReplan()
@@ -134,7 +160,20 @@ public class Robot : MonoBehaviour
 
         ScheduleSegment activeSegment;
         int segmentIndex;
-        return !TryGetScheduleSegmentAtTime(GetScheduleTime(), out activeSegment, out segmentIndex);
+        bool hasActiveSegment =
+            TryGetScheduleSegmentAtTime(GetScheduleTime(), out activeSegment, out segmentIndex);
+
+        if (!hasActiveSegment)
+        {
+            return true;
+        }
+
+        if (requestReplanAtNextVertex)
+        {
+            return activeSegment.type == ScheduleSegmentType.WaitAtVertex;
+        }
+
+        return false;
     }
 
     public bool TryBuildPlanningState(ContinuousPlanningGraph graph, out RobotPlanningState state)
