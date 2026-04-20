@@ -258,6 +258,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Vertex (4)
       objectReference: {fileID: 0}
+    - target: {fileID: 9106860803282069851, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
+      propertyPath: m_text
+      value: 4
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -578,6 +582,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Vertex (7)
       objectReference: {fileID: 0}
+    - target: {fileID: 9106860803282069851, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
+      propertyPath: m_text
+      value: 7
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -643,6 +651,10 @@ PrefabInstance:
     - target: {fileID: 7539515859470512737, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
       propertyPath: m_Name
       value: Vertex (3)
+      objectReference: {fileID: 0}
+    - target: {fileID: 9106860803282069851, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
+      propertyPath: m_text
+      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -754,7 +766,7 @@ Transform:
   m_GameObject: {fileID: 508586852}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.65, y: 0.75, z: 0}
+  m_LocalPosition: {x: -1.68, y: 0.68, z: 0}
   m_LocalScale: {x: 0.64, y: 0.64, z: 0.64}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -1290,6 +1302,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Vertex (8)
       objectReference: {fileID: 0}
+    - target: {fileID: 9106860803282069851, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
+      propertyPath: m_text
+      value: 8
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1327,7 +1343,7 @@ Transform:
   m_GameObject: {fileID: 897122532}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.48, y: 0.67, z: 0}
+  m_LocalPosition: {x: 2.4, y: 0.67, z: 0}
   m_LocalScale: {x: 0.64, y: 0.64, z: 0.64}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -1481,6 +1497,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Vertex (5)
       objectReference: {fileID: 0}
+    - target: {fileID: 9106860803282069851, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
+      propertyPath: m_text
+      value: 5
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1580,6 +1600,10 @@ PrefabInstance:
     - target: {fileID: 7539515859470512737, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
       propertyPath: m_Name
       value: Vertex (6)
+      objectReference: {fileID: 0}
+    - target: {fileID: 9106860803282069851, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
+      propertyPath: m_text
+      value: 6
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1698,6 +1722,10 @@ PrefabInstance:
     - target: {fileID: 7539515859470512737, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
       propertyPath: m_Name
       value: Vertex
+      objectReference: {fileID: 0}
+    - target: {fileID: 9106860803282069851, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
+      propertyPath: m_text
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1895,6 +1923,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Vertex (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 9106860803282069851, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
+      propertyPath: m_text
+      value: 2
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1931,7 +1963,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Robot
   id: 0
-  goalVertex: {fileID: 1902564695}
+  goalVertex: {fileID: 1641713208}
   initialVertex: {fileID: 655696795}
   initialLocationKind: 0
   initialEdgeFromVertex: {fileID: 0}
@@ -2015,6 +2047,17 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1680961903}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1641713208 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4586172968713596459, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
+  m_PrefabInstance: {fileID: 1596169979}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b41dac59aa0707e4ca5c48f5ecea636a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GraphVertex
 --- !u!1 &1680961902
 GameObject:
   m_ObjectHideFlags: 0
@@ -2365,7 +2408,7 @@ SceneRoots:
   - {fileID: 227383051}
   - {fileID: 1534630351}
   - {fileID: 550168468}
-  - {fileID: 1300998428}
-  - {fileID: 2109953114}
   - {fileID: 1680961903}
+  - {fileID: 1300998428}
   - {fileID: 1571057450}
+  - {fileID: 2109953114}
