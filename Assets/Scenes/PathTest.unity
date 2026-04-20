@@ -766,7 +766,7 @@ Transform:
   m_GameObject: {fileID: 508586852}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.68, y: 0.68, z: 0}
+  m_LocalPosition: {x: 2.46, y: 0.73, z: 0}
   m_LocalScale: {x: 0.64, y: 0.64, z: 0.64}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -785,8 +785,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Robot
   id: 2
-  goalVertex: {fileID: 655696795}
-  initialVertex: {fileID: 1902564695}
+  goalVertex: {fileID: 1225216859}
+  initialVertex: {fileID: 89266782}
   initialLocationKind: 0
   initialEdgeFromVertex: {fileID: 0}
   initialEdgeToVertex: {fileID: 0}
@@ -1343,7 +1343,7 @@ Transform:
   m_GameObject: {fileID: 897122532}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.4, y: 0.67, z: 0}
+  m_LocalPosition: {x: -1.67, y: 0.67, z: 0}
   m_LocalScale: {x: 0.64, y: 0.64, z: 0.64}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -1362,8 +1362,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Robot
   id: 1
-  goalVertex: {fileID: 1838901846}
-  initialVertex: {fileID: 89266782}
+  goalVertex: {fileID: 655696795}
+  initialVertex: {fileID: 1902564695}
   initialLocationKind: 0
   initialEdgeFromVertex: {fileID: 0}
   initialEdgeToVertex: {fileID: 0}
@@ -1506,6 +1506,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
+--- !u!114 &1225216859 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4586172968713596459, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
+  m_PrefabInstance: {fileID: 296167038}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b41dac59aa0707e4ca5c48f5ecea636a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GraphVertex
 --- !u!1 &1300998427
 GameObject:
   m_ObjectHideFlags: 0
@@ -1963,7 +1974,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Robot
   id: 0
-  goalVertex: {fileID: 1641713208}
+  goalVertex: {fileID: 1902564695}
   initialVertex: {fileID: 655696795}
   initialLocationKind: 0
   initialEdgeFromVertex: {fileID: 0}
@@ -2047,17 +2058,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1680961903}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1641713208 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4586172968713596459, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
-  m_PrefabInstance: {fileID: 1596169979}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b41dac59aa0707e4ca5c48f5ecea636a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GraphVertex
 --- !u!1 &1680961902
 GameObject:
   m_ObjectHideFlags: 0
@@ -2248,17 +2248,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5156253583781991742, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
   m_PrefabInstance: {fileID: 1492660275}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1838901846 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4586172968713596459, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
-  m_PrefabInstance: {fileID: 1492660275}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b41dac59aa0707e4ca5c48f5ecea636a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GraphVertex
 --- !u!1001 &1879190449
 PrefabInstance:
   m_ObjectHideFlags: 0
