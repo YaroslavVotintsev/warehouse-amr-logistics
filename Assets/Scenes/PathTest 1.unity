@@ -4126,17 +4126,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4088f4bd660fdf4409000c4617ee472f, type: 3}
---- !u!114 &443760846 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4586172968713596459, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
-  m_PrefabInstance: {fileID: 141515715}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b41dac59aa0707e4ca5c48f5ecea636a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GraphVertex
 --- !u!1001 &457547678
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5126,15 +5115,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 33164393462123513, guid: d64582862ac066947aed85b9770227bf, type: 3}
       propertyPath: m_Color.b
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 33164393462123513, guid: d64582862ac066947aed85b9770227bf, type: 3}
       propertyPath: m_Color.g
-      value: 0.92651856
+      value: 0.6592176
       objectReference: {fileID: 0}
     - target: {fileID: 33164393462123513, guid: d64582862ac066947aed85b9770227bf, type: 3}
       propertyPath: m_Color.r
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 33164393462123513, guid: d64582862ac066947aed85b9770227bf, type: 3}
       propertyPath: m_SortingOrder
@@ -5146,7 +5135,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2931764554831510657, guid: d64582862ac066947aed85b9770227bf, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 2.87
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 2931764554831510657, guid: d64582862ac066947aed85b9770227bf, type: 3}
       propertyPath: m_LocalPosition.z
@@ -5191,7 +5180,7 @@ PrefabInstance:
     - target: {fileID: 5095889797597770919, guid: d64582862ac066947aed85b9770227bf, type: 3}
       propertyPath: initialVertex
       value: 
-      objectReference: {fileID: 1458172331}
+      objectReference: {fileID: 1484104667}
     - target: {fileID: 7622279400672495455, guid: d64582862ac066947aed85b9770227bf, type: 3}
       propertyPath: m_Name
       value: Robot (4)
@@ -8380,7 +8369,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2931764554831510657, guid: d64582862ac066947aed85b9770227bf, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 2.86
+      value: 1.534
       objectReference: {fileID: 0}
     - target: {fileID: 2931764554831510657, guid: d64582862ac066947aed85b9770227bf, type: 3}
       propertyPath: m_LocalPosition.z
@@ -8425,7 +8414,7 @@ PrefabInstance:
     - target: {fileID: 5095889797597770919, guid: d64582862ac066947aed85b9770227bf, type: 3}
       propertyPath: initialVertex
       value: 
-      objectReference: {fileID: 1862518119}
+      objectReference: {fileID: 1456255692}
     - target: {fileID: 7622279400672495455, guid: d64582862ac066947aed85b9770227bf, type: 3}
       propertyPath: m_Name
       value: Robot (3)
@@ -11482,6 +11471,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2931764554831510657, guid: d64582862ac066947aed85b9770227bf, type: 3}
   m_PrefabInstance: {fileID: 1690177355}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1456255692 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4586172968713596459, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
+  m_PrefabInstance: {fileID: 493204714}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b41dac59aa0707e4ca5c48f5ecea636a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GraphVertex
 --- !u!114 &1458172331 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4586172968713596459, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
@@ -11703,6 +11703,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5156253583781991742, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
   m_PrefabInstance: {fileID: 1484104665}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1484104667 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4586172968713596459, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
+  m_PrefabInstance: {fileID: 1484104665}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b41dac59aa0707e4ca5c48f5ecea636a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GraphVertex
 --- !u!1001 &1486741362
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -13033,7 +13044,7 @@ GameObject:
   - component: {fileID: 1571057450}
   - component: {fileID: 1571057449}
   m_Layer: 0
-  m_Name: Scheduler
+  m_Name: PlanScheduler
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -13056,7 +13067,10 @@ MonoBehaviour:
   planOnStart: 1
   autoReplan: 1
   replanInterval: 1
-  autoReplanOnlyAtVertices: 0
+  autoReplanOnlyAtVertices: 1
+  rollingReplanAtVertices: 1
+  runPlanningAsync: 1
+  pauseRobotsDuringAsyncPlanning: 1
   logPlanningResult: 1
 --- !u!4 &1571057450
 Transform:
@@ -13767,7 +13781,7 @@ PrefabInstance:
     - target: {fileID: 5095889797597770919, guid: d64582862ac066947aed85b9770227bf, type: 3}
       propertyPath: goalVertex
       value: 
-      objectReference: {fileID: 443760846}
+      objectReference: {fileID: 1458172331}
     - target: {fileID: 5095889797597770919, guid: d64582862ac066947aed85b9770227bf, type: 3}
       propertyPath: initialVertex
       value: 
@@ -15105,17 +15119,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5156253583781991742, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
   m_PrefabInstance: {fileID: 1855407976}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1862518119 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4586172968713596459, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
-  m_PrefabInstance: {fileID: 60172266}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b41dac59aa0707e4ca5c48f5ecea636a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GraphVertex
 --- !u!4 &1869302234 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1934330664027755117, guid: 4088f4bd660fdf4409000c4617ee472f, type: 3}

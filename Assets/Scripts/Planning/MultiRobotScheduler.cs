@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 /// <summary>
@@ -16,11 +18,16 @@ public class MultiRobotScheduler : MonoBehaviour
     public bool autoReplan = false;
     public float replanInterval = 1f;
     public bool autoReplanOnlyAtVertices = true;
+    public bool rollingReplanAtVertices = true;
+    public bool runPlanningAsync = true;
+    public bool pauseRobotsDuringAsyncPlanning = true;
     public bool logPlanningResult = true;
 
     private readonly ContinuousMultiRobotPlanner planner = new ContinuousMultiRobotPlanner();
     private float nextReplanTime = 0f;
     private float nextDeferredEdgeLogTime = 0f;
+    private PlanningJob activePlanningJob;
+    private int nextPlanningJobId = 1;
     private const float DeferredReplanDelay = 0.1f;
     private const float DeferredEdgeLogInterval = 2f;
 
@@ -34,7 +41,14 @@ public class MultiRobotScheduler : MonoBehaviour
 
     void Update()
     {
+        CompleteFinishedPlanningJob();
+
         if (!autoReplan)
+        {
+            return;
+        }
+
+        if (activePlanningJob != null)
         {
             return;
         }
@@ -45,9 +59,22 @@ public class MultiRobotScheduler : MonoBehaviour
         }
     }
 
+    void OnDisable()
+    {
+        SetRobotsPlanningPaused(false);
+    }
+
     [ContextMenu("Plan Now")]
     public void PlanNow()
     {
+        CompleteFinishedPlanningJob();
+
+        if (activePlanningJob != null)
+        {
+            ScheduleNextAttempt();
+            return;
+        }
+
         if (graphManager == null)
         {
             Debug.LogError("MultiRobotScheduler requires a GraphManager reference.");
@@ -57,13 +84,7 @@ public class MultiRobotScheduler : MonoBehaviour
 
         if (robots == null || robots.Count == 0)
         {
-            robots = new List<Robot>(FindObjectsByType<Robot>(FindObjectsSortMode.None));
-        }
-
-        if (autoReplan && !AnyRobotNeedsReplan())
-        {
-            ScheduleNextAttempt();
-            return;
+            robots = new List<Robot>(FindObjectsByType<Robot>(FindObjectsInactive.Exclude));
         }
 
         ContinuousPlanningGraph graph = ContinuousPlanningGraph.Build(graphManager);
@@ -84,6 +105,13 @@ public class MultiRobotScheduler : MonoBehaviour
         }
 
         Dictionary<int, RobotPlanningState> robotStatesById = IndexRobotStatesById(robotStates);
+        bool anyRobotNeedsReplan = AnyRobotNeedsReplan();
+
+        if (autoReplan && !anyRobotNeedsReplan)
+        {
+            ScheduleNextAttempt();
+            return;
+        }
 
         if (autoReplan &&
             autoReplanOnlyAtVertices &&
@@ -102,13 +130,114 @@ public class MultiRobotScheduler : MonoBehaviour
                 nextDeferredEdgeLogTime = Time.time + DeferredEdgeLogInterval;
             }
 
-            nextReplanTime = Time.time + DeferredReplanDelay;
+            ScheduleNextAttempt();
             return;
         }
 
         nextDeferredEdgeLogTime = 0f;
 
+        if (runPlanningAsync)
+        {
+            StartAsyncPlanningJob(graph, robotStates, robotStatesById);
+            ScheduleNextAttempt();
+            return;
+        }
+
         ContinuousPlanningResult result = planner.Plan(graph, robotStates);
+        HandlePlanningResult(result, graph, robotStates, robotStatesById);
+    }
+
+    private void StartAsyncPlanningJob(
+        ContinuousPlanningGraph graph,
+        List<RobotPlanningState> robotStates,
+        Dictionary<int, RobotPlanningState> robotStatesById)
+    {
+        var job = new PlanningJob
+        {
+            id = nextPlanningJobId++,
+            graph = graph,
+            robotStates = new List<RobotPlanningState>(robotStates),
+            robotStatesById = new Dictionary<int, RobotPlanningState>(robotStatesById)
+        };
+
+        activePlanningJob = job;
+        SetRobotsPlanningPaused(pauseRobotsDuringAsyncPlanning);
+
+        job.task = Task.Run(() => planner.Plan(job.graph, job.robotStates));
+    }
+
+    private void CompleteFinishedPlanningJob()
+    {
+        if (activePlanningJob == null || activePlanningJob.task == null || !activePlanningJob.task.IsCompleted)
+        {
+            return;
+        }
+
+        PlanningJob job = activePlanningJob;
+        activePlanningJob = null;
+        SetRobotsPlanningPaused(false);
+
+        if (job.task.IsCanceled)
+        {
+            if (logPlanningResult)
+            {
+                Debug.LogWarning("Async planning job " + job.id + " was canceled.");
+            }
+
+            ScheduleNextAttempt();
+            return;
+        }
+
+        if (job.task.IsFaulted)
+        {
+            if (logPlanningResult)
+            {
+                Exception exception = job.task.Exception != null
+                    ? job.task.Exception.GetBaseException()
+                    : null;
+                Debug.LogError(
+                    "Async planning job " + job.id + " failed with an exception: " +
+                    (exception != null ? exception.Message : "<unknown>"));
+            }
+
+            ScheduleNextAttempt();
+            return;
+        }
+
+        ContinuousPlanningResult result = job.task.Result;
+        if (!ArePlanningInputsStillCurrent(job.robotStates))
+        {
+            if (logPlanningResult)
+            {
+                Debug.Log(
+                    "Async planning job " + job.id +
+                    " finished, but its snapshot is stale. A new planning attempt will be started.");
+            }
+
+            nextReplanTime = Time.time;
+            return;
+        }
+
+        HandlePlanningResult(result, job.graph, job.robotStates, job.robotStatesById);
+    }
+
+    private void HandlePlanningResult(
+        ContinuousPlanningResult result,
+        ContinuousPlanningGraph graph,
+        List<RobotPlanningState> robotStates,
+        Dictionary<int, RobotPlanningState> robotStatesById)
+    {
+        if (result == null)
+        {
+            if (logPlanningResult)
+            {
+                Debug.LogWarning("Planning failed: planner returned a null result.");
+            }
+
+            ScheduleNextAttempt();
+            return;
+        }
+
         if (!result.success && !result.partialSuccess)
         {
             if (logPlanningResult)
@@ -133,6 +262,8 @@ public class MultiRobotScheduler : MonoBehaviour
             RobotSchedule schedule;
             if (result.schedulesByRobotId.TryGetValue(robot.id, out schedule))
             {
+                robot.stopAtScheduleVerticesForReplanning =
+                    autoReplan && autoReplanOnlyAtVertices && rollingReplanAtVertices;
                 robot.SetSchedule(schedule, graph);
                 continue;
             }
@@ -144,15 +275,19 @@ public class MultiRobotScheduler : MonoBehaviour
                 {
                     if (robotState.IsAtVertex)
                     {
+                        robot.stopAtScheduleVerticesForReplanning = false;
                         robot.ClearSchedule();
                     }
                     else
                     {
+                        robot.stopAtScheduleVerticesForReplanning =
+                            autoReplan && autoReplanOnlyAtVertices && rollingReplanAtVertices;
                         robot.SetRetryHoldSchedule(BuildHoldSchedule(robotState, graph), graph);
                     }
                 }
                 else
                 {
+                    robot.stopAtScheduleVerticesForReplanning = false;
                     robot.ClearSchedule();
                 }
             }
@@ -369,5 +504,82 @@ public class MultiRobotScheduler : MonoBehaviour
     {
         float interval = autoReplan ? Mathf.Max(DeferredReplanDelay, replanInterval) : replanInterval;
         nextReplanTime = Time.time + interval;
+    }
+
+    private void SetRobotsPlanningPaused(bool paused)
+    {
+        if (robots == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < robots.Count; i++)
+        {
+            Robot robot = robots[i];
+            if (robot == null || !robot.gameObject.activeInHierarchy)
+            {
+                continue;
+            }
+
+            robot.SetSchedulePaused(paused);
+        }
+    }
+
+    private bool ArePlanningInputsStillCurrent(List<RobotPlanningState> plannedRobotStates)
+    {
+        if (plannedRobotStates == null)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < plannedRobotStates.Count; i++)
+        {
+            RobotPlanningState plannedState = plannedRobotStates[i];
+            if (plannedState == null)
+            {
+                continue;
+            }
+
+            Robot robot = FindRobotById(plannedState.robotId);
+            if (robot == null || !robot.gameObject.activeInHierarchy)
+            {
+                return false;
+            }
+
+            if (robot.GetGoalVertexId() != plannedState.goalVertexId)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private Robot FindRobotById(int robotId)
+    {
+        if (robots == null)
+        {
+            return null;
+        }
+
+        for (int i = 0; i < robots.Count; i++)
+        {
+            Robot robot = robots[i];
+            if (robot != null && robot.id == robotId)
+            {
+                return robot;
+            }
+        }
+
+        return null;
+    }
+
+    private class PlanningJob
+    {
+        public int id;
+        public ContinuousPlanningGraph graph;
+        public List<RobotPlanningState> robotStates;
+        public Dictionary<int, RobotPlanningState> robotStatesById;
+        public Task<ContinuousPlanningResult> task;
     }
 }

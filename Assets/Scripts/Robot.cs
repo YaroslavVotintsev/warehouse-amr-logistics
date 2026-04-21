@@ -16,6 +16,8 @@ public class Robot : MonoBehaviour
     public GraphVertex initialEdgeToVertex;
     public float initialDistanceFromEdgeStart = 0f;
     public bool useSchedulerMovement = true;
+    [System.NonSerialized]
+    public bool stopAtScheduleVerticesForReplanning = false;
     public float vertexSnapTolerance = 0.05f;
 
     [Header("Legacy Path Movement")]
@@ -33,6 +35,10 @@ public class Robot : MonoBehaviour
     private Vector3 firstSegmentStartPosition;
     private int activeScheduleGoalVertexId = -1;
     private bool requestReplanAtNextVertex = false;
+    private bool stoppedAtScheduleVertexForReplan = false;
+    private int stoppedScheduleVertexId = -1;
+    private bool schedulePaused = false;
+    private float schedulePauseStartedAt = 0f;
 
     void Start()
     {
@@ -119,6 +125,10 @@ public class Robot : MonoBehaviour
         firstSegmentStartPosition = transform.position;
         activeScheduleGoalVertexId = goalVertex != null ? goalVertex.id : -1;
         requestReplanAtNextVertex = false;
+        stoppedAtScheduleVertexForReplan = false;
+        stoppedScheduleVertexId = -1;
+        schedulePaused = false;
+        schedulePauseStartedAt = 0f;
     }
 
     public void SetRetryHoldSchedule(RobotSchedule schedule, ContinuousPlanningGraph graph)
@@ -129,6 +139,10 @@ public class Robot : MonoBehaviour
         firstSegmentStartPosition = transform.position;
         activeScheduleGoalVertexId = goalVertex != null ? goalVertex.id : -1;
         requestReplanAtNextVertex = true;
+        stoppedAtScheduleVertexForReplan = false;
+        stoppedScheduleVertexId = -1;
+        schedulePaused = false;
+        schedulePauseStartedAt = 0f;
     }
 
     public void ClearSchedule()
@@ -139,6 +153,30 @@ public class Robot : MonoBehaviour
         firstSegmentStartPosition = transform.position;
         activeScheduleGoalVertexId = goalVertex != null ? goalVertex.id : -1;
         requestReplanAtNextVertex = false;
+        stoppedAtScheduleVertexForReplan = false;
+        stoppedScheduleVertexId = -1;
+        schedulePaused = false;
+        schedulePauseStartedAt = 0f;
+    }
+
+    public void SetSchedulePaused(bool paused)
+    {
+        if (schedulePaused == paused)
+        {
+            return;
+        }
+
+        if (paused)
+        {
+            schedulePaused = true;
+            schedulePauseStartedAt = Time.time;
+            return;
+        }
+
+        // Keep schedule-local time continuous across an async planning pause.
+        scheduleStartTime += Time.time - schedulePauseStartedAt;
+        schedulePaused = false;
+        schedulePauseStartedAt = 0f;
     }
 
     public bool NeedsReplan()
@@ -149,6 +187,11 @@ public class Robot : MonoBehaviour
         }
 
         if (activeSchedule == null || activeGraph == null)
+        {
+            return true;
+        }
+
+        if (stoppedAtScheduleVertexForReplan)
         {
             return true;
         }
@@ -183,6 +226,19 @@ public class Robot : MonoBehaviour
         if (graph == null || !HasGoal())
         {
             return false;
+        }
+
+        if (stoppedAtScheduleVertexForReplan)
+        {
+            state = new RobotPlanningState
+            {
+                robotId = id,
+                speed = speed,
+                goalVertexId = goalVertex.id,
+                locationKind = RobotLocationKind.Vertex,
+                currentVertexId = stoppedScheduleVertexId
+            };
+            return true;
         }
 
         ScheduleSegment activeSegment;
@@ -328,6 +384,21 @@ public class Robot : MonoBehaviour
             return;
         }
 
+        if (stoppedAtScheduleVertexForReplan)
+        {
+            transform.position = activeGraph.GetVertexPosition(stoppedScheduleVertexId);
+            return;
+        }
+
+        int stopVertexId;
+        if (ShouldStopAtCompletedScheduleVertex(out stopVertexId))
+        {
+            stoppedAtScheduleVertexForReplan = true;
+            stoppedScheduleVertexId = stopVertexId;
+            transform.position = activeGraph.GetVertexPosition(stopVertexId);
+            return;
+        }
+
         ScheduleSegment activeSegment;
         int segmentIndex;
         if (!TryGetScheduleSegmentAtTime(GetScheduleTime(), out activeSegment, out segmentIndex))
@@ -352,7 +423,8 @@ public class Robot : MonoBehaviour
 
     private float GetScheduleTime()
     {
-        return Time.time - scheduleStartTime;
+        float currentTime = schedulePaused ? schedulePauseStartedAt : Time.time;
+        return currentTime - scheduleStartTime;
     }
 
     private bool TryGetActiveScheduleSegment(out ScheduleSegment activeSegment)
@@ -404,6 +476,81 @@ public class Robot : MonoBehaviour
 
         float elapsed = GetScheduleTime() - segment.interval.startTime;
         return Mathf.Clamp01(elapsed / duration);
+    }
+
+    private bool ShouldStopAtCompletedScheduleVertex(out int vertexId)
+    {
+        vertexId = -1;
+
+        if (!stopAtScheduleVerticesForReplanning ||
+            activeSchedule == null ||
+            activeSchedule.segments == null)
+        {
+            return false;
+        }
+
+        float scheduleTime = GetScheduleTime();
+        for (int i = 0; i < activeSchedule.segments.Count; i++)
+        {
+            ScheduleSegment segment = activeSchedule.segments[i];
+            if (segment == null || segment.type != ScheduleSegmentType.TraverseEdge)
+            {
+                continue;
+            }
+
+            if (scheduleTime < segment.interval.endTime)
+            {
+                return false;
+            }
+
+            bool goalChanged = goalVertex != null && activeScheduleGoalVertexId != goalVertex.id;
+            bool reachedCurrentGoal = goalVertex != null && segment.endVertexId == goalVertex.id;
+
+            if (goalChanged || requestReplanAtNextVertex || reachedCurrentGoal)
+            {
+                vertexId = segment.endVertexId;
+                return true;
+            }
+
+            // Do not turn a pass-through vertex into a permanent stop. That
+            // invalidates the planner's schedule because other robots may be
+            // planned to use this vertex shortly after this robot passes it.
+            if (!IsPlannedWaitAfterTraversal(i, segment))
+            {
+                continue;
+            }
+
+            vertexId = segment.endVertexId;
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool IsPlannedWaitAfterTraversal(int traversalSegmentIndex, ScheduleSegment traversalSegment)
+    {
+        if (activeSchedule == null ||
+            activeSchedule.segments == null ||
+            traversalSegment == null)
+        {
+            return false;
+        }
+
+        int nextIndex = traversalSegmentIndex + 1;
+        if (nextIndex >= activeSchedule.segments.Count)
+        {
+            return false;
+        }
+
+        ScheduleSegment nextSegment = activeSchedule.segments[nextIndex];
+        if (nextSegment == null ||
+            nextSegment.type != ScheduleSegmentType.WaitAtVertex ||
+            nextSegment.startVertexId != traversalSegment.endVertexId)
+        {
+            return false;
+        }
+
+        return Mathf.Abs(nextSegment.interval.startTime - traversalSegment.interval.endTime) <= 0.0001f;
     }
 
     private bool TrySnapToVertex(ContinuousPlanningGraph graph, out int vertexId)
