@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Edge
   - Vertex
+  - Robot
   layers:
   - Default
   - TransparentFX
