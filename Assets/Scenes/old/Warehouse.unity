@@ -5176,7 +5176,7 @@ PrefabInstance:
     - target: {fileID: 5095889797597770919, guid: d64582862ac066947aed85b9770227bf, type: 3}
       propertyPath: goalVertex
       value: 
-      objectReference: {fileID: 975748099}
+      objectReference: {fileID: 1511804230}
     - target: {fileID: 5095889797597770919, guid: d64582862ac066947aed85b9770227bf, type: 3}
       propertyPath: initialVertex
       value: 
@@ -8503,17 +8503,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5156253583781991742, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
   m_PrefabInstance: {fileID: 975748097}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &975748099 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4586172968713596459, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
-  m_PrefabInstance: {fileID: 975748097}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b41dac59aa0707e4ca5c48f5ecea636a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GraphVertex
 --- !u!1001 &989794729
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -12064,6 +12053,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5156253583781991742, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
   m_PrefabInstance: {fileID: 1511804228}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1511804230 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4586172968713596459, guid: d5886243faa392d4783a4c6f9746d96c, type: 3}
+  m_PrefabInstance: {fileID: 1511804228}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b41dac59aa0707e4ca5c48f5ecea636a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GraphVertex
 --- !u!4 &1514905361 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1934330664027755117, guid: 4088f4bd660fdf4409000c4617ee472f, type: 3}

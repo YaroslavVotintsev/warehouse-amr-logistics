@@ -39,6 +39,10 @@ public class Robot : MonoBehaviour
     private int stoppedScheduleVertexId = -1;
     private bool schedulePaused = false;
     private float schedulePauseStartedAt = 0f;
+    private float runtimeStartTime = 0f;
+    private float totalDistanceTraveled = 0f;
+    private int trackedGoalVertexIdForLogging = -1;
+    private bool destinationReachedLoggedForCurrentGoal = false;
 
     void Start()
     {
@@ -56,21 +60,30 @@ public class Robot : MonoBehaviour
         {
             transform.position = path[0].transform.position;
         }
+
+        runtimeStartTime = Time.time;
+        trackedGoalVertexIdForLogging = GetGoalVertexId();
     }
 
     void Update()
     {
+        UpdateGoalLoggingState();
+        Vector3 previousPosition = transform.position;
+
         if (useSchedulerMovement)
         {
             if (activeSchedule != null)
             {
                 FollowSchedule();
             }
-
-            return;
+        }
+        else
+        {
+            MoveAlongPath();
         }
 
-        MoveAlongPath();
+        totalDistanceTraveled += Vector3.Distance(previousPosition, transform.position);
+        TryLogDestinationReached();
     }
 
     void MoveAlongPath()
@@ -585,5 +598,65 @@ public class Robot : MonoBehaviour
         float clampedDistance = Mathf.Clamp(initialDistanceFromEdgeStart, 0f, edgeLength);
         float progress = clampedDistance / edgeLength;
         transform.position = Vector3.Lerp(startPosition, endPosition, progress);
+    }
+
+    private void UpdateGoalLoggingState()
+    {
+        int currentGoalVertexId = GetGoalVertexId();
+        if (trackedGoalVertexIdForLogging == currentGoalVertexId)
+        {
+            return;
+        }
+
+        trackedGoalVertexIdForLogging = currentGoalVertexId;
+        destinationReachedLoggedForCurrentGoal = false;
+    }
+
+    private void TryLogDestinationReached()
+    {
+        if (destinationReachedLoggedForCurrentGoal || goalVertex == null)
+        {
+            return;
+        }
+
+        if (!IsAtGoalVertex())
+        {
+            return;
+        }
+
+        destinationReachedLoggedForCurrentGoal = true;
+        Debug.Log(
+            "Robot " + id +
+            " reached destination V" + goalVertex.id +
+            ". Runtime since start: " + (Time.time - runtimeStartTime).ToString("0.###") +
+            " s. Distance traveled: " + totalDistanceTraveled.ToString("0.###") +
+            ".");
+    }
+
+    private bool IsAtGoalVertex()
+    {
+        if (goalVertex == null)
+        {
+            return false;
+        }
+
+        if (stoppedAtScheduleVertexForReplan)
+        {
+            return stoppedScheduleVertexId == goalVertex.id;
+        }
+
+        if (useSchedulerMovement)
+        {
+            ScheduleSegment activeSegment;
+            if (TryGetActiveScheduleSegment(out activeSegment) &&
+                activeSegment != null &&
+                activeSegment.type == ScheduleSegmentType.WaitAtVertex &&
+                activeSegment.startVertexId == goalVertex.id)
+            {
+                return true;
+            }
+        }
+
+        return Vector3.Distance(transform.position, goalVertex.transform.position) <= vertexSnapTolerance;
     }
 }
