@@ -2,6 +2,10 @@ using UnityEngine;
 
 namespace Mapf.Authoring
 {
+    /// <summary>
+    /// Scene-authored undirected roadmap edge between two <see cref="MapfNode"/> objects.
+    /// The scene graph adapter converts these components into bidirectional graph edges.
+    /// </summary>
     [DisallowMultipleComponent]
     public sealed class MapfEdge : MonoBehaviour
     {
@@ -15,19 +19,13 @@ namespace Mapf.Authoring
         public bool RequireAxisAligned => requireAxisAligned;
         public float AxisTolerance => axisTolerance;
 
+        /// <summary>
+        /// Assigns the endpoints for an edge created by editor tools or scenario spawning.
+        /// </summary>
         public void Configure(MapfNode nodeA, MapfNode nodeB)
         {
             a = nodeA;
             b = nodeB;
-        }
-
-        private void OnDrawGizmos()
-        {
-            if (a == null || b == null)
-                return;
-
-            Gizmos.color = Color.gray;
-            Gizmos.DrawLine(a.transform.position, b.transform.position);
         }
     }
 }

@@ -8148,10 +8148,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Mapf.Runtime::Mapf.UnityAdapter.MapfDebugGizmos
   nodeRadius: 0.08
-  labelOffset: 0.18
+  nodeLabelOffset: {x: 0, y: 0.1}
+  agentLabelOffset: {x: 0, y: 0.18}
   showNodeIds: 1
+  showAgentIds: 1
   nodeColor: {r: 0.2, g: 0.7, b: 1, a: 1}
-  planColor: {r: 1, g: 0.75, b: 0.2, a: 1}
+  edgeColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
 --- !u!114 &1390016551
 MonoBehaviour:
   m_ObjectHideFlags: 0
