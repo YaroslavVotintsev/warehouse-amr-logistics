@@ -17,6 +17,8 @@ namespace TaskPlanning
             scheduler ??= FindAnyObjectByType<TaskScheduler>();
         }
 
+        public TaskScheduler Scheduler => scheduler;
+
         [ContextMenu("Submit Selected Task")]
         public void SubmitSelectedTask()
         {

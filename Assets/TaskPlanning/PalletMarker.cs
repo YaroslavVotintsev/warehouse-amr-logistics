@@ -20,12 +20,15 @@ namespace TaskPlanning
         [SerializeField] private MapfNode currentNode;
 
         private Transform _originalParent;
+        private bool _isLoaded;
 
         public string PalletId => string.IsNullOrWhiteSpace(palletId) ? name : palletId.Trim();
         public string KitId => PalletId;
         public MapfNode CurrentNode => currentNode;
         public PalletStatus Status { get; private set; } = PalletStatus.Available;
         public bool IsAvailable => Status == PalletStatus.Available;
+        public bool IsLoaded => _isLoaded;
+        public string LoadStateLabel => _isLoaded ? "Loaded" : "Unloaded";
 
         private void Awake()
         {
@@ -57,11 +60,13 @@ namespace TaskPlanning
 
         public void MarkLoading()
         {
+            _isLoaded = false;
             Status = PalletStatus.Loading;
         }
 
         public void MarkLoaded()
         {
+            _isLoaded = true;
             Status = PalletStatus.Loaded;
         }
 
@@ -73,6 +78,7 @@ namespace TaskPlanning
         public void DetachAt(MapfNode node)
         {
             currentNode = node;
+            _isLoaded = false;
             Status = PalletStatus.Available;
             transform.SetParent(_originalParent, true);
             if (node != null)

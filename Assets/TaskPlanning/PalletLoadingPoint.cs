@@ -14,6 +14,7 @@ namespace TaskPlanning
         public string LoadingPointId => string.IsNullOrWhiteSpace(loadingPointId) ? name : loadingPointId.Trim();
         public MapfNode Node => node;
         public float LoadDurationSeconds => Mathf.Max(0f, loadDurationSeconds);
+        public int AcceptedPalletCount => acceptedPallets?.Length ?? 0;
 
         public bool Accepts(PalletMarker pallet)
         {
