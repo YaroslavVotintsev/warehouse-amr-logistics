@@ -27,10 +27,10 @@ namespace TaskPlanning
 
                 foreach (var loadingPoint in loadingPoints)
                 {
-                    if (loadingPoint == null || loadingPoint.Node == null || !loadingPoint.CanReserve(pallet))
+                    if (loadingPoint == null || loadingPoint.Node == null || !loadingPoint.Accepts(pallet))
                         continue;
 
-                    if (!request.workstation.CanReserve(pallet))
+                    if (request.workstation == null || request.workstation.Node == null || !request.workstation.Accepts(pallet))
                         continue;
 
                     var toPallet = distances.Distance(amrNode, pallet.CurrentNode);

@@ -770,7 +770,6 @@ MonoBehaviour:
   node: {fileID: 118687523}
   acceptedPallets:
   - {fileID: 261116817}
-  loadDurationSeconds: 3
 --- !u!1 &141648652
 GameObject:
   m_ObjectHideFlags: 0
@@ -1138,6 +1137,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: TaskPlanning::TaskPlanning.PalletMarker
   palletId: 2
   currentNode: {fileID: 96254533}
+  attachDurationSeconds: 3
+  detachDurationSeconds: 3
+  loadDurationSeconds: 3
+  unloadDurationSeconds: 3
 --- !u!212 &261116818
 SpriteRenderer:
   serializedVersion: 2
@@ -2330,7 +2333,7 @@ MonoBehaviour:
   acceptedPallets:
   - {fileID: 611666652}
   - {fileID: 709068845}
-  unloadDurationSeconds: 3
+  palletOccupancyDistance: 0.12
 --- !u!1 &581600601
 GameObject:
   m_ObjectHideFlags: 0
@@ -2471,6 +2474,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: TaskPlanning::TaskPlanning.PalletMarker
   palletId: 1
   currentNode: {fileID: 879219640}
+  attachDurationSeconds: 3
+  detachDurationSeconds: 3
+  loadDurationSeconds: 3
+  unloadDurationSeconds: 3
 --- !u!212 &611666653
 SpriteRenderer:
   serializedVersion: 2
@@ -2816,7 +2823,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &656281988
 Transform:
   m_ObjectHideFlags: 0
@@ -3106,6 +3113,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: TaskPlanning::TaskPlanning.PalletMarker
   palletId: 4
   currentNode: {fileID: 1025743101}
+  attachDurationSeconds: 3
+  detachDurationSeconds: 3
+  loadDurationSeconds: 3
+  unloadDurationSeconds: 3
 --- !u!212 &709068846
 SpriteRenderer:
   serializedVersion: 2
@@ -3290,7 +3301,7 @@ MonoBehaviour:
   node: {fileID: 732784561}
   acceptedPallets:
   - {fileID: 1130050153}
-  unloadDurationSeconds: 3
+  palletOccupancyDistance: 0.12
 --- !u!1 &761158554
 GameObject:
   m_ObjectHideFlags: 0
@@ -3740,6 +3751,7 @@ MonoBehaviour:
   coordinator: {fileID: 1390016551}
   sceneGraph: {fileID: 1390016552}
   arrivalDistance: 0.08
+  pendingRetryIntervalSeconds: 0.5
   autoDiscoverSceneObjects: 1
   amrs:
   - {fileID: 108708341}
@@ -3969,7 +3981,6 @@ MonoBehaviour:
   - {fileID: 611666652}
   - {fileID: 1130050153}
   - {fileID: 709068845}
-  loadDurationSeconds: 3
 --- !u!1 &998440098
 GameObject:
   m_ObjectHideFlags: 0
@@ -4460,6 +4471,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: TaskPlanning::TaskPlanning.PalletMarker
   palletId: 3
   currentNode: {fileID: 385702733}
+  attachDurationSeconds: 3
+  detachDurationSeconds: 3
+  loadDurationSeconds: 3
+  unloadDurationSeconds: 3
 --- !u!212 &1130050154
 SpriteRenderer:
   serializedVersion: 2
@@ -5388,7 +5403,8 @@ MonoBehaviour:
   node: {fileID: 1450868322}
   acceptedPallets:
   - {fileID: 261116817}
-  unloadDurationSeconds: 3
+  - {fileID: 611666652}
+  palletOccupancyDistance: 0.12
 --- !u!1 &1467739710
 GameObject:
   m_ObjectHideFlags: 0

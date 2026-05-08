@@ -22,6 +22,8 @@ namespace TaskPlanning
         [SerializeField] private MapfNode currentNode;
         [SerializeField] private float attachDurationSeconds = 1f;
         [SerializeField] private float detachDurationSeconds = 1f;
+        [SerializeField] private float loadDurationSeconds = 3f;
+        [SerializeField] private float unloadDurationSeconds = 3f;
 
         private Transform _originalParent;
         private bool _isLoaded;
@@ -31,6 +33,8 @@ namespace TaskPlanning
         public MapfNode CurrentNode => currentNode;
         public float AttachDurationSeconds => Mathf.Max(0f, attachDurationSeconds);
         public float DetachDurationSeconds => Mathf.Max(0f, detachDurationSeconds);
+        public float LoadDurationSeconds => Mathf.Max(0f, loadDurationSeconds);
+        public float UnloadDurationSeconds => Mathf.Max(0f, unloadDurationSeconds);
         public PalletStatus Status { get; private set; } = PalletStatus.Available;
         public bool IsAvailable => Status == PalletStatus.Available;
         public bool IsLoaded => _isLoaded;
@@ -94,12 +98,22 @@ namespace TaskPlanning
 
         public void DetachAt(MapfNode node)
         {
+            DetachAt(node, PalletStatus.Available);
+        }
+
+        public void DetachAt(MapfNode node, PalletStatus statusAfterDetach)
+        {
             currentNode = node;
-            _isLoaded = false;
-            Status = PalletStatus.Available;
+            Status = statusAfterDetach;
             transform.SetParent(_originalParent, true);
             if (node != null)
                 transform.position = new Vector3(node.transform.position.x, node.transform.position.y, transform.position.z);
+        }
+
+        public void MarkUnloadedAvailable()
+        {
+            _isLoaded = false;
+            Status = PalletStatus.Available;
         }
     }
 }

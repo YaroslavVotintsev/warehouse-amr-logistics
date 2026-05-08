@@ -13,6 +13,7 @@ namespace TaskPlanning
         [SerializeField] private MapfCoordinator coordinator;
         [SerializeField] private MapfSceneGraph sceneGraph;
         [SerializeField] private float arrivalDistance = 0.08f;
+        [SerializeField] private float pendingRetryIntervalSeconds = 0.5f;
         [SerializeField] private bool autoDiscoverSceneObjects = true;
         [SerializeField] private List<TaskPlanningAmr> amrs = new();
         [SerializeField] private List<PalletLoadingPoint> loadingPoints = new();
@@ -20,6 +21,7 @@ namespace TaskPlanning
         private readonly Queue<DeliveryTaskRequest> _pendingTasks = new();
         private ITaskDispatchAlgorithm _dispatchAlgorithm;
         private RoadmapDistanceService _distances;
+        private float _nextPendingRetryTime;
 
         private void Awake()
         {
@@ -34,6 +36,15 @@ namespace TaskPlanning
         private void Start()
         {
             RefreshDistances();
+            TryDispatchPendingTasks();
+        }
+
+        private void Update()
+        {
+            if (_pendingTasks.Count == 0 || Time.time < _nextPendingRetryTime)
+                return;
+
+            _nextPendingRetryTime = Time.time + Mathf.Max(0.05f, pendingRetryIntervalSeconds);
             TryDispatchPendingTasks();
         }
 
@@ -91,7 +102,7 @@ namespace TaskPlanning
                     continue;
                 }
 
-                if (!assignment.LoadingPoint.TryReserve(assignment.Pallet))
+                if (!request.workstation.Enqueue(assignment.Pallet))
                 {
                     assignment.Pallet.ReleaseReservation();
                     assignment.Amr.Release();
@@ -99,9 +110,9 @@ namespace TaskPlanning
                     continue;
                 }
 
-                if (!request.workstation.TryReserve(assignment.Pallet))
+                if (!assignment.LoadingPoint.Enqueue(assignment.Pallet))
                 {
-                    assignment.LoadingPoint.ReleaseReservation(assignment.Pallet);
+                    request.workstation.ReleaseReservation(assignment.Pallet);
                     assignment.Pallet.ReleaseReservation();
                     assignment.Amr.Release();
                     _pendingTasks.Enqueue(request);
@@ -124,9 +135,10 @@ namespace TaskPlanning
             assignment.Pallet.AttachTo(assignment.Amr);
             TryDispatchPendingTasks();
 
+            yield return WaitForLoadingAndWorkstationTurn(request, assignment);
             yield return MoveAmrTo(assignment.Amr, assignment.LoadingPoint.Node);
             assignment.Pallet.MarkLoading();
-            yield return new WaitForSeconds(assignment.LoadingPoint.LoadDurationSeconds);
+            yield return new WaitForSeconds(assignment.Pallet.LoadDurationSeconds);
             assignment.Pallet.MarkLoaded();
 
             coordinator.RequestAgentGoal(assignment.Amr.MapfAgent, request.workstation.Node);
@@ -134,13 +146,15 @@ namespace TaskPlanning
             TryDispatchPendingTasks();
             yield return WaitForAmrAt(assignment.Amr, request.workstation.Node);
 
-            assignment.Pallet.MarkUnloading();
-            yield return new WaitForSeconds(request.workstation.UnloadDurationSeconds);
             assignment.Pallet.MarkDetaching();
             yield return new WaitForSeconds(assignment.Pallet.DetachDurationSeconds);
-            assignment.Pallet.DetachAt(request.workstation.Node);
-            request.workstation.ReleaseReservation(assignment.Pallet);
+            assignment.Pallet.DetachAt(request.workstation.Node, PalletStatus.Unloading);
             assignment.Amr.Release();
+            TryDispatchPendingTasks();
+
+            yield return new WaitForSeconds(assignment.Pallet.UnloadDurationSeconds);
+            assignment.Pallet.MarkUnloadedAvailable();
+            request.workstation.ReleaseReservation(assignment.Pallet);
 
             Debug.Log($"MES task completed: task={request.taskId} amr={assignment.Amr.AmrId} pallet={assignment.Pallet.PalletId}", this);
             TryDispatchPendingTasks();
@@ -153,6 +167,27 @@ namespace TaskPlanning
 
             coordinator.RequestAgentGoal(amr.MapfAgent, goal);
             yield return WaitForAmrAt(amr, goal);
+        }
+
+        private IEnumerator WaitForLoadingAndWorkstationTurn(DeliveryTaskRequest request, DispatchAssignment assignment)
+        {
+            while (true)
+            {
+                if (!assignment.LoadingPoint.CanReserveNext(assignment.Pallet) ||
+                    !request.workstation.CanReserveNext(assignment.Pallet))
+                {
+                    yield return null;
+                    continue;
+                }
+
+                if (assignment.LoadingPoint.TryReserveNext(assignment.Pallet) &&
+                    request.workstation.TryReserveNext(assignment.Pallet))
+                    yield break;
+
+                assignment.LoadingPoint.ReleaseReservation(assignment.Pallet);
+                request.workstation.ReleaseReservation(assignment.Pallet);
+                yield return null;
+            }
         }
 
         private IEnumerator WaitForAmrAt(TaskPlanningAmr amr, MapfNode goal)

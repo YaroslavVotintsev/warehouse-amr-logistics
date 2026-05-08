@@ -1,4 +1,5 @@
 ﻿<Solution>
+  <Project Path="TaskPlanning.Tests.csproj" />
   <Project Path="Mapf.Editor.csproj" />
   <Project Path="Mapf.Runtime.csproj" />
   <Project Path="TaskPlanning.csproj" />
