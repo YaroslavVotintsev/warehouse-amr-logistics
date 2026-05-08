@@ -7,10 +7,12 @@ namespace TaskPlanning
     {
         Available,
         Reserved,
+        Attaching,
         Attached,
         Loading,
         Loaded,
-        Unloading
+        Unloading,
+        Detaching
     }
 
     [DisallowMultipleComponent]
@@ -18,6 +20,8 @@ namespace TaskPlanning
     {
         [SerializeField] private string palletId;
         [SerializeField] private MapfNode currentNode;
+        [SerializeField] private float attachDurationSeconds = 1f;
+        [SerializeField] private float detachDurationSeconds = 1f;
 
         private Transform _originalParent;
         private bool _isLoaded;
@@ -25,6 +29,8 @@ namespace TaskPlanning
         public string PalletId => string.IsNullOrWhiteSpace(palletId) ? name : palletId.Trim();
         public string KitId => PalletId;
         public MapfNode CurrentNode => currentNode;
+        public float AttachDurationSeconds => Mathf.Max(0f, attachDurationSeconds);
+        public float DetachDurationSeconds => Mathf.Max(0f, detachDurationSeconds);
         public PalletStatus Status { get; private set; } = PalletStatus.Available;
         public bool IsAvailable => Status == PalletStatus.Available;
         public bool IsLoaded => _isLoaded;
@@ -50,9 +56,15 @@ namespace TaskPlanning
                 Status = PalletStatus.Available;
         }
 
+        public void MarkAttaching()
+        {
+            Status = PalletStatus.Attaching;
+        }
+
         public void AttachTo(TaskPlanningAmr amr)
         {
             Status = PalletStatus.Attached;
+            currentNode = null;
             transform.SetParent(amr.PalletMount, true);
             transform.localPosition = Vector3.zero;
             amr.Attach(this);
@@ -73,6 +85,11 @@ namespace TaskPlanning
         public void MarkUnloading()
         {
             Status = PalletStatus.Unloading;
+        }
+
+        public void MarkDetaching()
+        {
+            Status = PalletStatus.Detaching;
         }
 
         public void DetachAt(MapfNode node)

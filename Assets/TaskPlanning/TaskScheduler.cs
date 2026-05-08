@@ -91,6 +91,23 @@ namespace TaskPlanning
                     continue;
                 }
 
+                if (!assignment.LoadingPoint.TryReserve(assignment.Pallet))
+                {
+                    assignment.Pallet.ReleaseReservation();
+                    assignment.Amr.Release();
+                    _pendingTasks.Enqueue(request);
+                    continue;
+                }
+
+                if (!request.workstation.TryReserve(assignment.Pallet))
+                {
+                    assignment.LoadingPoint.ReleaseReservation(assignment.Pallet);
+                    assignment.Pallet.ReleaseReservation();
+                    assignment.Amr.Release();
+                    _pendingTasks.Enqueue(request);
+                    continue;
+                }
+
                 Debug.Log(
                     $"Task dispatched: task={request.taskId} amr={assignment.Amr.AmrId} pallet={assignment.Pallet.PalletId} " +
                     $"loading={assignment.LoadingPoint.LoadingPointId} score={assignment.Score:0.###}",
@@ -102,17 +119,27 @@ namespace TaskPlanning
         private IEnumerator RunDelivery(DeliveryTaskRequest request, DispatchAssignment assignment)
         {
             yield return MoveAmrTo(assignment.Amr, assignment.Pallet.CurrentNode);
+            assignment.Pallet.MarkAttaching();
+            yield return new WaitForSeconds(assignment.Pallet.AttachDurationSeconds);
             assignment.Pallet.AttachTo(assignment.Amr);
+            TryDispatchPendingTasks();
 
             yield return MoveAmrTo(assignment.Amr, assignment.LoadingPoint.Node);
             assignment.Pallet.MarkLoading();
             yield return new WaitForSeconds(assignment.LoadingPoint.LoadDurationSeconds);
             assignment.Pallet.MarkLoaded();
 
-            yield return MoveAmrTo(assignment.Amr, request.workstation.Node);
+            coordinator.RequestAgentGoal(assignment.Amr.MapfAgent, request.workstation.Node);
+            assignment.LoadingPoint.ReleaseReservation(assignment.Pallet);
+            TryDispatchPendingTasks();
+            yield return WaitForAmrAt(assignment.Amr, request.workstation.Node);
+
             assignment.Pallet.MarkUnloading();
             yield return new WaitForSeconds(request.workstation.UnloadDurationSeconds);
+            assignment.Pallet.MarkDetaching();
+            yield return new WaitForSeconds(assignment.Pallet.DetachDurationSeconds);
             assignment.Pallet.DetachAt(request.workstation.Node);
+            request.workstation.ReleaseReservation(assignment.Pallet);
             assignment.Amr.Release();
 
             Debug.Log($"MES task completed: task={request.taskId} amr={assignment.Amr.AmrId} pallet={assignment.Pallet.PalletId}", this);
@@ -125,6 +152,14 @@ namespace TaskPlanning
                 yield break;
 
             coordinator.RequestAgentGoal(amr.MapfAgent, goal);
+            yield return WaitForAmrAt(amr, goal);
+        }
+
+        private IEnumerator WaitForAmrAt(TaskPlanningAmr amr, MapfNode goal)
+        {
+            if (amr == null || goal == null)
+                yield break;
+
             while (Vector2.Distance(amr.transform.position, goal.transform.position) > arrivalDistance)
                 yield return null;
         }

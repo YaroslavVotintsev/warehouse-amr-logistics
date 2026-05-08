@@ -96,12 +96,14 @@ namespace TaskPlanning
 
         private static string BuildLoadingPointText(PalletLoadingPoint loadingPoint)
         {
-            return $"Load:{loadingPoint.LoadingPointId}\nKits:{loadingPoint.AcceptedPalletCount}";
+            var reservation = loadingPoint.ReservedFor != null ? $"\nReserved:{loadingPoint.ReservedFor.KitId}" : string.Empty;
+            return $"Load:{loadingPoint.LoadingPointId}\nKits:{loadingPoint.AcceptedPalletCount}{reservation}";
         }
 
         private static string BuildWorkstationText(WorkstationDeliveryPoint workstation)
         {
-            return $"Unload:{workstation.WorkstationId}\nKits:{workstation.AcceptedPalletCount}";
+            var reservation = workstation.ReservedFor != null ? $"\nReserved:{workstation.ReservedFor.KitId}" : string.Empty;
+            return $"Unload:{workstation.WorkstationId}\nKits:{workstation.AcceptedPalletCount}{reservation}";
         }
     }
 }
