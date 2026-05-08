@@ -8,7 +8,7 @@ namespace TaskPlanning
     {
         [SerializeField] private TaskScheduler scheduler;
         [SerializeField] private List<DeliveryTaskRequest> inspectorTasks = new();
-        [SerializeField] private int selectedTaskIndex;
+        [SerializeField] private int[] selectedTaskIndexes = Array.Empty<int>();
 
         private int _generatedTaskNumber;
 
@@ -19,8 +19,8 @@ namespace TaskPlanning
 
         public TaskScheduler Scheduler => scheduler;
 
-        [ContextMenu("Submit Selected Task")]
-        public void SubmitSelectedTask()
+        [ContextMenu("Submit Selected Tasks")]
+        public void SubmitSelectedTasks()
         {
             if (inspectorTasks.Count == 0)
             {
@@ -28,8 +28,22 @@ namespace TaskPlanning
                 return;
             }
 
-            var index = Mathf.Clamp(selectedTaskIndex, 0, inspectorTasks.Count - 1);
-            SubmitTask(inspectorTasks[index]);
+            if (selectedTaskIndexes.Length == 0)
+            {
+                Debug.LogWarning("MES has no selected task indexes configured.", this);
+                return;
+            }
+
+            foreach (var index in selectedTaskIndexes)
+            {
+                if (index < 0 || index >= inspectorTasks.Count)
+                {
+                    Debug.LogWarning($"MES task index {index} is outside configured task range 0..{inspectorTasks.Count - 1}.", this);
+                    continue;
+                }
+
+                SubmitTask(inspectorTasks[index]);
+            }
         }
 
         public void SubmitTask(DeliveryTaskRequest request)

@@ -766,7 +766,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0a500ecbf974d0699553c820a8b42ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: TaskPlanning::TaskPlanning.PartSetLoadingPoint
-  loadingPointId: 2
+  loadingPointId: 148
   node: {fileID: 118687523}
   acceptedPallets:
   - {fileID: 261116817}
@@ -2325,10 +2325,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dcbc4036eca7417693857f0eeae39bb7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: TaskPlanning::TaskPlanning.WorkstationDeliveryPoint
-  workstationId: 1
+  workstationId: 13
   node: {fileID: 577553415}
   acceptedPallets:
   - {fileID: 611666652}
+  - {fileID: 709068845}
   unloadDurationSeconds: 3
 --- !u!1 &581600601
 GameObject:
@@ -3073,6 +3074,112 @@ MonoBehaviour:
   b: {fileID: 732784561}
   requireAxisAligned: 0
   axisTolerance: 0.01
+--- !u!1 &709068844
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 709068847}
+  - component: {fileID: 709068846}
+  - component: {fileID: 709068845}
+  m_Layer: 0
+  m_Name: Pallet_4
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &709068845
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 709068844}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30d35cca54034289a0a13b5a647cd44b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TaskPlanning::TaskPlanning.PalletMarker
+  palletId: 4
+  currentNode: {fileID: 1025743101}
+--- !u!212 &709068846
+SpriteRenderer:
+  serializedVersion: 2
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 709068844}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
+  m_Color: {r: 1, g: 0.84121287, b: 0.6, a: 1}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 1, y: 1}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_SpriteSortPoint: 0
+--- !u!4 &709068847
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 709068844}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 21, y: 1, z: 0}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 1099789644}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &720019940
 GameObject:
   m_ObjectHideFlags: 0
@@ -3179,7 +3286,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dcbc4036eca7417693857f0eeae39bb7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: TaskPlanning::TaskPlanning.WorkstationDeliveryPoint
-  workstationId: 3
+  workstationId: 14
   node: {fileID: 732784561}
   acceptedPallets:
   - {fileID: 1130050153}
@@ -3604,16 +3711,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: TaskPlanning::TaskPlanning.TaskPlanningMes
   scheduler: {fileID: 870286945}
   inspectorTasks:
-  - taskId: 1
+  - taskId: 0
     pallet: {fileID: 611666652}
     workstation: {fileID: 577553417}
-  - taskId: 2
+  - taskId: 1
     pallet: {fileID: 261116817}
     workstation: {fileID: 1450868324}
-  - taskId: 3
+  - taskId: 2
     pallet: {fileID: 1130050153}
     workstation: {fileID: 732784563}
-  selectedTaskIndex: 0
+  - taskId: 3
+    pallet: {fileID: 709068845}
+    workstation: {fileID: 577553417}
+  selectedTaskIndexes: 
 --- !u!114 &870286945
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3853,11 +3963,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0a500ecbf974d0699553c820a8b42ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: TaskPlanning::TaskPlanning.PartSetLoadingPoint
-  loadingPointId: 1
+  loadingPointId: 12
   node: {fileID: 989681077}
   acceptedPallets:
   - {fileID: 611666652}
   - {fileID: 1130050153}
+  - {fileID: 709068845}
   loadDurationSeconds: 3
 --- !u!1 &998440098
 GameObject:
@@ -4224,6 +4335,7 @@ Transform:
   - {fileID: 611666651}
   - {fileID: 261116816}
   - {fileID: 1130050155}
+  - {fileID: 709068847}
   m_Father: {fileID: 1390016554}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1100775502
@@ -5272,7 +5384,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dcbc4036eca7417693857f0eeae39bb7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: TaskPlanning::TaskPlanning.WorkstationDeliveryPoint
-  workstationId: 2
+  workstationId: 38
   node: {fileID: 1450868322}
   acceptedPallets:
   - {fileID: 261116817}
@@ -6729,6 +6841,7 @@ GameObject:
   - component: {fileID: 2083073564}
   - component: {fileID: 2083073563}
   - component: {fileID: 2083073562}
+  - component: {fileID: 2083073565}
   m_Layer: 0
   m_Name: Agent_2
   m_TagString: Untagged
@@ -6838,6 +6951,20 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &2083073565
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2083073559}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 824d28f732d24d439fe0a46820525993, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TaskPlanning::TaskPlanning.TaskPlanningAmr
+  amrId: 2
+  palletMount: {fileID: 0}
 --- !u!1 &2118025559
 GameObject:
   m_ObjectHideFlags: 0
