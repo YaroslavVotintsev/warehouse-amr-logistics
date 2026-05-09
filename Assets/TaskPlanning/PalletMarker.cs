@@ -12,7 +12,8 @@ namespace TaskPlanning
         Loading,
         Loaded,
         Unloading,
-        Detaching
+        Detaching,
+        AwaitingRemoval
     }
 
     [DisallowMultipleComponent]
@@ -20,6 +21,7 @@ namespace TaskPlanning
     {
         [SerializeField] private string palletId;
         [SerializeField] private MapfNode currentNode;
+        [SerializeField] private MapfNode parkingNode;
         [SerializeField] private float attachDurationSeconds = 1f;
         [SerializeField] private float detachDurationSeconds = 1f;
         [SerializeField] private float loadDurationSeconds = 3f;
@@ -31,6 +33,7 @@ namespace TaskPlanning
         public string PalletId => string.IsNullOrWhiteSpace(palletId) ? name : palletId.Trim();
         public string KitId => PalletId;
         public MapfNode CurrentNode => currentNode;
+        public MapfNode ParkingNode => parkingNode;
         public float AttachDurationSeconds => Mathf.Max(0f, attachDurationSeconds);
         public float DetachDurationSeconds => Mathf.Max(0f, detachDurationSeconds);
         public float LoadDurationSeconds => Mathf.Max(0f, loadDurationSeconds);
@@ -48,6 +51,15 @@ namespace TaskPlanning
         public bool TryReserve()
         {
             if (!IsAvailable)
+                return false;
+
+            Status = PalletStatus.Reserved;
+            return true;
+        }
+
+        public bool TryReserveForRemoval()
+        {
+            if (Status != PalletStatus.AwaitingRemoval)
                 return false;
 
             Status = PalletStatus.Reserved;
@@ -114,6 +126,12 @@ namespace TaskPlanning
         {
             _isLoaded = false;
             Status = PalletStatus.Available;
+        }
+
+        public void MarkAwaitingRemoval()
+        {
+            _isLoaded = false;
+            Status = PalletStatus.AwaitingRemoval;
         }
     }
 }

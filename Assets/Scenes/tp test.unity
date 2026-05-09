@@ -770,6 +770,51 @@ MonoBehaviour:
   node: {fileID: 118687523}
   acceptedPallets:
   - {fileID: 261116817}
+--- !u!1 &120014287
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 120014289}
+  - component: {fileID: 120014288}
+  m_Layer: 0
+  m_Name: 201
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &120014288
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 120014287}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6afacf5218659ba46bb320a9ae15b6dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mapf.Runtime::Mapf.Authoring.MapfNode
+  stableId: 201
+--- !u!4 &120014289
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 120014287}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 26, y: -1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 162355897}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &141648652
 GameObject:
   m_ObjectHideFlags: 0
@@ -919,6 +964,10 @@ Transform:
   - {fileID: 141648654}
   - {fileID: 1644942397}
   - {fileID: 459995491}
+  - {fileID: 120014289}
+  - {fileID: 207885032}
+  - {fileID: 1456305666}
+  - {fileID: 1647490080}
   - {fileID: 2038156855}
   - {fileID: 118687524}
   - {fileID: 577553416}
@@ -1042,6 +1091,51 @@ MonoBehaviour:
   b: {fileID: 1895744011}
   requireAxisAligned: 0
   axisTolerance: 0.01
+--- !u!1 &207885030
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 207885032}
+  - component: {fileID: 207885031}
+  m_Layer: 0
+  m_Name: 202
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &207885031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 207885030}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6afacf5218659ba46bb320a9ae15b6dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mapf.Runtime::Mapf.Authoring.MapfNode
+  stableId: 202
+--- !u!4 &207885032
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 207885030}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 25, y: -1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 162355897}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &232386389
 GameObject:
   m_ObjectHideFlags: 0
@@ -1137,6 +1231,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: TaskPlanning::TaskPlanning.PalletMarker
   palletId: 2
   currentNode: {fileID: 96254533}
+  parkingNode: {fileID: 207885031}
   attachDurationSeconds: 3
   detachDurationSeconds: 3
   loadDurationSeconds: 3
@@ -2474,6 +2569,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: TaskPlanning::TaskPlanning.PalletMarker
   palletId: 1
   currentNode: {fileID: 879219640}
+  parkingNode: {fileID: 120014288}
   attachDurationSeconds: 3
   detachDurationSeconds: 3
   loadDurationSeconds: 3
@@ -2823,7 +2919,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &656281988
 Transform:
   m_ObjectHideFlags: 0
@@ -3113,6 +3209,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: TaskPlanning::TaskPlanning.PalletMarker
   palletId: 4
   currentNode: {fileID: 1025743101}
+  parkingNode: {fileID: 1647490079}
   attachDurationSeconds: 3
   detachDurationSeconds: 3
   loadDurationSeconds: 3
@@ -3701,7 +3798,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 870286942}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -3751,7 +3848,22 @@ MonoBehaviour:
   coordinator: {fileID: 1390016551}
   sceneGraph: {fileID: 1390016552}
   arrivalDistance: 0.08
-  pendingRetryIntervalSeconds: 0.5
+  pendingRetryIntervalSeconds: 5
+  costAmrSpeed: 5
+  costWeights:
+    priorAssignmentEta: 1
+    amrToPalletEta: 1
+    attachTime: 1
+    loadingQueueEta: 1
+    palletToLoadingEta: 1
+    loadTime: 1
+    loadingToWorkstationEta: 1
+    detachTime: 1
+    palletToParkingEta: 1
+    removalBlocksPendingDeliveryMultiplier: 0.5
+    blockedDeliveryBias: 100
+    agingWeight: 1
+    maxAgingBonus: 300
   autoDiscoverSceneObjects: 1
   amrs:
   - {fileID: 108708341}
@@ -4471,6 +4583,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: TaskPlanning::TaskPlanning.PalletMarker
   palletId: 3
   currentNode: {fileID: 385702733}
+  parkingNode: {fileID: 1456305665}
   attachDurationSeconds: 3
   detachDurationSeconds: 3
   loadDurationSeconds: 3
@@ -4787,6 +4900,54 @@ MonoBehaviour:
   m_EditorClassIdentifier: Mapf.Runtime::Mapf.Authoring.MapfEdge
   a: {fileID: 989681077}
   b: {fileID: 544852500}
+  requireAxisAligned: 0
+  axisTolerance: 0.01
+--- !u!1 &1300399631
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1300399632}
+  - component: {fileID: 1300399633}
+  m_Layer: 0
+  m_Name: Edge_144_203
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1300399632
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1300399631}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1743400197}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1300399633
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1300399631}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1798319445e5c8143afaa10f3089bb5e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mapf.Runtime::Mapf.Authoring.MapfEdge
+  a: {fileID: 141648653}
+  b: {fileID: 1456305665}
   requireAxisAligned: 0
   axisTolerance: 0.01
 --- !u!1 &1311683884
@@ -5405,6 +5566,51 @@ MonoBehaviour:
   - {fileID: 261116817}
   - {fileID: 611666652}
   palletOccupancyDistance: 0.12
+--- !u!1 &1456305664
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1456305666}
+  - component: {fileID: 1456305665}
+  m_Layer: 0
+  m_Name: 203
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1456305665
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1456305664}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6afacf5218659ba46bb320a9ae15b6dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mapf.Runtime::Mapf.Authoring.MapfNode
+  stableId: 203
+--- !u!4 &1456305666
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1456305664}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 24, y: -1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 162355897}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1467739710
 GameObject:
   m_ObjectHideFlags: 0
@@ -5495,6 +5701,54 @@ Transform:
   m_Children: []
   m_Father: {fileID: 162355897}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1550411426
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1550411427}
+  - component: {fileID: 1550411428}
+  m_Layer: 0
+  m_Name: Edge_201_146
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1550411427
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1550411426}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1743400197}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1550411428
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1550411426}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1798319445e5c8143afaa10f3089bb5e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mapf.Runtime::Mapf.Authoring.MapfEdge
+  a: {fileID: 120014288}
+  b: {fileID: 459995490}
+  requireAxisAligned: 0
+  axisTolerance: 0.01
 --- !u!1 &1560521280
 GameObject:
   m_ObjectHideFlags: 0
@@ -5726,6 +5980,54 @@ MonoBehaviour:
   b: {fileID: 577553415}
   requireAxisAligned: 0
   axisTolerance: 0.01
+--- !u!1 &1633508987
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1633508988}
+  - component: {fileID: 1633508989}
+  m_Layer: 0
+  m_Name: Edge_145_202
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1633508988
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1633508987}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1743400197}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1633508989
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1633508987}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1798319445e5c8143afaa10f3089bb5e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mapf.Runtime::Mapf.Authoring.MapfEdge
+  a: {fileID: 1644942396}
+  b: {fileID: 207885031}
+  requireAxisAligned: 0
+  axisTolerance: 0.01
 --- !u!1 &1644942395
 GameObject:
   m_ObjectHideFlags: 0
@@ -5766,6 +6068,51 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 25, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 162355897}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1647490078
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1647490080}
+  - component: {fileID: 1647490079}
+  m_Layer: 0
+  m_Name: 204
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1647490079
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1647490078}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6afacf5218659ba46bb320a9ae15b6dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mapf.Runtime::Mapf.Authoring.MapfNode
+  stableId: 204
+--- !u!4 &1647490080
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1647490078}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 23, y: -1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6116,6 +6463,10 @@ Transform:
   - {fileID: 418726523}
   - {fileID: 1724841008}
   - {fileID: 1387934931}
+  - {fileID: 1550411427}
+  - {fileID: 1633508988}
+  - {fileID: 1300399632}
+  - {fileID: 1883411314}
   m_Father: {fileID: 1390016554}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1761599563
@@ -6518,6 +6869,54 @@ MonoBehaviour:
   b: {fileID: 341027017}
   requireAxisAligned: 0
   axisTolerance: 0.01
+--- !u!1 &1883411313
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1883411314}
+  - component: {fileID: 1883411315}
+  m_Layer: 0
+  m_Name: Edge_143_204
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1883411314
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1883411313}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1743400197}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1883411315
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1883411313}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1798319445e5c8143afaa10f3089bb5e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mapf.Runtime::Mapf.Authoring.MapfEdge
+  a: {fileID: 106352893}
+  b: {fileID: 1647490079}
+  requireAxisAligned: 0
+  axisTolerance: 0.01
 --- !u!1 &1892942779
 GameObject:
   m_ObjectHideFlags: 0
@@ -6864,7 +7263,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2083073560
 Transform:
   m_ObjectHideFlags: 0

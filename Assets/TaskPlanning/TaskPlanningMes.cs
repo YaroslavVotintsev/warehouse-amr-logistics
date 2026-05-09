@@ -34,6 +34,14 @@ namespace TaskPlanning
                 return;
             }
 
+            scheduler ??= FindAnyObjectByType<TaskScheduler>();
+            if (scheduler == null)
+            {
+                Debug.LogError("No TaskScheduler found for MES task submission.", this);
+                return;
+            }
+
+            var batch = new List<DeliveryTaskRequest>();
             foreach (var index in selectedTaskIndexes)
             {
                 if (index < 0 || index >= inspectorTasks.Count)
@@ -42,8 +50,16 @@ namespace TaskPlanning
                     continue;
                 }
 
-                SubmitTask(inspectorTasks[index]);
+                batch.Add(CreateSubmittedRequest(inspectorTasks[index]));
             }
+
+            if (batch.Count == 0)
+            {
+                Debug.LogWarning("MES selected task indexes did not resolve to any valid configured tasks.", this);
+                return;
+            }
+
+            scheduler.EnqueueTasks(batch);
         }
 
         public void SubmitTask(DeliveryTaskRequest request)
@@ -58,11 +74,16 @@ namespace TaskPlanning
                 return;
             }
 
+            scheduler.EnqueueTask(CreateSubmittedRequest(request));
+        }
+
+        private DeliveryTaskRequest CreateSubmittedRequest(DeliveryTaskRequest request)
+        {
             var taskId = string.IsNullOrWhiteSpace(request.taskId)
                 ? $"MES-{++_generatedTaskNumber:0000}"
                 : request.taskId.Trim();
 
-            scheduler.EnqueueTask(new DeliveryTaskRequest(taskId, request.pallet, request.workstation));
+            return new DeliveryTaskRequest(taskId, request.pallet, request.workstation);
         }
     }
 }

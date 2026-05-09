@@ -31,6 +31,11 @@ namespace TaskPlanning
                 !HasBlockingPallet(pallet);
         }
 
+        public bool HasBlockingPalletFor(PalletMarker incomingPallet)
+        {
+            return HasBlockingPallet(incomingPallet);
+        }
+
         public bool TryReserve(PalletMarker pallet)
         {
             if (!CanReserve(pallet))
@@ -44,6 +49,17 @@ namespace TaskPlanning
         {
             if (_reservedFor == pallet)
                 _reservedFor = null;
+        }
+
+        public void RemoveQueued(PalletMarker pallet)
+        {
+            if (pallet == null || _waitingPallets.Count == 0)
+                return;
+
+            var remaining = _waitingPallets.Where(p => p != pallet).ToArray();
+            _waitingPallets.Clear();
+            foreach (var queued in remaining)
+                _waitingPallets.Enqueue(queued);
         }
 
         public bool Enqueue(PalletMarker pallet)
@@ -97,9 +113,6 @@ namespace TaskPlanning
             foreach (var pallet in FindObjectsByType<PalletMarker>(FindObjectsInactive.Exclude))
             {
                 if (pallet == null || pallet == incomingPallet)
-                    continue;
-
-                if (!pallet.IsAvailable)
                     continue;
 
                 var distance = Vector2.Distance(pallet.transform.position, node.transform.position);

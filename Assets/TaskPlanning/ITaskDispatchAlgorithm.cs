@@ -4,10 +4,6 @@ namespace TaskPlanning
 {
     public interface ITaskDispatchAlgorithm
     {
-        DispatchAssignment SelectAssignment(
-            DeliveryTaskRequest request,
-            IReadOnlyList<TaskPlanningAmr> amrs,
-            IReadOnlyList<PalletLoadingPoint> loadingPoints,
-            RoadmapDistanceService distances);
+        DispatchPlan Solve(DispatchProblem problem);
     }
 }

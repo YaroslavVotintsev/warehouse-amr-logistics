@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,14 +15,17 @@ namespace TaskPlanning
         [SerializeField] private MapfSceneGraph sceneGraph;
         [SerializeField] private float arrivalDistance = 0.08f;
         [SerializeField] private float pendingRetryIntervalSeconds = 0.5f;
+        [SerializeField] private float costAmrSpeed = 1f;
+        [SerializeField] private TaskPlanningCostWeights costWeights = new();
         [SerializeField] private bool autoDiscoverSceneObjects = true;
         [SerializeField] private List<TaskPlanningAmr> amrs = new();
         [SerializeField] private List<PalletLoadingPoint> loadingPoints = new();
 
-        private readonly Queue<DeliveryTaskRequest> _pendingTasks = new();
+        private readonly List<ITaskPlanningTask> _pendingTasks = new();
         private ITaskDispatchAlgorithm _dispatchAlgorithm;
         private RoadmapDistanceService _distances;
         private float _nextPendingRetryTime;
+        private int _generatedRemovalTaskNumber;
 
         private void Awake()
         {
@@ -50,12 +54,28 @@ namespace TaskPlanning
 
         public void EnqueueTask(DeliveryTaskRequest request)
         {
-            if (!ValidateRequest(request))
-                return;
+            EnqueueTasks(new[] { request });
+        }
 
-            _pendingTasks.Enqueue(request);
-            Debug.Log($"MES task queued: task={request.taskId} kit={request.pallet.KitId} workstation={request.workstation.WorkstationId}", this);
-            TryDispatchPendingTasks();
+        public void EnqueueTasks(IEnumerable<DeliveryTaskRequest> requests)
+        {
+            if (requests == null)
+                throw new ArgumentNullException(nameof(requests));
+
+            var enqueuedTime = Time.time;
+            var queuedAny = false;
+            foreach (var request in requests)
+            {
+                if (!ValidateRequest(request))
+                    continue;
+
+                _pendingTasks.Add(new DeliveryPlanningTask(request.taskId, request.pallet, request.workstation, enqueuedTime));
+                Debug.Log($"MES task queued: task={request.taskId} kit={request.pallet.KitId} workstation={request.workstation.WorkstationId}", this);
+                queuedAny = true;
+            }
+
+            if (queuedAny)
+                TryDispatchPendingTasks();
         }
 
         [ContextMenu("Discover Scene Objects")]
@@ -78,56 +98,84 @@ namespace TaskPlanning
 
             RefreshDistances();
 
-            var remaining = _pendingTasks.Count;
-            while (remaining-- > 0 && _pendingTasks.Count > 0)
+            var taskSnapshot = _pendingTasks.ToArray();
+            var evaluator = new TaskPlanningCostEvaluator(_distances, costWeights, costAmrSpeed, taskSnapshot, Time.time);
+            var problem = new DispatchProblem(taskSnapshot, amrs, loadingPoints, _distances, evaluator, Time.time);
+            var plan = _dispatchAlgorithm.Solve(problem);
+            foreach (var assignment in plan.Assignments)
             {
-                var request = _pendingTasks.Dequeue();
-                var assignment = _dispatchAlgorithm.SelectAssignment(request, amrs, loadingPoints, _distances);
-                if (!assignment.IsValid)
-                {
-                    _pendingTasks.Enqueue(request);
+                if (!TryStartAssignment(assignment))
                     continue;
-                }
 
-                if (!assignment.Amr.TryReserve())
-                {
-                    _pendingTasks.Enqueue(request);
-                    continue;
-                }
-
-                if (!assignment.Pallet.TryReserve())
-                {
-                    assignment.Amr.Release();
-                    _pendingTasks.Enqueue(request);
-                    continue;
-                }
-
-                if (!request.workstation.Enqueue(assignment.Pallet))
-                {
-                    assignment.Pallet.ReleaseReservation();
-                    assignment.Amr.Release();
-                    _pendingTasks.Enqueue(request);
-                    continue;
-                }
-
-                if (!assignment.LoadingPoint.Enqueue(assignment.Pallet))
-                {
-                    request.workstation.ReleaseReservation(assignment.Pallet);
-                    assignment.Pallet.ReleaseReservation();
-                    assignment.Amr.Release();
-                    _pendingTasks.Enqueue(request);
-                    continue;
-                }
-
-                Debug.Log(
-                    $"Task dispatched: task={request.taskId} amr={assignment.Amr.AmrId} pallet={assignment.Pallet.PalletId} " +
-                    $"loading={assignment.LoadingPoint.LoadingPointId} score={assignment.Score:0.###}",
-                    this);
-                StartCoroutine(RunDelivery(request, assignment));
+                _pendingTasks.Remove(assignment.Task);
             }
         }
 
-        private IEnumerator RunDelivery(DeliveryTaskRequest request, DispatchAssignment assignment)
+        private bool TryStartAssignment(DispatchAssignment assignment)
+        {
+            if (!assignment.IsValid || !assignment.Amr.TryReserve())
+                return false;
+
+            switch (assignment.Task)
+            {
+                case DeliveryPlanningTask delivery:
+                    return TryStartDelivery(delivery, assignment);
+                case PalletRemovalPlanningTask removal:
+                    return TryStartRemoval(removal, assignment);
+                default:
+                    assignment.Amr.Release();
+                    return false;
+            }
+        }
+
+        private bool TryStartDelivery(DeliveryPlanningTask task, DispatchAssignment assignment)
+        {
+            if (!assignment.Pallet.TryReserve())
+            {
+                assignment.Amr.Release();
+                return false;
+            }
+
+            if (!task.Workstation.Enqueue(assignment.Pallet))
+            {
+                assignment.Pallet.ReleaseReservation();
+                assignment.Amr.Release();
+                return false;
+            }
+
+            if (!assignment.LoadingPoint.Enqueue(assignment.Pallet))
+            {
+                task.Workstation.RemoveQueued(assignment.Pallet);
+                assignment.Pallet.ReleaseReservation();
+                assignment.Amr.Release();
+                return false;
+            }
+
+            Debug.Log(
+                $"Task dispatched: task={task.TaskId} amr={assignment.Amr.AmrId} pallet={assignment.Pallet.PalletId} " +
+                $"loading={assignment.LoadingPoint.LoadingPointId} score={assignment.Score:0.###}",
+                this);
+            StartCoroutine(RunDelivery(task, assignment));
+            return true;
+        }
+
+        private bool TryStartRemoval(PalletRemovalPlanningTask task, DispatchAssignment assignment)
+        {
+            if (!assignment.Pallet.TryReserveForRemoval())
+            {
+                assignment.Amr.Release();
+                return false;
+            }
+
+            Debug.Log(
+                $"Pallet removal dispatched: task={task.TaskId} amr={assignment.Amr.AmrId} pallet={assignment.Pallet.PalletId} " +
+                $"parking={NodeId(assignment.RemovalTargetNode)} score={assignment.Score:0.###}",
+                this);
+            StartCoroutine(RunPalletRemoval(task, assignment));
+            return true;
+        }
+
+        private IEnumerator RunDelivery(DeliveryPlanningTask request, DispatchAssignment assignment)
         {
             yield return MoveAmrTo(assignment.Amr, assignment.Pallet.CurrentNode);
             assignment.Pallet.MarkAttaching();
@@ -141,22 +189,41 @@ namespace TaskPlanning
             yield return new WaitForSeconds(assignment.Pallet.LoadDurationSeconds);
             assignment.Pallet.MarkLoaded();
 
-            coordinator.RequestAgentGoal(assignment.Amr.MapfAgent, request.workstation.Node);
+            coordinator.RequestAgentGoal(assignment.Amr.MapfAgent, request.Workstation.Node);
             assignment.LoadingPoint.ReleaseReservation(assignment.Pallet);
             TryDispatchPendingTasks();
-            yield return WaitForAmrAt(assignment.Amr, request.workstation.Node);
+            yield return WaitForAmrAt(assignment.Amr, request.Workstation.Node);
 
             assignment.Pallet.MarkDetaching();
             yield return new WaitForSeconds(assignment.Pallet.DetachDurationSeconds);
-            assignment.Pallet.DetachAt(request.workstation.Node, PalletStatus.Unloading);
+            assignment.Pallet.DetachAt(request.Workstation.Node, PalletStatus.Unloading);
             assignment.Amr.Release();
             TryDispatchPendingTasks();
 
             yield return new WaitForSeconds(assignment.Pallet.UnloadDurationSeconds);
-            assignment.Pallet.MarkUnloadedAvailable();
-            request.workstation.ReleaseReservation(assignment.Pallet);
+            assignment.Pallet.MarkAwaitingRemoval();
+            request.Workstation.ReleaseReservation(assignment.Pallet);
+            EnqueueRemovalTask(assignment.Pallet, request.Workstation);
 
-            Debug.Log($"MES task completed: task={request.taskId} amr={assignment.Amr.AmrId} pallet={assignment.Pallet.PalletId}", this);
+            Debug.Log($"MES task completed: task={request.TaskId} amr={assignment.Amr.AmrId} pallet={assignment.Pallet.PalletId}", this);
+            TryDispatchPendingTasks();
+        }
+
+        private IEnumerator RunPalletRemoval(PalletRemovalPlanningTask request, DispatchAssignment assignment)
+        {
+            yield return MoveAmrTo(assignment.Amr, assignment.Pallet.CurrentNode);
+            assignment.Pallet.MarkAttaching();
+            yield return new WaitForSeconds(assignment.Pallet.AttachDurationSeconds);
+            assignment.Pallet.AttachTo(assignment.Amr);
+
+            yield return MoveAmrTo(assignment.Amr, assignment.RemovalTargetNode);
+            assignment.Pallet.MarkDetaching();
+            yield return new WaitForSeconds(assignment.Pallet.DetachDurationSeconds);
+            assignment.Pallet.DetachAt(assignment.RemovalTargetNode);
+            assignment.Pallet.MarkUnloadedAvailable();
+            assignment.Amr.Release();
+
+            Debug.Log($"Pallet removal completed: task={request.TaskId} amr={assignment.Amr.AmrId} pallet={assignment.Pallet.PalletId}", this);
             TryDispatchPendingTasks();
         }
 
@@ -169,23 +236,23 @@ namespace TaskPlanning
             yield return WaitForAmrAt(amr, goal);
         }
 
-        private IEnumerator WaitForLoadingAndWorkstationTurn(DeliveryTaskRequest request, DispatchAssignment assignment)
+        private IEnumerator WaitForLoadingAndWorkstationTurn(DeliveryPlanningTask request, DispatchAssignment assignment)
         {
             while (true)
             {
                 if (!assignment.LoadingPoint.CanReserveNext(assignment.Pallet) ||
-                    !request.workstation.CanReserveNext(assignment.Pallet))
+                    !request.Workstation.CanReserveNext(assignment.Pallet))
                 {
                     yield return null;
                     continue;
                 }
 
                 if (assignment.LoadingPoint.TryReserveNext(assignment.Pallet) &&
-                    request.workstation.TryReserveNext(assignment.Pallet))
+                    request.Workstation.TryReserveNext(assignment.Pallet))
                     yield break;
 
                 assignment.LoadingPoint.ReleaseReservation(assignment.Pallet);
-                request.workstation.ReleaseReservation(assignment.Pallet);
+                request.Workstation.ReleaseReservation(assignment.Pallet);
                 yield return null;
             }
         }
@@ -209,10 +276,31 @@ namespace TaskPlanning
         {
             switch (algorithm)
             {
-                case TaskPlanningAlgorithmType.GreedyNearestFeasible:
+                case TaskPlanningAlgorithmType.NearestDispatching:
                 default:
-                    return new GreedyNearestFeasibleDispatchAlgorithm();
+                    return new NearestDispatching();
             }
+        }
+
+        private void EnqueueRemovalTask(PalletMarker pallet, WorkstationDeliveryPoint workstation)
+        {
+            if (pallet == null || pallet.ParkingNode == null)
+            {
+                Debug.LogWarning($"Pallet '{(pallet != null ? pallet.PalletId : "<null>")}' has no parking node; removal task was not created.", this);
+                return;
+            }
+
+            if (_pendingTasks.Any(task => task.TaskType == TaskPlanningTaskType.PalletRemoval && task.Pallet == pallet))
+                return;
+
+            var taskId = $"REM-{++_generatedRemovalTaskNumber:0000}";
+            _pendingTasks.Add(new PalletRemovalPlanningTask(taskId, pallet, workstation, Time.time));
+            Debug.Log($"Pallet removal queued: task={taskId} pallet={pallet.PalletId} parking={NodeId(pallet.ParkingNode)}", this);
+        }
+
+        private static string NodeId(MapfNode node)
+        {
+            return node != null ? node.StableId : "<none>";
         }
 
         private bool ValidateRequest(DeliveryTaskRequest request)

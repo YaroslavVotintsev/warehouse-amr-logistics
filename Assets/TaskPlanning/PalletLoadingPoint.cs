@@ -22,6 +22,7 @@ namespace TaskPlanning
         public PalletMarker ReservedFor => _reservedFor;
         public int QueueLength => _waitingPallets.Count;
         public PalletMarker NextQueuedPallet => _waitingPallets.Count > 0 ? _waitingPallets.Peek() : null;
+        public IReadOnlyCollection<PalletMarker> QueuedPallets => _waitingPallets.ToArray();
 
         public bool CanReserve(PalletMarker pallet)
         {
@@ -41,6 +42,17 @@ namespace TaskPlanning
         {
             if (_reservedFor == pallet)
                 _reservedFor = null;
+        }
+
+        public void RemoveQueued(PalletMarker pallet)
+        {
+            if (pallet == null || _waitingPallets.Count == 0)
+                return;
+
+            var remaining = _waitingPallets.Where(p => p != pallet).ToArray();
+            _waitingPallets.Clear();
+            foreach (var queued in remaining)
+                _waitingPallets.Enqueue(queued);
         }
 
         public bool Enqueue(PalletMarker pallet)

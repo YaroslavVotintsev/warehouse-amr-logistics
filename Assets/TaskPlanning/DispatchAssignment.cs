@@ -4,17 +4,32 @@ namespace TaskPlanning
     {
         public readonly bool IsValid;
         public readonly TaskPlanningAmr Amr;
+        public readonly ITaskPlanningTask Task;
         public readonly PalletMarker Pallet;
         public readonly PalletLoadingPoint LoadingPoint;
-        public readonly double Score;
+        public readonly WorkstationDeliveryPoint Workstation;
+        public readonly Mapf.Authoring.MapfNode RemovalTargetNode;
+        public readonly CostEvaluation Cost;
 
-        public DispatchAssignment(TaskPlanningAmr amr, PalletMarker pallet, PalletLoadingPoint loadingPoint, double score)
+        public double Score => Cost.TotalCost;
+
+        public DispatchAssignment(
+            TaskPlanningAmr amr,
+            ITaskPlanningTask task,
+            PalletMarker pallet,
+            PalletLoadingPoint loadingPoint,
+            WorkstationDeliveryPoint workstation,
+            Mapf.Authoring.MapfNode removalTargetNode,
+            CostEvaluation cost)
         {
-            IsValid = amr != null && pallet != null && loadingPoint != null;
+            IsValid = amr != null && task != null && pallet != null;
             Amr = amr;
+            Task = task;
             Pallet = pallet;
             LoadingPoint = loadingPoint;
-            Score = score;
+            Workstation = workstation;
+            RemovalTargetNode = removalTargetNode;
+            Cost = cost;
         }
     }
 }
