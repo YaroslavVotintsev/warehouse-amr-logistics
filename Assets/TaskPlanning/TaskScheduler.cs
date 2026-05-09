@@ -100,6 +100,9 @@ namespace TaskPlanning
             }
 
             RefreshDistances();
+            CompleteAlreadyParkedRemovalTasks();
+            if (_pendingTasks.Count == 0)
+                return;
 
             var taskSnapshot = _pendingTasks.ToArray();
             var evaluator = new TaskPlanningCostEvaluator(_distances, costWeights, costAmrSpeed, taskSnapshot, Time.time);
@@ -223,9 +226,19 @@ namespace TaskPlanning
             TryDispatchPendingTasks();
 
             yield return new WaitForSeconds(assignment.Pallet.UnloadDurationSeconds);
-            assignment.Pallet.MarkAwaitingRemoval();
             request.Workstation.ReleaseReservation(assignment.Pallet);
-            EnqueueRemovalTask(assignment.Pallet, request.Workstation);
+            if (IsAtParkingNode(assignment.Pallet))
+            {
+                assignment.Pallet.MarkUnloadedAvailable();
+                Debug.Log(
+                    $"Pallet already parked after delivery: task={request.TaskId} pallet={assignment.Pallet.PalletId} node={NodeId(assignment.Pallet.CurrentNode)}",
+                    this);
+            }
+            else
+            {
+                assignment.Pallet.MarkAwaitingRemoval();
+                EnqueueRemovalTask(assignment.Pallet, request.Workstation);
+            }
 
             Debug.Log($"MES task completed: task={request.TaskId} amr={assignment.Amr.AmrId} pallet={assignment.Pallet.PalletId}", this);
             TryDispatchPendingTasks();
@@ -471,12 +484,40 @@ namespace TaskPlanning
                 return;
             }
 
+            if (IsAtParkingNode(pallet))
+            {
+                pallet.MarkUnloadedAvailable();
+                Debug.Log($"Pallet removal skipped: pallet={pallet.PalletId} already at parking node {NodeId(pallet.ParkingNode)}", this);
+                return;
+            }
+
             if (_pendingTasks.Any(task => task.TaskType == TaskPlanningTaskType.PalletRemoval && task.Pallet == pallet))
                 return;
 
             var taskId = $"REM-{++_generatedRemovalTaskNumber:0000}";
             _pendingTasks.Add(new PalletRemovalPlanningTask(taskId, pallet, workstation, Time.time));
             Debug.Log($"Pallet removal queued: task={taskId} pallet={pallet.PalletId} parking={NodeId(pallet.ParkingNode)}", this);
+        }
+
+        private void CompleteAlreadyParkedRemovalTasks()
+        {
+            for (var i = _pendingTasks.Count - 1; i >= 0; i--)
+            {
+                if (_pendingTasks[i] is not PalletRemovalPlanningTask removal || !IsAtParkingNode(removal.Pallet))
+                    continue;
+
+                removal.Pallet.MarkUnloadedAvailable();
+                _pendingTasks.RemoveAt(i);
+                Debug.Log($"Pallet removal completed without AMR: task={removal.TaskId} pallet={removal.Pallet.PalletId} already parked.", this);
+            }
+        }
+
+        private static bool IsAtParkingNode(PalletMarker pallet)
+        {
+            return pallet != null &&
+                pallet.CurrentNode != null &&
+                pallet.ParkingNode != null &&
+                pallet.CurrentNode == pallet.ParkingNode;
         }
 
         private static string NodeId(MapfNode node)
