@@ -5,6 +5,7 @@ using System.Linq;
 using Mapf.Authoring;
 using Mapf.UnityAdapter;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace TaskPlanning
 {
@@ -18,7 +19,8 @@ namespace TaskPlanning
         [SerializeField] private float costAmrSpeed = 1f;
         [SerializeField] private TaskPlanningCostWeights costWeights = new();
         [SerializeField] private bool enableSoftAmrReservations;
-        [SerializeField, Min(0f)] private float reassignmentCostImprovementThreshold = 1f;
+        [FormerlySerializedAs("reassignmentCostImprovementThreshold")]
+        [SerializeField, Min(0f)] private float reassignmentCostImprovementPercent = 10f;
         [SerializeField] private bool autoDiscoverSceneObjects = true;
         [SerializeField] private List<TaskPlanningAmr> amrs = new();
         [SerializeField] private List<PalletLoadingPoint> loadingPoints = new();
@@ -371,10 +373,11 @@ namespace TaskPlanning
             if (!IsEnoughReassignmentImprovement(currentCost.TotalCost, replacement.Score))
                 return false;
 
+            var improvementPercent = ReassignmentImprovementPercent(currentCost.TotalCost, replacement.Score);
             Debug.Log(
                 $"Task reassigned before pallet attach: amr={activeAssignment.Assignment.Amr.AmrId} " +
                 $"from={activeAssignment.Assignment.Task.TaskId} to={replacement.Task.TaskId} " +
-                $"improvement={improvement:0.###}",
+                $"improvement={improvement:0.###} ({improvementPercent:0.##}%)",
                 this);
             return true;
         }
@@ -416,8 +419,18 @@ namespace TaskPlanning
 
         private bool IsEnoughReassignmentImprovement(double currentCost, double replacementCost)
         {
-            var threshold = Math.Max(0.0, reassignmentCostImprovementThreshold);
-            return currentCost - replacementCost >= threshold;
+            var improvementPercent = ReassignmentImprovementPercent(currentCost, replacementCost);
+            return improvementPercent >= Math.Max(0.0, reassignmentCostImprovementPercent);
+        }
+
+        private static double ReassignmentImprovementPercent(double currentCost, double replacementCost)
+        {
+            var improvement = currentCost - replacementCost;
+            if (improvement <= 0)
+                return 0;
+
+            var baseline = Math.Max(0.0001, Math.Abs(currentCost));
+            return improvement / baseline * 100.0;
         }
 
         private ActiveTaskExecution RegisterActiveAssignment(DispatchAssignment assignment)

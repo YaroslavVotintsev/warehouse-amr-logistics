@@ -59,5 +59,88 @@ namespace TaskPlanning.Tests
                 TaskPlanningTestHelpers.Destroy(pallet.gameObject);
             }
         }
+
+        [Test]
+        public void TryReserveForRemovalOnlyWorksWhenAwaitingRemoval()
+        {
+            var pallet = TaskPlanningTestHelpers.CreatePallet("RemovalOnly");
+
+            try
+            {
+                Assert.That(pallet.TryReserveForRemoval(), Is.False);
+
+                pallet.MarkAwaitingRemoval();
+
+                Assert.That(pallet.TryReserveForRemoval(), Is.True);
+                Assert.That(pallet.Status, Is.EqualTo(PalletStatus.Reserved));
+            }
+            finally
+            {
+                TaskPlanningTestHelpers.Destroy(pallet.gameObject);
+            }
+        }
+
+        [Test]
+        public void ReleasePendingReservationRestoresDeliveryReservation()
+        {
+            var pallet = TaskPlanningTestHelpers.CreatePallet("DeliveryReservation");
+
+            try
+            {
+                Assert.That(pallet.TryReserve(), Is.True);
+
+                pallet.ReleasePendingReservation(PalletStatus.Available);
+
+                Assert.That(pallet.Status, Is.EqualTo(PalletStatus.Available));
+                Assert.That(pallet.IsAvailable, Is.True);
+            }
+            finally
+            {
+                TaskPlanningTestHelpers.Destroy(pallet.gameObject);
+            }
+        }
+
+        [Test]
+        public void ReleasePendingReservationRestoresRemovalReservation()
+        {
+            var pallet = TaskPlanningTestHelpers.CreatePallet("RemovalReservation");
+
+            try
+            {
+                pallet.MarkAwaitingRemoval();
+                Assert.That(pallet.TryReserveForRemoval(), Is.True);
+
+                pallet.ReleasePendingReservation(PalletStatus.AwaitingRemoval);
+
+                Assert.That(pallet.Status, Is.EqualTo(PalletStatus.AwaitingRemoval));
+            }
+            finally
+            {
+                TaskPlanningTestHelpers.Destroy(pallet.gameObject);
+            }
+        }
+
+        [Test]
+        public void ReleasePendingReservationDoesNotChangeAttachedPallet()
+        {
+            var pallet = TaskPlanningTestHelpers.CreatePallet("AttachedReservation");
+            var amr = TaskPlanningTestHelpers.CreateComponent<TaskPlanningAmr>("AttachedReservationAmr");
+
+            try
+            {
+                Assert.That(pallet.TryReserve(), Is.True);
+                pallet.AttachTo(amr);
+
+                pallet.ReleasePendingReservation(PalletStatus.Available);
+
+                Assert.That(pallet.Status, Is.EqualTo(PalletStatus.Attached));
+                Assert.That(amr.AttachedPallet, Is.SameAs(pallet));
+            }
+            finally
+            {
+                TaskPlanningTestHelpers.Destroy(pallet.gameObject);
+                TaskPlanningTestHelpers.Destroy(amr.gameObject);
+            }
+        }
     }
 }

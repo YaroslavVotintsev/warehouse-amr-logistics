@@ -21,11 +21,14 @@ namespace TaskPlanning
             float now)
         {
             _distances = distances;
-            _weights = weights;
+            _weights = weights ?? new TaskPlanningCostWeights();
             _amrSpeed = Mathf.Max(0.0001f, amrSpeed);
             _pendingTasks = pendingTasks ?? System.Array.Empty<ITaskPlanningTask>();
             _now = now;
         }
+
+        private DeliveryTaskCostWeights DeliveryWeights => _weights.delivery ??= new DeliveryTaskCostWeights();
+        private RemovalTaskCostWeights RemovalWeights => _weights.removal ??= new RemovalTaskCostWeights();
 
         public CostEvaluation Evaluate(TaskPlanningAmr amr, DeliveryPlanningTask task, PalletLoadingPoint loadingPoint)
         {
@@ -67,19 +70,20 @@ namespace TaskPlanning
             if (!Finite(amrToPallet) || !Finite(palletToLoading) || !Finite(loadingToWorkstation))
                 return CostEvaluation.Infeasible;
 
+            var weights = DeliveryWeights;
             var loadingQueueEta = EstimateLoadingQueueEta(loadingPoint, ignoredQueuedPallet);
             var blockedDeliveryBias = task.Workstation.HasBlockingPalletFor(pallet)
-                ? _weights.blockedDeliveryBias
+                ? weights.blockedDeliveryBias
                 : 0.0;
-            var agingBonus = AgingBonus(task);
+            var agingBonus = AgingBonus(task, weights.agingWeight, weights.maxAgingBonus);
             var total =
-                _weights.amrToPalletEta * amrToPallet +
-                _weights.attachTime * pallet.AttachDurationSeconds +
-                _weights.loadingQueueEta * loadingQueueEta +
-                _weights.palletToLoadingEta * palletToLoading +
-                _weights.loadTime * pallet.LoadDurationSeconds +
-                _weights.loadingToWorkstationEta * loadingToWorkstation +
-                _weights.detachTime * pallet.DetachDurationSeconds +
+                weights.amrToPalletEta * amrToPallet +
+                weights.attachTime * pallet.AttachDurationSeconds +
+                weights.loadingQueueEta * loadingQueueEta +
+                weights.palletToLoadingEta * palletToLoading +
+                weights.loadTime * pallet.LoadDurationSeconds +
+                weights.loadingToWorkstationEta * loadingToWorkstation +
+                weights.detachTime * pallet.DetachDurationSeconds +
                 blockedDeliveryBias -
                 agingBonus;
 
@@ -124,15 +128,16 @@ namespace TaskPlanning
             if (!Finite(amrToPallet) || !Finite(palletToParking))
                 return CostEvaluation.Infeasible;
 
+            var weights = RemovalWeights;
             var baseTotal =
-                _weights.amrToPalletEta * amrToPallet +
-                _weights.attachTime * task.Pallet.AttachDurationSeconds +
-                _weights.palletToParkingEta * palletToParking +
-                _weights.detachTime * task.Pallet.DetachDurationSeconds;
+                weights.amrToPalletEta * amrToPallet +
+                weights.attachTime * task.Pallet.AttachDurationSeconds +
+                weights.palletToParkingEta * palletToParking +
+                weights.detachTime * task.Pallet.DetachDurationSeconds;
             var multiplier = RemovalBlocksPendingDelivery(task)
-                ? Mathf.Max(0f, _weights.removalBlocksPendingDeliveryMultiplier)
+                ? Mathf.Max(0f, weights.blocksPendingDeliveryMultiplier)
                 : 1.0;
-            var agingBonus = AgingBonus(task);
+            var agingBonus = AgingBonus(task, weights.agingWeight, weights.maxAgingBonus);
             var total = baseTotal * multiplier - agingBonus;
 
             return new CostEvaluation(
@@ -180,10 +185,10 @@ namespace TaskPlanning
             return eta;
         }
 
-        private double AgingBonus(ITaskPlanningTask task)
+        private double AgingBonus(ITaskPlanningTask task, float agingWeight, float maxAgingBonus)
         {
             var waitingTime = System.Math.Max(0.0, _now - task.EnqueuedTime);
-            return System.Math.Min(_weights.maxAgingBonus, waitingTime * _weights.agingWeight);
+            return System.Math.Min(maxAgingBonus, waitingTime * agingWeight);
         }
 
         private bool RemovalBlocksPendingDelivery(PalletRemovalPlanningTask removal)

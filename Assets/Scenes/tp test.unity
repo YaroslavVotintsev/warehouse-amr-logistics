@@ -3771,6 +3771,52 @@ Transform:
   m_Children: []
   m_Father: {fileID: 162355897}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &859078016
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 859078018}
+  - component: {fileID: 859078017}
+  m_Layer: 0
+  m_Name: SimSpeed
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &859078017
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 859078016}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6373c734531443247ab930813997616f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SimulationSpeed
+  speed: 1
+  elapsedSimulationTime: 0
+--- !u!4 &859078018
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 859078016}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 11.26657, y: 0.32248, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &870286942
 GameObject:
   m_ObjectHideFlags: 0
@@ -3831,7 +3877,7 @@ MonoBehaviour:
   - taskId: 3
     pallet: {fileID: 709068845}
     workstation: {fileID: 577553417}
-  selectedTaskIndexes: 
+  selectedTaskIndexes: 00000000010000000200000003000000
 --- !u!114 &870286945
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3848,10 +3894,10 @@ MonoBehaviour:
   coordinator: {fileID: 1390016551}
   sceneGraph: {fileID: 1390016552}
   arrivalDistance: 0.08
-  pendingRetryIntervalSeconds: 5
-  costAmrSpeed: 5
+  pendingRetryIntervalSeconds: 0.1
+  costAmrSpeed: 1
   costWeights:
-    priorAssignmentEta: 1
+    serializedVersion: 1
     amrToPalletEta: 1
     attachTime: 1
     loadingQueueEta: 1
@@ -3860,10 +3906,31 @@ MonoBehaviour:
     loadingToWorkstationEta: 1
     detachTime: 1
     palletToParkingEta: 1
-    removalBlocksPendingDeliveryMultiplier: 0.5
+    removalBlocksPendingDeliveryMultiplier: 0.1
     blockedDeliveryBias: 100
     agingWeight: 1
-    maxAgingBonus: 300
+    maxAgingBonus: 1
+    delivery:
+      amrToPalletEta: 1
+      attachTime: 1
+      loadingQueueEta: 1
+      palletToLoadingEta: 1
+      loadTime: 1
+      loadingToWorkstationEta: 1
+      detachTime: 1
+      blockedDeliveryBias: 100
+      agingWeight: 1
+      maxAgingBonus: 1
+    removal:
+      amrToPalletEta: 1
+      attachTime: 1
+      palletToParkingEta: 1
+      detachTime: 1
+      blocksPendingDeliveryMultiplier: 0.5
+      agingWeight: 1
+      maxAgingBonus: 1
+  enableSoftAmrReservations: 1
+  reassignmentCostImprovementPercent: 5
   autoDiscoverSceneObjects: 1
   amrs:
   - {fileID: 108708341}
@@ -4583,7 +4650,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: TaskPlanning::TaskPlanning.PalletMarker
   palletId: 3
   currentNode: {fileID: 385702733}
-  parkingNode: {fileID: 1456305665}
+  parkingNode: {fileID: 732784561}
   attachDurationSeconds: 3
   detachDurationSeconds: 3
   loadDurationSeconds: 3
@@ -7273,7 +7340,7 @@ Transform:
   m_GameObject: {fileID: 2083073559}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.1}
+  m_LocalPosition: {x: 10.02, y: 1.07, z: -0.1}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -7292,8 +7359,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Mapf.Runtime::Mapf.Authoring.MapfAgent
   agentId: 2
-  startNode: {fileID: 989681077}
-  goalNode: {fileID: 989681077}
+  startNode: {fileID: 170774594}
+  goalNode: {fileID: 170774594}
   arrivalDistance: 0.05
 --- !u!114 &2083073563
 MonoBehaviour:
@@ -7477,3 +7544,4 @@ SceneRoots:
   - {fileID: 519420032}
   - {fileID: 619394802}
   - {fileID: 1390016554}
+  - {fileID: 859078018}

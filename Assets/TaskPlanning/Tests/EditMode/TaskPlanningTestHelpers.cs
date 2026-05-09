@@ -22,6 +22,18 @@ namespace TaskPlanning.Tests
             return node;
         }
 
+        public static MapfEdge CreateEdge(string name, MapfNode a, MapfNode b)
+        {
+            var edge = CreateComponent<MapfEdge>(name);
+            edge.Configure(a, b);
+            return edge;
+        }
+
+        public static MapfSceneGraph CreateSceneGraph(string name = "SceneGraph")
+        {
+            return CreateComponent<MapfSceneGraph>(name);
+        }
+
         public static PalletMarker CreatePallet(string name, MapfNode currentNode = null)
         {
             var pallet = CreateComponent<PalletMarker>(name);
@@ -50,6 +62,24 @@ namespace TaskPlanning.Tests
             return point;
         }
 
+        public static void SetParkingNode(PalletMarker pallet, MapfNode parkingNode)
+        {
+            SetField(pallet, "parkingNode", parkingNode);
+        }
+
+        public static void SetPalletDurations(
+            PalletMarker pallet,
+            float attachSeconds,
+            float detachSeconds,
+            float loadSeconds,
+            float unloadSeconds)
+        {
+            SetField(pallet, "attachDurationSeconds", attachSeconds);
+            SetField(pallet, "detachDurationSeconds", detachSeconds);
+            SetField(pallet, "loadDurationSeconds", loadSeconds);
+            SetField(pallet, "unloadDurationSeconds", unloadSeconds);
+        }
+
         public static void SetField<TTarget, TValue>(TTarget target, string fieldName, TValue value)
         {
             var field = typeof(TTarget).GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
@@ -59,10 +89,34 @@ namespace TaskPlanning.Tests
             field.SetValue(target, value);
         }
 
+        public static TValue GetField<TValue>(object target, string fieldName)
+        {
+            var field = target.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+            if (field == null)
+                throw new MissingFieldException(target.GetType().FullName, fieldName);
+
+            return (TValue)field.GetValue(target);
+        }
+
+        public static object InvokePrivate(object target, string methodName, params object[] args)
+        {
+            var method = target.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic);
+            if (method == null)
+                throw new MissingMethodException(target.GetType().FullName, methodName);
+
+            return method.Invoke(target, args);
+        }
+
         public static void Destroy(UnityEngine.Object unityObject)
         {
             if (unityObject != null)
                 UnityEngine.Object.DestroyImmediate(unityObject);
+        }
+
+        public static void Destroy(params UnityEngine.Object[] unityObjects)
+        {
+            foreach (var unityObject in unityObjects)
+                Destroy(unityObject);
         }
     }
 }
