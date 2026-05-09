@@ -29,11 +29,29 @@ namespace TaskPlanning
 
         public CostEvaluation Evaluate(TaskPlanningAmr amr, DeliveryPlanningTask task, PalletLoadingPoint loadingPoint)
         {
+            return EvaluateDelivery(amr, task, loadingPoint, false, null);
+        }
+
+        public CostEvaluation EvaluateActiveAssignment(TaskPlanningAmr amr, DeliveryPlanningTask task, PalletLoadingPoint loadingPoint)
+        {
+            return EvaluateDelivery(amr, task, loadingPoint, true, task?.Pallet);
+        }
+
+        private CostEvaluation EvaluateDelivery(
+            TaskPlanningAmr amr,
+            DeliveryPlanningTask task,
+            PalletLoadingPoint loadingPoint,
+            bool allowReservedPallet,
+            PalletMarker ignoredQueuedPallet)
+        {
             if (amr == null || task?.Pallet == null || task.Workstation == null || loadingPoint == null)
                 return CostEvaluation.Infeasible;
 
             var pallet = task.Pallet;
-            if (!pallet.IsAvailable || pallet.CurrentNode == null || loadingPoint.Node == null || task.Workstation.Node == null)
+            if (!IsAvailableForDelivery(pallet, allowReservedPallet) ||
+                pallet.CurrentNode == null ||
+                loadingPoint.Node == null ||
+                task.Workstation.Node == null)
                 return CostEvaluation.Infeasible;
 
             if (!loadingPoint.Accepts(pallet) || !task.Workstation.Accepts(pallet))
@@ -49,7 +67,7 @@ namespace TaskPlanning
             if (!Finite(amrToPallet) || !Finite(palletToLoading) || !Finite(loadingToWorkstation))
                 return CostEvaluation.Infeasible;
 
-            var loadingQueueEta = EstimateLoadingQueueEta(loadingPoint);
+            var loadingQueueEta = EstimateLoadingQueueEta(loadingPoint, ignoredQueuedPallet);
             var blockedDeliveryBias = task.Workstation.HasBlockingPalletFor(pallet)
                 ? _weights.blockedDeliveryBias
                 : 0.0;
@@ -81,10 +99,20 @@ namespace TaskPlanning
 
         public CostEvaluation Evaluate(TaskPlanningAmr amr, PalletRemovalPlanningTask task)
         {
+            return EvaluateRemoval(amr, task, false);
+        }
+
+        public CostEvaluation EvaluateActiveAssignment(TaskPlanningAmr amr, PalletRemovalPlanningTask task)
+        {
+            return EvaluateRemoval(amr, task, true);
+        }
+
+        private CostEvaluation EvaluateRemoval(TaskPlanningAmr amr, PalletRemovalPlanningTask task, bool allowReservedPallet)
+        {
             if (amr == null || task?.Pallet == null || task.Pallet.CurrentNode == null || task.Pallet.ParkingNode == null)
                 return CostEvaluation.Infeasible;
 
-            if (task.Pallet.Status != PalletStatus.AwaitingRemoval)
+            if (!IsAvailableForRemoval(task.Pallet, allowReservedPallet))
                 return CostEvaluation.Infeasible;
 
             var amrNode = _distances.NearestNode(amr.transform.position);
@@ -123,14 +151,31 @@ namespace TaskPlanning
             return _distances.Distance(from, to) / _amrSpeed;
         }
 
-        private static double EstimateLoadingQueueEta(PalletLoadingPoint loadingPoint)
+        private static bool IsAvailableForDelivery(PalletMarker pallet, bool allowReservedPallet)
+        {
+            return pallet.IsAvailable ||
+                (allowReservedPallet && (pallet.Status == PalletStatus.Reserved || pallet.Status == PalletStatus.Attaching));
+        }
+
+        private static bool IsAvailableForRemoval(PalletMarker pallet, bool allowReservedPallet)
+        {
+            return pallet.Status == PalletStatus.AwaitingRemoval ||
+                (allowReservedPallet && (pallet.Status == PalletStatus.Reserved || pallet.Status == PalletStatus.Attaching));
+        }
+
+        private static double EstimateLoadingQueueEta(PalletLoadingPoint loadingPoint, PalletMarker ignoredPallet)
         {
             var eta = 0.0;
-            if (loadingPoint.ReservedFor != null)
+            if (loadingPoint.ReservedFor != null && loadingPoint.ReservedFor != ignoredPallet)
                 eta += loadingPoint.ReservedFor.LoadDurationSeconds;
 
             foreach (var pallet in loadingPoint.QueuedPallets)
+            {
+                if (pallet == ignoredPallet)
+                    continue;
+
                 eta += pallet.LoadDurationSeconds;
+            }
 
             return eta;
         }

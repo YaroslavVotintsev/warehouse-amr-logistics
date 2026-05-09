@@ -17,11 +17,14 @@ namespace TaskPlanning
         [SerializeField] private float pendingRetryIntervalSeconds = 0.5f;
         [SerializeField] private float costAmrSpeed = 1f;
         [SerializeField] private TaskPlanningCostWeights costWeights = new();
+        [SerializeField] private bool enableSoftAmrReservations;
+        [SerializeField, Min(0f)] private float reassignmentCostImprovementThreshold = 1f;
         [SerializeField] private bool autoDiscoverSceneObjects = true;
         [SerializeField] private List<TaskPlanningAmr> amrs = new();
         [SerializeField] private List<PalletLoadingPoint> loadingPoints = new();
 
         private readonly List<ITaskPlanningTask> _pendingTasks = new();
+        private readonly Dictionary<TaskPlanningAmr, ActiveTaskExecution> _activeAssignments = new();
         private ITaskDispatchAlgorithm _dispatchAlgorithm;
         private RoadmapDistanceService _distances;
         private float _nextPendingRetryTime;
@@ -100,7 +103,11 @@ namespace TaskPlanning
 
             var taskSnapshot = _pendingTasks.ToArray();
             var evaluator = new TaskPlanningCostEvaluator(_distances, costWeights, costAmrSpeed, taskSnapshot, Time.time);
-            var problem = new DispatchProblem(taskSnapshot, amrs, loadingPoints, _distances, evaluator, Time.time);
+            var candidateAmrs = GetDispatchCandidateAmrs(taskSnapshot, evaluator);
+            if (candidateAmrs.Count == 0)
+                return;
+
+            var problem = new DispatchProblem(taskSnapshot, candidateAmrs, loadingPoints, _distances, evaluator, Time.time);
             var plan = _dispatchAlgorithm.Solve(problem);
             foreach (var assignment in plan.Assignments)
             {
@@ -113,7 +120,18 @@ namespace TaskPlanning
 
         private bool TryStartAssignment(DispatchAssignment assignment)
         {
-            if (!assignment.IsValid || !assignment.Amr.TryReserve())
+            if (!assignment.IsValid)
+                return false;
+
+            if (_activeAssignments.TryGetValue(assignment.Amr, out var activeAssignment))
+            {
+                if (!CanReplaceActiveAssignment(activeAssignment, assignment))
+                    return false;
+
+                CancelActiveAssignment(activeAssignment, true);
+            }
+
+            if (!assignment.Amr.TryReserve())
                 return false;
 
             switch (assignment.Task)
@@ -155,7 +173,8 @@ namespace TaskPlanning
                 $"Task dispatched: task={task.TaskId} amr={assignment.Amr.AmrId} pallet={assignment.Pallet.PalletId} " +
                 $"loading={assignment.LoadingPoint.LoadingPointId} score={assignment.Score:0.###}",
                 this);
-            StartCoroutine(RunDelivery(task, assignment));
+            var execution = RegisterActiveAssignment(assignment);
+            execution.Coroutine = StartCoroutine(RunDelivery(task, assignment, execution));
             return true;
         }
 
@@ -171,16 +190,18 @@ namespace TaskPlanning
                 $"Pallet removal dispatched: task={task.TaskId} amr={assignment.Amr.AmrId} pallet={assignment.Pallet.PalletId} " +
                 $"parking={NodeId(assignment.RemovalTargetNode)} score={assignment.Score:0.###}",
                 this);
-            StartCoroutine(RunPalletRemoval(task, assignment));
+            var execution = RegisterActiveAssignment(assignment);
+            execution.Coroutine = StartCoroutine(RunPalletRemoval(task, assignment, execution));
             return true;
         }
 
-        private IEnumerator RunDelivery(DeliveryPlanningTask request, DispatchAssignment assignment)
+        private IEnumerator RunDelivery(DeliveryPlanningTask request, DispatchAssignment assignment, ActiveTaskExecution execution)
         {
             yield return MoveAmrTo(assignment.Amr, assignment.Pallet.CurrentNode);
             assignment.Pallet.MarkAttaching();
             yield return new WaitForSeconds(assignment.Pallet.AttachDurationSeconds);
             assignment.Pallet.AttachTo(assignment.Amr);
+            execution.HasAttachedPallet = true;
             TryDispatchPendingTasks();
 
             yield return WaitForLoadingAndWorkstationTurn(request, assignment);
@@ -198,6 +219,7 @@ namespace TaskPlanning
             yield return new WaitForSeconds(assignment.Pallet.DetachDurationSeconds);
             assignment.Pallet.DetachAt(request.Workstation.Node, PalletStatus.Unloading);
             assignment.Amr.Release();
+            CompleteActiveAssignment(assignment.Amr);
             TryDispatchPendingTasks();
 
             yield return new WaitForSeconds(assignment.Pallet.UnloadDurationSeconds);
@@ -209,12 +231,13 @@ namespace TaskPlanning
             TryDispatchPendingTasks();
         }
 
-        private IEnumerator RunPalletRemoval(PalletRemovalPlanningTask request, DispatchAssignment assignment)
+        private IEnumerator RunPalletRemoval(PalletRemovalPlanningTask request, DispatchAssignment assignment, ActiveTaskExecution execution)
         {
             yield return MoveAmrTo(assignment.Amr, assignment.Pallet.CurrentNode);
             assignment.Pallet.MarkAttaching();
             yield return new WaitForSeconds(assignment.Pallet.AttachDurationSeconds);
             assignment.Pallet.AttachTo(assignment.Amr);
+            execution.HasAttachedPallet = true;
 
             yield return MoveAmrTo(assignment.Amr, assignment.RemovalTargetNode);
             assignment.Pallet.MarkDetaching();
@@ -224,6 +247,7 @@ namespace TaskPlanning
             assignment.Amr.Release();
 
             Debug.Log($"Pallet removal completed: task={request.TaskId} amr={assignment.Amr.AmrId} pallet={assignment.Pallet.PalletId}", this);
+            CompleteActiveAssignment(assignment.Amr);
             TryDispatchPendingTasks();
         }
 
@@ -264,6 +288,163 @@ namespace TaskPlanning
 
             while (Vector2.Distance(amr.transform.position, goal.transform.position) > arrivalDistance)
                 yield return null;
+        }
+
+        private List<TaskPlanningAmr> GetDispatchCandidateAmrs(
+            IReadOnlyList<ITaskPlanningTask> taskSnapshot,
+            TaskPlanningCostEvaluator evaluator)
+        {
+            var candidates = new List<TaskPlanningAmr>();
+            foreach (var amr in amrs)
+            {
+                if (amr == null)
+                    continue;
+
+                if (!amr.IsBusy)
+                {
+                    candidates.Add(amr);
+                    continue;
+                }
+
+                if (CanOfferForSoftReassignment(amr, taskSnapshot, evaluator))
+                    candidates.Add(amr);
+            }
+
+            return candidates;
+        }
+
+        private bool CanOfferForSoftReassignment(
+            TaskPlanningAmr amr,
+            IReadOnlyList<ITaskPlanningTask> taskSnapshot,
+            TaskPlanningCostEvaluator evaluator)
+        {
+            if (!enableSoftAmrReservations ||
+                taskSnapshot.Count == 0 ||
+                !_activeAssignments.TryGetValue(amr, out var activeAssignment) ||
+                !activeAssignment.CanReassign)
+                return false;
+
+            var currentCost = EvaluateActiveAssignment(activeAssignment, evaluator);
+            if (!currentCost.IsFeasible)
+                return false;
+
+            foreach (var task in taskSnapshot)
+            {
+                foreach (var cost in EvaluatePotentialReassignmentCosts(amr, task, evaluator))
+                {
+                    if (!cost.IsFeasible)
+                        continue;
+
+                    if (IsEnoughReassignmentImprovement(currentCost.TotalCost, cost.TotalCost))
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool CanReplaceActiveAssignment(ActiveTaskExecution activeAssignment, DispatchAssignment replacement)
+        {
+            if (!enableSoftAmrReservations || !activeAssignment.CanReassign)
+                return false;
+
+            var taskSnapshot = _pendingTasks.ToArray();
+            var evaluator = new TaskPlanningCostEvaluator(_distances, costWeights, costAmrSpeed, taskSnapshot, Time.time);
+            var currentCost = EvaluateActiveAssignment(activeAssignment, evaluator);
+            if (!currentCost.IsFeasible)
+                return false;
+
+            var improvement = currentCost.TotalCost - replacement.Score;
+            if (!IsEnoughReassignmentImprovement(currentCost.TotalCost, replacement.Score))
+                return false;
+
+            Debug.Log(
+                $"Task reassigned before pallet attach: amr={activeAssignment.Assignment.Amr.AmrId} " +
+                $"from={activeAssignment.Assignment.Task.TaskId} to={replacement.Task.TaskId} " +
+                $"improvement={improvement:0.###}",
+                this);
+            return true;
+        }
+
+        private CostEvaluation EvaluateActiveAssignment(
+            ActiveTaskExecution activeAssignment,
+            TaskPlanningCostEvaluator evaluator)
+        {
+            switch (activeAssignment.Assignment.Task)
+            {
+                case DeliveryPlanningTask delivery:
+                    return evaluator.EvaluateActiveAssignment(
+                        activeAssignment.Assignment.Amr,
+                        delivery,
+                        activeAssignment.Assignment.LoadingPoint);
+                case PalletRemovalPlanningTask removal:
+                    return evaluator.EvaluateActiveAssignment(activeAssignment.Assignment.Amr, removal);
+                default:
+                    return CostEvaluation.Infeasible;
+            }
+        }
+
+        private IEnumerable<CostEvaluation> EvaluatePotentialReassignmentCosts(
+            TaskPlanningAmr amr,
+            ITaskPlanningTask task,
+            TaskPlanningCostEvaluator evaluator)
+        {
+            switch (task)
+            {
+                case DeliveryPlanningTask delivery:
+                    foreach (var loadingPoint in loadingPoints)
+                        yield return evaluator.Evaluate(amr, delivery, loadingPoint);
+                    break;
+                case PalletRemovalPlanningTask removal:
+                    yield return evaluator.Evaluate(amr, removal);
+                    break;
+            }
+        }
+
+        private bool IsEnoughReassignmentImprovement(double currentCost, double replacementCost)
+        {
+            var threshold = Math.Max(0.0, reassignmentCostImprovementThreshold);
+            return currentCost - replacementCost >= threshold;
+        }
+
+        private ActiveTaskExecution RegisterActiveAssignment(DispatchAssignment assignment)
+        {
+            var execution = new ActiveTaskExecution(assignment);
+            _activeAssignments[assignment.Amr] = execution;
+            return execution;
+        }
+
+        private void CompleteActiveAssignment(TaskPlanningAmr amr)
+        {
+            if (amr != null)
+                _activeAssignments.Remove(amr);
+        }
+
+        private void CancelActiveAssignment(ActiveTaskExecution execution, bool requeueTask)
+        {
+            if (execution.Coroutine != null)
+                StopCoroutine(execution.Coroutine);
+
+            var assignment = execution.Assignment;
+            switch (assignment.Task)
+            {
+                case DeliveryPlanningTask delivery:
+                    delivery.Workstation.RemoveQueued(assignment.Pallet);
+                    delivery.Workstation.ReleaseReservation(assignment.Pallet);
+                    assignment.LoadingPoint.RemoveQueued(assignment.Pallet);
+                    assignment.LoadingPoint.ReleaseReservation(assignment.Pallet);
+                    assignment.Pallet.ReleasePendingReservation(PalletStatus.Available);
+                    break;
+                case PalletRemovalPlanningTask:
+                    assignment.Pallet.ReleasePendingReservation(PalletStatus.AwaitingRemoval);
+                    break;
+            }
+
+            CompleteActiveAssignment(assignment.Amr);
+            assignment.Amr.Release();
+
+            if (requeueTask && !_pendingTasks.Contains(assignment.Task))
+                _pendingTasks.Add(assignment.Task);
         }
 
         private void RefreshDistances()
@@ -330,6 +511,20 @@ namespace TaskPlanning
             }
 
             return true;
+        }
+
+        private sealed class ActiveTaskExecution
+        {
+            public ActiveTaskExecution(DispatchAssignment assignment)
+            {
+                Assignment = assignment;
+            }
+
+            public DispatchAssignment Assignment { get; }
+            public Coroutine Coroutine { get; set; }
+            public bool HasAttachedPallet { get; set; }
+
+            public bool CanReassign => !HasAttachedPallet && Assignment.Amr.AttachedPallet == null;
         }
     }
 }

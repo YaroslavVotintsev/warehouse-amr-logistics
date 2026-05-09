@@ -72,6 +72,12 @@ namespace TaskPlanning
                 Status = PalletStatus.Available;
         }
 
+        public void ReleasePendingReservation(PalletStatus statusAfterRelease)
+        {
+            if (Status == PalletStatus.Reserved || Status == PalletStatus.Attaching)
+                Status = statusAfterRelease;
+        }
+
         public void MarkAttaching()
         {
             Status = PalletStatus.Attaching;

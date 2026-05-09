@@ -12,7 +12,7 @@ namespace TaskPlanning
             {
                 foreach (var amr in problem.Amrs)
                 {
-                    if (amr == null || amr.IsBusy)
+                    if (amr == null)
                         continue;
 
                     AddCandidates(problem, task, amr, candidates);
