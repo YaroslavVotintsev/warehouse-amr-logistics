@@ -32,22 +32,34 @@ namespace TaskPlanning
 
         public CostEvaluation Evaluate(TaskPlanningAmr amr, DeliveryPlanningTask task, PalletLoadingPoint loadingPoint)
         {
-            return EvaluateDelivery(amr, task, loadingPoint, false, null);
+            var startNode = NearestNode(amr);
+            return EvaluateDelivery(startNode, task, loadingPoint, false, null, 0);
         }
 
         public CostEvaluation EvaluateActiveAssignment(TaskPlanningAmr amr, DeliveryPlanningTask task, PalletLoadingPoint loadingPoint)
         {
-            return EvaluateDelivery(amr, task, loadingPoint, true, task?.Pallet);
+            var startNode = NearestNode(amr);
+            return EvaluateDelivery(startNode, task, loadingPoint, true, task?.Pallet, 0);
+        }
+
+        public CostEvaluation EvaluateFrom(
+            MapfNode startNode,
+            DeliveryPlanningTask task,
+            PalletLoadingPoint loadingPoint,
+            double priorAssignmentEta)
+        {
+            return EvaluateDelivery(startNode, task, loadingPoint, false, null, priorAssignmentEta);
         }
 
         private CostEvaluation EvaluateDelivery(
-            TaskPlanningAmr amr,
+            MapfNode startNode,
             DeliveryPlanningTask task,
             PalletLoadingPoint loadingPoint,
             bool allowReservedPallet,
-            PalletMarker ignoredQueuedPallet)
+            PalletMarker ignoredQueuedPallet,
+            double priorAssignmentEta)
         {
-            if (amr == null || task?.Pallet == null || task.Workstation == null || loadingPoint == null)
+            if (startNode == null || task?.Pallet == null || task.Workstation == null || loadingPoint == null || !Finite(priorAssignmentEta))
                 return CostEvaluation.Infeasible;
 
             var pallet = task.Pallet;
@@ -60,11 +72,7 @@ namespace TaskPlanning
             if (!loadingPoint.Accepts(pallet) || !task.Workstation.Accepts(pallet))
                 return CostEvaluation.Infeasible;
 
-            var amrNode = _distances.NearestNode(amr.transform.position);
-            if (amrNode == null)
-                return CostEvaluation.Infeasible;
-
-            var amrToPallet = Eta(amrNode, pallet.CurrentNode);
+            var amrToPallet = Eta(startNode, pallet.CurrentNode);
             var palletToLoading = Eta(pallet.CurrentNode, loadingPoint.Node);
             var loadingToWorkstation = Eta(loadingPoint.Node, task.Workstation.Node);
             if (!Finite(amrToPallet) || !Finite(palletToLoading) || !Finite(loadingToWorkstation))
@@ -77,6 +85,7 @@ namespace TaskPlanning
                 : 0.0;
             var agingBonus = AgingBonus(task, weights.agingWeight, weights.maxAgingBonus);
             var total =
+                weights.priorAssignmentEta * priorAssignmentEta +
                 weights.amrToPalletEta * amrToPallet +
                 weights.attachTime * pallet.AttachDurationSeconds +
                 weights.loadingQueueEta * loadingQueueEta +
@@ -90,6 +99,7 @@ namespace TaskPlanning
             return new CostEvaluation(
                 true,
                 total,
+                priorAssignmentEta: priorAssignmentEta,
                 amrToPalletEta: amrToPallet,
                 attachTime: pallet.AttachDurationSeconds,
                 loadingQueueEta: loadingQueueEta,
@@ -103,33 +113,43 @@ namespace TaskPlanning
 
         public CostEvaluation Evaluate(TaskPlanningAmr amr, PalletRemovalPlanningTask task)
         {
-            return EvaluateRemoval(amr, task, false);
+            var startNode = NearestNode(amr);
+            return EvaluateRemoval(startNode, task, false, 0);
         }
 
         public CostEvaluation EvaluateActiveAssignment(TaskPlanningAmr amr, PalletRemovalPlanningTask task)
         {
-            return EvaluateRemoval(amr, task, true);
+            var startNode = NearestNode(amr);
+            return EvaluateRemoval(startNode, task, true, 0);
         }
 
-        private CostEvaluation EvaluateRemoval(TaskPlanningAmr amr, PalletRemovalPlanningTask task, bool allowReservedPallet)
+        public CostEvaluation EvaluateFrom(
+            MapfNode startNode,
+            PalletRemovalPlanningTask task,
+            double priorAssignmentEta)
         {
-            if (amr == null || task?.Pallet == null || task.Pallet.CurrentNode == null || task.Pallet.ParkingNode == null)
+            return EvaluateRemoval(startNode, task, false, priorAssignmentEta);
+        }
+
+        private CostEvaluation EvaluateRemoval(
+            MapfNode startNode,
+            PalletRemovalPlanningTask task,
+            bool allowReservedPallet,
+            double priorAssignmentEta)
+        {
+            if (startNode == null || task?.Pallet == null || task.Pallet.CurrentNode == null || task.Pallet.ParkingNode == null || !Finite(priorAssignmentEta))
                 return CostEvaluation.Infeasible;
 
             if (!IsAvailableForRemoval(task.Pallet, allowReservedPallet))
                 return CostEvaluation.Infeasible;
 
-            var amrNode = _distances.NearestNode(amr.transform.position);
-            if (amrNode == null)
-                return CostEvaluation.Infeasible;
-
-            var amrToPallet = Eta(amrNode, task.Pallet.CurrentNode);
+            var amrToPallet = Eta(startNode, task.Pallet.CurrentNode);
             var palletToParking = Eta(task.Pallet.CurrentNode, task.Pallet.ParkingNode);
             if (!Finite(amrToPallet) || !Finite(palletToParking))
                 return CostEvaluation.Infeasible;
 
             var weights = RemovalWeights;
-            var baseTotal =
+            var operationTotal =
                 weights.amrToPalletEta * amrToPallet +
                 weights.attachTime * task.Pallet.AttachDurationSeconds +
                 weights.palletToParkingEta * palletToParking +
@@ -138,11 +158,15 @@ namespace TaskPlanning
                 ? Mathf.Max(0f, weights.blocksPendingDeliveryMultiplier)
                 : 1.0;
             var agingBonus = AgingBonus(task, weights.agingWeight, weights.maxAgingBonus);
-            var total = baseTotal * multiplier - agingBonus;
+            var total =
+                weights.priorAssignmentEta * priorAssignmentEta +
+                operationTotal * multiplier -
+                agingBonus;
 
             return new CostEvaluation(
                 true,
                 total,
+                priorAssignmentEta: priorAssignmentEta,
                 amrToPalletEta: amrToPallet,
                 attachTime: task.Pallet.AttachDurationSeconds,
                 detachTime: task.Pallet.DetachDurationSeconds,
@@ -154,6 +178,11 @@ namespace TaskPlanning
         private double Eta(MapfNode from, MapfNode to)
         {
             return _distances.Distance(from, to) / _amrSpeed;
+        }
+
+        private MapfNode NearestNode(TaskPlanningAmr amr)
+        {
+            return amr != null ? _distances.NearestNode(amr.transform.position) : null;
         }
 
         private static bool IsAvailableForDelivery(PalletMarker pallet, bool allowReservedPallet)

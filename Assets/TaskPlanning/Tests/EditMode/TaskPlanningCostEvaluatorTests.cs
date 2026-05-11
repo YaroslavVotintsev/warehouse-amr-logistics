@@ -243,6 +243,54 @@ namespace TaskPlanning.Tests
             }
         }
 
+        [Test]
+        public void DeliveryCostFromStartNodeIncludesPriorAssignmentEtaWeight()
+        {
+            var fixture = CreateDeliveryFixture("CostDeliveryPriorEta");
+
+            try
+            {
+                var weights = ZeroWeights();
+                weights.delivery.priorAssignmentEta = 3f;
+
+                var evaluator = CreateEvaluator(fixture.Graph, weights);
+                var task = new DeliveryPlanningTask("D-Prior", fixture.Pallet, fixture.Workstation, 0f);
+                var cost = evaluator.EvaluateFrom(fixture.AmrNode, task, fixture.LoadingPoint, priorAssignmentEta: 7.0);
+
+                Assert.That(cost.IsFeasible, Is.True);
+                Assert.That(cost.PriorAssignmentEta, Is.EqualTo(7.0).Within(0.0001));
+                Assert.That(cost.TotalCost, Is.EqualTo(21.0).Within(0.0001));
+            }
+            finally
+            {
+                fixture.Destroy();
+            }
+        }
+
+        [Test]
+        public void RemovalCostFromStartNodeIncludesPriorAssignmentEtaWeight()
+        {
+            var fixture = CreateRemovalFixture("CostRemovalPriorEta");
+
+            try
+            {
+                var weights = ZeroWeights();
+                weights.removal.priorAssignmentEta = 4f;
+
+                var evaluator = CreateEvaluator(fixture.Graph, weights);
+                var task = new PalletRemovalPlanningTask("R-Prior", fixture.Pallet, fixture.Workstation, 0f);
+                var cost = evaluator.EvaluateFrom(fixture.PalletNode, task, priorAssignmentEta: 6.0);
+
+                Assert.That(cost.IsFeasible, Is.True);
+                Assert.That(cost.PriorAssignmentEta, Is.EqualTo(6.0).Within(0.0001));
+                Assert.That(cost.TotalCost, Is.EqualTo(24.0).Within(0.0001));
+            }
+            finally
+            {
+                fixture.Destroy();
+            }
+        }
+
         private static TaskPlanningCostEvaluator CreateEvaluator(
             MapfSceneGraph graph,
             TaskPlanningCostWeights weights,
@@ -260,6 +308,7 @@ namespace TaskPlanning.Tests
         private static TaskPlanningCostWeights ZeroWeights()
         {
             var weights = new TaskPlanningCostWeights();
+            weights.delivery.priorAssignmentEta = 0f;
             weights.delivery.amrToPalletEta = 0f;
             weights.delivery.attachTime = 0f;
             weights.delivery.loadingQueueEta = 0f;
@@ -271,6 +320,7 @@ namespace TaskPlanning.Tests
             weights.delivery.agingWeight = 0f;
             weights.delivery.maxAgingBonus = 0f;
 
+            weights.removal.priorAssignmentEta = 0f;
             weights.removal.amrToPalletEta = 0f;
             weights.removal.attachTime = 0f;
             weights.removal.palletToParkingEta = 0f;

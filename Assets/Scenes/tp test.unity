@@ -3849,7 +3849,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1390016554}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &870286944
 MonoBehaviour:
@@ -3898,6 +3898,7 @@ MonoBehaviour:
   costAmrSpeed: 1
   costWeights:
     serializedVersion: 1
+    priorAssignmentEta: 1
     amrToPalletEta: 1
     attachTime: 1
     loadingQueueEta: 1
@@ -3911,6 +3912,7 @@ MonoBehaviour:
     agingWeight: 1
     maxAgingBonus: 1
     delivery:
+      priorAssignmentEta: 1
       amrToPalletEta: 1
       attachTime: 1
       loadingQueueEta: 1
@@ -3922,6 +3924,7 @@ MonoBehaviour:
       agingWeight: 1
       maxAgingBonus: 1
     removal:
+      priorAssignmentEta: 1
       amrToPalletEta: 1
       attachTime: 1
       palletToParkingEta: 1
@@ -3930,7 +3933,8 @@ MonoBehaviour:
       agingWeight: 1
       maxAgingBonus: 1
   enableSoftAmrReservations: 1
-  reassignmentCostImprovementPercent: 5
+  reassignmentCostImprovementPercent: 10
+  waitForFutureImprovementPercent: 10
   autoDiscoverSceneObjects: 1
   amrs:
   - {fileID: 108708341}
@@ -5447,7 +5451,6 @@ Transform:
   - {fileID: 1743400197}
   - {fileID: 44038360}
   - {fileID: 1099789644}
-  - {fileID: 870286943}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1390016555
@@ -7544,4 +7547,5 @@ SceneRoots:
   - {fileID: 519420032}
   - {fileID: 619394802}
   - {fileID: 1390016554}
+  - {fileID: 870286943}
   - {fileID: 859078018}

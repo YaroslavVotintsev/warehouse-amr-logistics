@@ -5,20 +5,17 @@ namespace TaskPlanning
 {
     public class NearestDispatching : ITaskDispatchAlgorithm
     {
-        public DispatchPlan Solve(DispatchProblem problem)
+        public virtual DispatchPlan Solve(DispatchProblem problem)
         {
             var candidates = new List<DispatchAssignment>();
             foreach (var task in problem.Tasks)
-            {
-                foreach (var amr in problem.Amrs)
-                {
-                    if (amr == null)
-                        continue;
+                candidates.AddRange(BuildImmediateCandidates(problem, task));
 
-                    AddCandidates(problem, task, amr, candidates);
-                }
-            }
+            return SelectGreedy(candidates);
+        }
 
+        protected static DispatchPlan SelectGreedy(IEnumerable<DispatchAssignment> candidates)
+        {
             var selected = new List<DispatchAssignment>();
             var usedAmrs = new HashSet<TaskPlanningAmr>();
             var usedTasks = new HashSet<ITaskPlanningTask>();
@@ -40,7 +37,21 @@ namespace TaskPlanning
             return new DispatchPlan(selected);
         }
 
-        private static void AddCandidates(
+        protected static List<DispatchAssignment> BuildImmediateCandidates(DispatchProblem problem, ITaskPlanningTask task)
+        {
+            var candidates = new List<DispatchAssignment>();
+            foreach (var amr in problem.Amrs)
+            {
+                if (amr == null)
+                    continue;
+
+                AddCandidates(problem, task, amr, candidates);
+            }
+
+            return candidates;
+        }
+
+        protected static void AddCandidates(
             DispatchProblem problem,
             ITaskPlanningTask task,
             TaskPlanningAmr amr,
@@ -57,7 +68,7 @@ namespace TaskPlanning
             }
         }
 
-        private static void AddDeliveryCandidates(
+        protected static void AddDeliveryCandidates(
             DispatchProblem problem,
             DeliveryPlanningTask task,
             TaskPlanningAmr amr,
@@ -80,7 +91,7 @@ namespace TaskPlanning
             }
         }
 
-        private static void AddRemovalCandidate(
+        protected static void AddRemovalCandidate(
             DispatchProblem problem,
             PalletRemovalPlanningTask task,
             TaskPlanningAmr amr,

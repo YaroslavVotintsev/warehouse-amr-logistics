@@ -8,6 +8,7 @@ namespace TaskPlanning
         private const int CurrentSerializedVersion = 1;
 
         [SerializeField, HideInInspector] private int serializedVersion = CurrentSerializedVersion;
+        [SerializeField, HideInInspector] private float priorAssignmentEta = 1f;
         [SerializeField, HideInInspector] private float amrToPalletEta = 1f;
         [SerializeField, HideInInspector] private float attachTime = 1f;
         [SerializeField, HideInInspector] private float loadingQueueEta = 1f;
@@ -38,6 +39,7 @@ namespace TaskPlanning
                 return;
 
             delivery.amrToPalletEta = amrToPalletEta;
+            delivery.priorAssignmentEta = priorAssignmentEta;
             delivery.attachTime = attachTime;
             delivery.loadingQueueEta = loadingQueueEta;
             delivery.palletToLoadingEta = palletToLoadingEta;
@@ -49,6 +51,7 @@ namespace TaskPlanning
             delivery.maxAgingBonus = maxAgingBonus;
 
             removal.amrToPalletEta = amrToPalletEta;
+            removal.priorAssignmentEta = priorAssignmentEta;
             removal.attachTime = attachTime;
             removal.palletToParkingEta = palletToParkingEta;
             removal.detachTime = detachTime;
@@ -61,6 +64,7 @@ namespace TaskPlanning
     [System.Serializable]
     public sealed class DeliveryTaskCostWeights
     {
+        [Min(0f)] public float priorAssignmentEta = 1f;
         [Min(0f)] public float amrToPalletEta = 1f;
         [Min(0f)] public float attachTime = 1f;
         [Min(0f)] public float loadingQueueEta = 1f;
@@ -76,6 +80,7 @@ namespace TaskPlanning
     [System.Serializable]
     public sealed class RemovalTaskCostWeights
     {
+        [Min(0f)] public float priorAssignmentEta = 1f;
         [Min(0f)] public float amrToPalletEta = 1f;
         [Min(0f)] public float attachTime = 1f;
         [Min(0f)] public float palletToParkingEta = 1f;

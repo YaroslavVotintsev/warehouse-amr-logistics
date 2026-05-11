@@ -21,6 +21,7 @@ namespace TaskPlanning
         [SerializeField] private bool enableSoftAmrReservations;
         [FormerlySerializedAs("reassignmentCostImprovementThreshold")]
         [SerializeField, Min(0f)] private float reassignmentCostImprovementPercent = 10f;
+        [SerializeField, Min(0f)] private float waitForFutureImprovementPercent = 10f;
         [SerializeField] private bool autoDiscoverSceneObjects = true;
         [SerializeField] private List<TaskPlanningAmr> amrs = new();
         [SerializeField] private List<PalletLoadingPoint> loadingPoints = new();
@@ -36,7 +37,7 @@ namespace TaskPlanning
         {
             coordinator ??= FindAnyObjectByType<MapfCoordinator>();
             sceneGraph ??= FindAnyObjectByType<MapfSceneGraph>();
-            _dispatchAlgorithm = CreateAlgorithm(algorithm);
+            _dispatchAlgorithm = CreateAlgorithm(algorithm, waitForFutureImprovementPercent);
 
             if (autoDiscoverSceneObjects)
                 DiscoverSceneObjects();
@@ -112,7 +113,8 @@ namespace TaskPlanning
             if (candidateAmrs.Count == 0)
                 return;
 
-            var problem = new DispatchProblem(taskSnapshot, candidateAmrs, loadingPoints, _distances, evaluator, Time.time);
+            var futureAvailabilities = GetFutureAvailabilities();
+            var problem = new DispatchProblem(taskSnapshot, candidateAmrs, loadingPoints, _distances, evaluator, Time.time, futureAvailabilities);
             var plan = _dispatchAlgorithm.Solve(problem);
             foreach (var assignment in plan.Assignments)
             {
@@ -202,24 +204,31 @@ namespace TaskPlanning
 
         private IEnumerator RunDelivery(DeliveryPlanningTask request, DispatchAssignment assignment, ActiveTaskExecution execution)
         {
+            execution.Phase = ActiveTaskPhase.MovingToPallet;
             yield return MoveAmrTo(assignment.Amr, assignment.Pallet.CurrentNode);
+            execution.Phase = ActiveTaskPhase.Attaching;
             assignment.Pallet.MarkAttaching();
             yield return new WaitForSeconds(assignment.Pallet.AttachDurationSeconds);
             assignment.Pallet.AttachTo(assignment.Amr);
             execution.HasAttachedPallet = true;
+            execution.Phase = ActiveTaskPhase.WaitingForLoadingAndWorkstationTurn;
             TryDispatchPendingTasks();
 
             yield return WaitForLoadingAndWorkstationTurn(request, assignment);
+            execution.Phase = ActiveTaskPhase.MovingToLoading;
             yield return MoveAmrTo(assignment.Amr, assignment.LoadingPoint.Node);
+            execution.Phase = ActiveTaskPhase.Loading;
             assignment.Pallet.MarkLoading();
             yield return new WaitForSeconds(assignment.Pallet.LoadDurationSeconds);
             assignment.Pallet.MarkLoaded();
 
+            execution.Phase = ActiveTaskPhase.MovingToWorkstation;
             coordinator.RequestAgentGoal(assignment.Amr.MapfAgent, request.Workstation.Node);
             assignment.LoadingPoint.ReleaseReservation(assignment.Pallet);
             TryDispatchPendingTasks();
             yield return WaitForAmrAt(assignment.Amr, request.Workstation.Node);
 
+            execution.Phase = ActiveTaskPhase.DetachingAtWorkstation;
             assignment.Pallet.MarkDetaching();
             yield return new WaitForSeconds(assignment.Pallet.DetachDurationSeconds);
             assignment.Pallet.DetachAt(request.Workstation.Node, PalletStatus.Unloading);
@@ -248,13 +257,17 @@ namespace TaskPlanning
 
         private IEnumerator RunPalletRemoval(PalletRemovalPlanningTask request, DispatchAssignment assignment, ActiveTaskExecution execution)
         {
+            execution.Phase = ActiveTaskPhase.MovingToPallet;
             yield return MoveAmrTo(assignment.Amr, assignment.Pallet.CurrentNode);
+            execution.Phase = ActiveTaskPhase.Attaching;
             assignment.Pallet.MarkAttaching();
             yield return new WaitForSeconds(assignment.Pallet.AttachDurationSeconds);
             assignment.Pallet.AttachTo(assignment.Amr);
             execution.HasAttachedPallet = true;
 
+            execution.Phase = ActiveTaskPhase.MovingToParking;
             yield return MoveAmrTo(assignment.Amr, assignment.RemovalTargetNode);
+            execution.Phase = ActiveTaskPhase.DetachingAtParking;
             assignment.Pallet.MarkDetaching();
             yield return new WaitForSeconds(assignment.Pallet.DetachDurationSeconds);
             assignment.Pallet.DetachAt(assignment.RemovalTargetNode);
@@ -303,6 +316,176 @@ namespace TaskPlanning
 
             while (Vector2.Distance(amr.transform.position, goal.transform.position) > arrivalDistance)
                 yield return null;
+        }
+
+        private IReadOnlyList<AmrFutureAvailability> GetFutureAvailabilities()
+        {
+            var availabilities = new List<AmrFutureAvailability>();
+            foreach (var execution in _activeAssignments.Values)
+            {
+                if (TryCreateFutureAvailability(execution, out var availability))
+                    availabilities.Add(availability);
+            }
+
+            return availabilities;
+        }
+
+        private bool TryCreateFutureAvailability(ActiveTaskExecution execution, out AmrFutureAvailability availability)
+        {
+            availability = default;
+            var finishNode = PredictedFinishNode(execution);
+            if (finishNode == null)
+                return false;
+
+            var priorAssignmentEta = EstimateRemainingEta(execution);
+            if (double.IsNaN(priorAssignmentEta) || double.IsInfinity(priorAssignmentEta))
+                return false;
+
+            availability = new AmrFutureAvailability(
+                execution.Assignment.Amr,
+                execution.Assignment.Task,
+                finishNode,
+                priorAssignmentEta,
+                execution.CanReassign);
+            return availability.IsValid;
+        }
+
+        private MapfNode PredictedFinishNode(ActiveTaskExecution execution)
+        {
+            switch (execution.Assignment.Task)
+            {
+                case DeliveryPlanningTask delivery:
+                    return delivery.Workstation != null ? delivery.Workstation.Node : null;
+                case PalletRemovalPlanningTask:
+                    return execution.Assignment.RemovalTargetNode;
+                default:
+                    return null;
+            }
+        }
+
+        private double EstimateRemainingEta(ActiveTaskExecution execution)
+        {
+            switch (execution.Assignment.Task)
+            {
+                case DeliveryPlanningTask delivery:
+                    return EstimateDeliveryRemainingEta(execution, delivery);
+                case PalletRemovalPlanningTask removal:
+                    return EstimateRemovalRemainingEta(execution, removal);
+                default:
+                    return double.PositiveInfinity;
+            }
+        }
+
+        private double EstimateDeliveryRemainingEta(ActiveTaskExecution execution, DeliveryPlanningTask delivery)
+        {
+            var assignment = execution.Assignment;
+            var pallet = assignment.Pallet;
+            var loadingNode = assignment.LoadingPoint != null ? assignment.LoadingPoint.Node : null;
+            var workstationNode = delivery.Workstation != null ? delivery.Workstation.Node : null;
+            if (pallet == null || workstationNode == null)
+                return double.PositiveInfinity;
+
+            switch (execution.Phase)
+            {
+                case ActiveTaskPhase.MovingToPallet:
+                    return SumEta(
+                        TravelEtaFromCurrent(assignment.Amr, pallet.CurrentNode),
+                        pallet.AttachDurationSeconds,
+                        TravelEta(pallet.CurrentNode, loadingNode),
+                        pallet.LoadDurationSeconds,
+                        TravelEta(loadingNode, workstationNode),
+                        pallet.DetachDurationSeconds);
+                case ActiveTaskPhase.Attaching:
+                    return SumEta(
+                        pallet.AttachDurationSeconds,
+                        TravelEta(pallet.CurrentNode, loadingNode),
+                        pallet.LoadDurationSeconds,
+                        TravelEta(loadingNode, workstationNode),
+                        pallet.DetachDurationSeconds);
+                case ActiveTaskPhase.WaitingForLoadingAndWorkstationTurn:
+                case ActiveTaskPhase.MovingToLoading:
+                    return SumEta(
+                        TravelEtaFromCurrent(assignment.Amr, loadingNode),
+                        pallet.LoadDurationSeconds,
+                        TravelEta(loadingNode, workstationNode),
+                        pallet.DetachDurationSeconds);
+                case ActiveTaskPhase.Loading:
+                    return SumEta(
+                        pallet.LoadDurationSeconds,
+                        TravelEta(loadingNode, workstationNode),
+                        pallet.DetachDurationSeconds);
+                case ActiveTaskPhase.MovingToWorkstation:
+                    return SumEta(
+                        TravelEtaFromCurrent(assignment.Amr, workstationNode),
+                        pallet.DetachDurationSeconds);
+                case ActiveTaskPhase.DetachingAtWorkstation:
+                    return pallet.DetachDurationSeconds;
+                default:
+                    return double.PositiveInfinity;
+            }
+        }
+
+        private double EstimateRemovalRemainingEta(ActiveTaskExecution execution, PalletRemovalPlanningTask removal)
+        {
+            var assignment = execution.Assignment;
+            var pallet = assignment.Pallet;
+            var parkingNode = assignment.RemovalTargetNode;
+            if (pallet == null || parkingNode == null)
+                return double.PositiveInfinity;
+
+            switch (execution.Phase)
+            {
+                case ActiveTaskPhase.MovingToPallet:
+                    return SumEta(
+                        TravelEtaFromCurrent(assignment.Amr, pallet.CurrentNode),
+                        pallet.AttachDurationSeconds,
+                        TravelEta(pallet.CurrentNode, parkingNode),
+                        pallet.DetachDurationSeconds);
+                case ActiveTaskPhase.Attaching:
+                    return SumEta(
+                        pallet.AttachDurationSeconds,
+                        TravelEta(pallet.CurrentNode, parkingNode),
+                        pallet.DetachDurationSeconds);
+                case ActiveTaskPhase.MovingToParking:
+                    return SumEta(
+                        TravelEtaFromCurrent(assignment.Amr, parkingNode),
+                        pallet.DetachDurationSeconds);
+                case ActiveTaskPhase.DetachingAtParking:
+                    return pallet.DetachDurationSeconds;
+                default:
+                    return double.PositiveInfinity;
+            }
+        }
+
+        private double TravelEtaFromCurrent(TaskPlanningAmr amr, MapfNode destination)
+        {
+            if (amr == null || destination == null)
+                return double.PositiveInfinity;
+
+            var currentNode = _distances.NearestNode(amr.transform.position);
+            return TravelEta(currentNode, destination);
+        }
+
+        private double TravelEta(MapfNode from, MapfNode to)
+        {
+            if (from == null || to == null)
+                return double.PositiveInfinity;
+
+            return _distances.Distance(from, to) / Mathf.Max(0.0001f, costAmrSpeed);
+        }
+
+        private static double SumEta(params double[] values)
+        {
+            var total = 0.0;
+            foreach (var value in values)
+            {
+                if (double.IsNaN(value) || double.IsInfinity(value))
+                    return double.PositiveInfinity;
+
+                total += Math.Max(0.0, value);
+            }
+
+            return total;
         }
 
         private List<TaskPlanningAmr> GetDispatchCandidateAmrs(
@@ -479,10 +662,12 @@ namespace TaskPlanning
                 _distances = new RoadmapDistanceService(sceneGraph);
         }
 
-        private static ITaskDispatchAlgorithm CreateAlgorithm(TaskPlanningAlgorithmType algorithm)
+        private static ITaskDispatchAlgorithm CreateAlgorithm(TaskPlanningAlgorithmType algorithm, float waitForFutureImprovementPercent)
         {
             switch (algorithm)
             {
+                case TaskPlanningAlgorithmType.LookAheadNearestDispatching:
+                    return new LookAheadNearestDispatching(waitForFutureImprovementPercent);
                 case TaskPlanningAlgorithmType.NearestDispatching:
                 default:
                     return new NearestDispatching();
@@ -572,13 +757,28 @@ namespace TaskPlanning
             public ActiveTaskExecution(DispatchAssignment assignment)
             {
                 Assignment = assignment;
+                Phase = ActiveTaskPhase.MovingToPallet;
             }
 
             public DispatchAssignment Assignment { get; }
             public Coroutine Coroutine { get; set; }
             public bool HasAttachedPallet { get; set; }
+            public ActiveTaskPhase Phase { get; set; }
 
             public bool CanReassign => !HasAttachedPallet && Assignment.Amr.AttachedPallet == null;
+        }
+
+        private enum ActiveTaskPhase
+        {
+            MovingToPallet,
+            Attaching,
+            WaitingForLoadingAndWorkstationTurn,
+            MovingToLoading,
+            Loading,
+            MovingToWorkstation,
+            DetachingAtWorkstation,
+            MovingToParking,
+            DetachingAtParking
         }
     }
 }
