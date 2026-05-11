@@ -28,6 +28,7 @@ namespace TaskPlanning
 
         private readonly List<ITaskPlanningTask> _pendingTasks = new();
         private readonly Dictionary<TaskPlanningAmr, ActiveTaskExecution> _activeAssignments = new();
+        private readonly HashSet<ITaskPlanningTask> _reportedInvalidDeliveryTasks = new();
         private ITaskDispatchAlgorithm _dispatchAlgorithm;
         private RoadmapDistanceService _distances;
         private float _nextPendingRetryTime;
@@ -108,6 +109,7 @@ namespace TaskPlanning
                 return;
 
             var taskSnapshot = _pendingTasks.ToArray();
+            ReportInvalidDeliveryTaskConfigurations(taskSnapshot);
             var evaluator = new TaskPlanningCostEvaluator(_distances, costWeights, costAmrSpeed, taskSnapshot, Time.time);
             var candidateAmrs = GetDispatchCandidateAmrs(taskSnapshot, evaluator);
             if (candidateAmrs.Count == 0)
@@ -591,8 +593,9 @@ namespace TaskPlanning
             switch (task)
             {
                 case DeliveryPlanningTask delivery:
-                    foreach (var loadingPoint in loadingPoints)
-                        yield return evaluator.Evaluate(amr, delivery, loadingPoint);
+                    var loadingPointResolution = PalletLoadingPoint.ResolveAcceptedLoadingPoint(delivery.Pallet, loadingPoints);
+                    if (loadingPointResolution.IsResolved)
+                        yield return evaluator.Evaluate(amr, delivery, loadingPointResolution.LoadingPoint);
                     break;
                 case PalletRemovalPlanningTask removal:
                     yield return evaluator.Evaluate(amr, removal);
@@ -749,7 +752,30 @@ namespace TaskPlanning
                 return false;
             }
 
+            var loadingPointResolution = PalletLoadingPoint.ResolveAcceptedLoadingPoint(request.pallet, loadingPoints);
+            if (!loadingPointResolution.IsResolved)
+            {
+                Debug.LogWarning($"Ignoring MES task '{request.taskId}': {loadingPointResolution.Message}", this);
+                return false;
+            }
+
             return true;
+        }
+
+        private void ReportInvalidDeliveryTaskConfigurations(IEnumerable<ITaskPlanningTask> tasks)
+        {
+            foreach (var delivery in tasks.OfType<DeliveryPlanningTask>())
+            {
+                var loadingPointResolution = PalletLoadingPoint.ResolveAcceptedLoadingPoint(delivery.Pallet, loadingPoints);
+                if (loadingPointResolution.IsResolved)
+                {
+                    _reportedInvalidDeliveryTasks.Remove(delivery);
+                    continue;
+                }
+
+                if (_reportedInvalidDeliveryTasks.Add(delivery))
+                    Debug.LogWarning($"Delivery task '{delivery.TaskId}' is infeasible: {loadingPointResolution.Message}", this);
+            }
         }
 
         private sealed class ActiveTaskExecution

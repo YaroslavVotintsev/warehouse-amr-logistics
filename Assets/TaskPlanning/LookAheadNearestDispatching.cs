@@ -64,12 +64,15 @@ namespace TaskPlanning
             switch (task)
             {
                 case DeliveryPlanningTask delivery:
-                    foreach (var loadingPoint in problem.LoadingPoints)
-                        yield return problem.CostEvaluator.EvaluateFrom(
-                            availability.FinishNode,
-                            delivery,
-                            loadingPoint,
-                            availability.PriorAssignmentEta);
+                    var loadingPointResolution = problem.ResolveLoadingPoint(delivery.Pallet);
+                    if (!loadingPointResolution.IsResolved)
+                        yield break;
+
+                    yield return problem.CostEvaluator.EvaluateFrom(
+                        availability.FinishNode,
+                        delivery,
+                        loadingPointResolution.LoadingPoint,
+                        availability.PriorAssignmentEta);
                     break;
                 case PalletRemovalPlanningTask removal:
                     yield return problem.CostEvaluator.EvaluateFrom(

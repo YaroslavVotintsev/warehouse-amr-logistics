@@ -74,21 +74,23 @@ namespace TaskPlanning
             TaskPlanningAmr amr,
             ICollection<DispatchAssignment> candidates)
         {
-            foreach (var loadingPoint in problem.LoadingPoints)
-            {
-                var cost = problem.CostEvaluator.Evaluate(amr, task, loadingPoint);
-                if (!cost.IsFeasible)
-                    continue;
+            var loadingPointResolution = problem.ResolveLoadingPoint(task.Pallet);
+            if (!loadingPointResolution.IsResolved)
+                return;
 
-                candidates.Add(new DispatchAssignment(
-                    amr,
-                    task,
-                    task.Pallet,
-                    loadingPoint,
-                    task.Workstation,
-                    null,
-                    cost));
-            }
+            var loadingPoint = loadingPointResolution.LoadingPoint;
+            var cost = problem.CostEvaluator.Evaluate(amr, task, loadingPoint);
+            if (!cost.IsFeasible)
+                return;
+
+            candidates.Add(new DispatchAssignment(
+                amr,
+                task,
+                task.Pallet,
+                loadingPoint,
+                task.Workstation,
+                null,
+                cost));
         }
 
         protected static void AddRemovalCandidate(

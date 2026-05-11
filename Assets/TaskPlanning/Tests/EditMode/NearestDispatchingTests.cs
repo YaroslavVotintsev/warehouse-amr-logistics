@@ -79,6 +79,187 @@ namespace TaskPlanning.Tests
         }
 
         [Test]
+        public void NearestDispatchingUsesOnlyResolvedLoadingPointForPallet()
+        {
+            var graph = TaskPlanningTestHelpers.CreateSceneGraph("DispatchResolvedLoading_Graph");
+            var amrNode = TaskPlanningTestHelpers.CreateNode("DispatchResolvedLoading_Amr", new Vector2(0f, 0f));
+            var palletNode = TaskPlanningTestHelpers.CreateNode("DispatchResolvedLoading_Pallet", new Vector2(1f, 0f));
+            var decoyLoadNode = TaskPlanningTestHelpers.CreateNode("DispatchResolvedLoading_DecoyLoad", new Vector2(2f, 0f));
+            var resolvedLoadNode = TaskPlanningTestHelpers.CreateNode("DispatchResolvedLoading_Load", new Vector2(5f, 0f));
+            var workNode = TaskPlanningTestHelpers.CreateNode("DispatchResolvedLoading_Work", new Vector2(6f, 0f));
+            var edgeA = TaskPlanningTestHelpers.CreateEdge("DispatchResolvedLoading_EdgeA", amrNode, palletNode);
+            var edgeB = TaskPlanningTestHelpers.CreateEdge("DispatchResolvedLoading_EdgeB", palletNode, resolvedLoadNode);
+            var edgeC = TaskPlanningTestHelpers.CreateEdge("DispatchResolvedLoading_EdgeC", resolvedLoadNode, workNode);
+            var amr = TaskPlanningTestHelpers.CreateComponent<TaskPlanningAmr>("DispatchResolvedLoading_AmrObject");
+            var pallet = TaskPlanningTestHelpers.CreatePallet("DispatchResolvedLoading_PalletObject", palletNode);
+            var decoyPallet = TaskPlanningTestHelpers.CreatePallet("DispatchResolvedLoading_DecoyPallet");
+            var decoyLoading = TaskPlanningTestHelpers.CreateLoadingPoint("DispatchResolvedLoading_Decoy", decoyLoadNode, decoyPallet);
+            var resolvedLoading = TaskPlanningTestHelpers.CreateLoadingPoint("DispatchResolvedLoading_Resolved", resolvedLoadNode, pallet);
+            var workstation = TaskPlanningTestHelpers.CreateWorkstation("DispatchResolvedLoading_Workstation", workNode, pallet);
+
+            try
+            {
+                amr.transform.position = amrNode.transform.position;
+                var task = new DeliveryPlanningTask("D-Resolved", pallet, workstation, 0f);
+                var plan = Solve(graph, new ITaskPlanningTask[] { task }, new[] { amr }, new[] { decoyLoading, resolvedLoading });
+
+                Assert.That(plan.Assignments, Has.Count.EqualTo(1));
+                Assert.That(plan.Assignments[0].LoadingPoint, Is.SameAs(resolvedLoading));
+            }
+            finally
+            {
+                TaskPlanningTestHelpers.Destroy(
+                    workstation.gameObject,
+                    resolvedLoading.gameObject,
+                    decoyLoading.gameObject,
+                    decoyPallet.gameObject,
+                    pallet.gameObject,
+                    amr.gameObject,
+                    edgeC.gameObject,
+                    edgeB.gameObject,
+                    edgeA.gameObject,
+                    workNode.gameObject,
+                    resolvedLoadNode.gameObject,
+                    decoyLoadNode.gameObject,
+                    palletNode.gameObject,
+                    amrNode.gameObject,
+                    graph.gameObject);
+            }
+        }
+
+        [Test]
+        public void NearestDispatchingRejectsDeliveryWhenMultipleLoadingPointsAcceptPallet()
+        {
+            var graph = TaskPlanningTestHelpers.CreateSceneGraph("DispatchAmbiguousLoading_Graph");
+            var amrNode = TaskPlanningTestHelpers.CreateNode("DispatchAmbiguousLoading_Amr", new Vector2(0f, 0f));
+            var palletNode = TaskPlanningTestHelpers.CreateNode("DispatchAmbiguousLoading_Pallet", new Vector2(1f, 0f));
+            var loadNodeA = TaskPlanningTestHelpers.CreateNode("DispatchAmbiguousLoading_LoadA", new Vector2(2f, 0f));
+            var loadNodeB = TaskPlanningTestHelpers.CreateNode("DispatchAmbiguousLoading_LoadB", new Vector2(2f, 1f));
+            var workNode = TaskPlanningTestHelpers.CreateNode("DispatchAmbiguousLoading_Work", new Vector2(3f, 0f));
+            var edgeA = TaskPlanningTestHelpers.CreateEdge("DispatchAmbiguousLoading_EdgeA", amrNode, palletNode);
+            var edgeB = TaskPlanningTestHelpers.CreateEdge("DispatchAmbiguousLoading_EdgeB", palletNode, loadNodeA);
+            var edgeC = TaskPlanningTestHelpers.CreateEdge("DispatchAmbiguousLoading_EdgeC", loadNodeA, workNode);
+            var edgeD = TaskPlanningTestHelpers.CreateEdge("DispatchAmbiguousLoading_EdgeD", palletNode, loadNodeB);
+            var edgeE = TaskPlanningTestHelpers.CreateEdge("DispatchAmbiguousLoading_EdgeE", loadNodeB, workNode);
+            var amr = TaskPlanningTestHelpers.CreateComponent<TaskPlanningAmr>("DispatchAmbiguousLoading_AmrObject");
+            var pallet = TaskPlanningTestHelpers.CreatePallet("DispatchAmbiguousLoading_PalletObject", palletNode);
+            var loadingA = TaskPlanningTestHelpers.CreateLoadingPoint("DispatchAmbiguousLoading_LoadingA", loadNodeA, pallet);
+            var loadingB = TaskPlanningTestHelpers.CreateLoadingPoint("DispatchAmbiguousLoading_LoadingB", loadNodeB, pallet);
+            var workstation = TaskPlanningTestHelpers.CreateWorkstation("DispatchAmbiguousLoading_Workstation", workNode, pallet);
+
+            try
+            {
+                amr.transform.position = amrNode.transform.position;
+                var task = new DeliveryPlanningTask("D-Ambiguous", pallet, workstation, 0f);
+                var plan = Solve(graph, new ITaskPlanningTask[] { task }, new[] { amr }, new[] { loadingA, loadingB });
+
+                Assert.That(plan.Assignments, Is.Empty);
+            }
+            finally
+            {
+                TaskPlanningTestHelpers.Destroy(
+                    workstation.gameObject,
+                    loadingB.gameObject,
+                    loadingA.gameObject,
+                    pallet.gameObject,
+                    amr.gameObject,
+                    edgeE.gameObject,
+                    edgeD.gameObject,
+                    edgeC.gameObject,
+                    edgeB.gameObject,
+                    edgeA.gameObject,
+                    workNode.gameObject,
+                    loadNodeB.gameObject,
+                    loadNodeA.gameObject,
+                    palletNode.gameObject,
+                    amrNode.gameObject,
+                    graph.gameObject);
+            }
+        }
+
+        [Test]
+        public void NearestDispatchingRejectsDeliveryWhenNoLoadingPointAcceptsPallet()
+        {
+            var graph = TaskPlanningTestHelpers.CreateSceneGraph("DispatchMissingLoading_Graph");
+            var amrNode = TaskPlanningTestHelpers.CreateNode("DispatchMissingLoading_Amr", new Vector2(0f, 0f));
+            var palletNode = TaskPlanningTestHelpers.CreateNode("DispatchMissingLoading_Pallet", new Vector2(1f, 0f));
+            var loadNode = TaskPlanningTestHelpers.CreateNode("DispatchMissingLoading_Load", new Vector2(2f, 0f));
+            var workNode = TaskPlanningTestHelpers.CreateNode("DispatchMissingLoading_Work", new Vector2(3f, 0f));
+            var edgeA = TaskPlanningTestHelpers.CreateEdge("DispatchMissingLoading_EdgeA", amrNode, palletNode);
+            var edgeB = TaskPlanningTestHelpers.CreateEdge("DispatchMissingLoading_EdgeB", palletNode, loadNode);
+            var edgeC = TaskPlanningTestHelpers.CreateEdge("DispatchMissingLoading_EdgeC", loadNode, workNode);
+            var amr = TaskPlanningTestHelpers.CreateComponent<TaskPlanningAmr>("DispatchMissingLoading_AmrObject");
+            var pallet = TaskPlanningTestHelpers.CreatePallet("DispatchMissingLoading_PalletObject", palletNode);
+            var otherPallet = TaskPlanningTestHelpers.CreatePallet("DispatchMissingLoading_OtherPallet");
+            var loadingPoint = TaskPlanningTestHelpers.CreateLoadingPoint("DispatchMissingLoading_Loading", loadNode, otherPallet);
+            var workstation = TaskPlanningTestHelpers.CreateWorkstation("DispatchMissingLoading_Workstation", workNode, pallet);
+
+            try
+            {
+                amr.transform.position = amrNode.transform.position;
+                var task = new DeliveryPlanningTask("D-MissingLoading", pallet, workstation, 0f);
+                var plan = Solve(graph, new ITaskPlanningTask[] { task }, new[] { amr }, new[] { loadingPoint });
+
+                Assert.That(plan.Assignments, Is.Empty);
+            }
+            finally
+            {
+                TaskPlanningTestHelpers.Destroy(
+                    workstation.gameObject,
+                    loadingPoint.gameObject,
+                    otherPallet.gameObject,
+                    pallet.gameObject,
+                    amr.gameObject,
+                    edgeC.gameObject,
+                    edgeB.gameObject,
+                    edgeA.gameObject,
+                    workNode.gameObject,
+                    loadNode.gameObject,
+                    palletNode.gameObject,
+                    amrNode.gameObject,
+                    graph.gameObject);
+            }
+        }
+
+        [Test]
+        public void NearestDispatchingRejectsDeliveryWhenResolvedLoadingPointHasNoNode()
+        {
+            var graph = TaskPlanningTestHelpers.CreateSceneGraph("DispatchLoadingNoNode_Graph");
+            var amrNode = TaskPlanningTestHelpers.CreateNode("DispatchLoadingNoNode_Amr", new Vector2(0f, 0f));
+            var palletNode = TaskPlanningTestHelpers.CreateNode("DispatchLoadingNoNode_Pallet", new Vector2(1f, 0f));
+            var workNode = TaskPlanningTestHelpers.CreateNode("DispatchLoadingNoNode_Work", new Vector2(2f, 0f));
+            var edgeA = TaskPlanningTestHelpers.CreateEdge("DispatchLoadingNoNode_EdgeA", amrNode, palletNode);
+            var edgeB = TaskPlanningTestHelpers.CreateEdge("DispatchLoadingNoNode_EdgeB", palletNode, workNode);
+            var amr = TaskPlanningTestHelpers.CreateComponent<TaskPlanningAmr>("DispatchLoadingNoNode_AmrObject");
+            var pallet = TaskPlanningTestHelpers.CreatePallet("DispatchLoadingNoNode_PalletObject", palletNode);
+            var loadingPoint = TaskPlanningTestHelpers.CreateLoadingPoint("DispatchLoadingNoNode_Loading", null, pallet);
+            var workstation = TaskPlanningTestHelpers.CreateWorkstation("DispatchLoadingNoNode_Workstation", workNode, pallet);
+
+            try
+            {
+                amr.transform.position = amrNode.transform.position;
+                var task = new DeliveryPlanningTask("D-LoadingNoNode", pallet, workstation, 0f);
+                var plan = Solve(graph, new ITaskPlanningTask[] { task }, new[] { amr }, new[] { loadingPoint });
+
+                Assert.That(plan.Assignments, Is.Empty);
+            }
+            finally
+            {
+                TaskPlanningTestHelpers.Destroy(
+                    workstation.gameObject,
+                    loadingPoint.gameObject,
+                    pallet.gameObject,
+                    amr.gameObject,
+                    edgeB.gameObject,
+                    edgeA.gameObject,
+                    workNode.gameObject,
+                    palletNode.gameObject,
+                    amrNode.gameObject,
+                    graph.gameObject);
+            }
+        }
+
+        [Test]
         public void NearestDispatchingAssignsEachAmrAtMostOnce()
         {
             var fixture = CreateTwoTaskSingleLineFixture("DispatchOneAmr");

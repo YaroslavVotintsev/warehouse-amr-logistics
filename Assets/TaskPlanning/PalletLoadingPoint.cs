@@ -96,5 +96,97 @@ namespace TaskPlanning
 
             return false;
         }
+
+        public static PalletLoadingPointResolution ResolveAcceptedLoadingPoint(
+            PalletMarker pallet,
+            IEnumerable<PalletLoadingPoint> loadingPoints)
+        {
+            if (pallet == null)
+                return PalletLoadingPointResolution.Failed(
+                    PalletLoadingPointResolutionStatus.MissingPallet,
+                    null,
+                    "Cannot resolve loading point because the pallet/kit is missing.");
+
+            var matches = new List<PalletLoadingPoint>();
+            var seen = new HashSet<PalletLoadingPoint>();
+            if (loadingPoints != null)
+            {
+                foreach (var loadingPoint in loadingPoints)
+                {
+                    if (loadingPoint == null || !seen.Add(loadingPoint) || !loadingPoint.Accepts(pallet))
+                        continue;
+
+                    matches.Add(loadingPoint);
+                }
+            }
+
+            if (matches.Count == 0)
+                return PalletLoadingPointResolution.Failed(
+                    PalletLoadingPointResolutionStatus.NoAcceptingLoadingPoint,
+                    null,
+                    $"No loading point accepts pallet/kit '{pallet.KitId}'.");
+
+            if (matches.Count > 1)
+            {
+                var loadingPointNames = string.Join(", ", matches.Select(point => point.LoadingPointId));
+                return PalletLoadingPointResolution.Failed(
+                    PalletLoadingPointResolutionStatus.MultipleAcceptingLoadingPoints,
+                    null,
+                    $"Pallet/kit '{pallet.KitId}' is accepted by multiple loading points: {loadingPointNames}. Configure it on exactly one loading point.");
+            }
+
+            var resolved = matches[0];
+            if (resolved.Node == null)
+                return PalletLoadingPointResolution.Failed(
+                    PalletLoadingPointResolutionStatus.MissingNode,
+                    resolved,
+                    $"Loading point '{resolved.LoadingPointId}' accepts pallet/kit '{pallet.KitId}' but has no node.");
+
+            return PalletLoadingPointResolution.Resolved(resolved);
+        }
+    }
+
+    public enum PalletLoadingPointResolutionStatus
+    {
+        Resolved,
+        MissingPallet,
+        NoAcceptingLoadingPoint,
+        MultipleAcceptingLoadingPoints,
+        MissingNode
+    }
+
+    public readonly struct PalletLoadingPointResolution
+    {
+        public readonly PalletLoadingPointResolutionStatus Status;
+        public readonly PalletLoadingPoint LoadingPoint;
+        public readonly string Message;
+
+        private PalletLoadingPointResolution(
+            PalletLoadingPointResolutionStatus status,
+            PalletLoadingPoint loadingPoint,
+            string message)
+        {
+            Status = status;
+            LoadingPoint = loadingPoint;
+            Message = message;
+        }
+
+        public bool IsResolved => Status == PalletLoadingPointResolutionStatus.Resolved;
+
+        public static PalletLoadingPointResolution Resolved(PalletLoadingPoint loadingPoint)
+        {
+            return new PalletLoadingPointResolution(
+                PalletLoadingPointResolutionStatus.Resolved,
+                loadingPoint,
+                string.Empty);
+        }
+
+        public static PalletLoadingPointResolution Failed(
+            PalletLoadingPointResolutionStatus status,
+            PalletLoadingPoint loadingPoint,
+            string message)
+        {
+            return new PalletLoadingPointResolution(status, loadingPoint, message);
+        }
     }
 }

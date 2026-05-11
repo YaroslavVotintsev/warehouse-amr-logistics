@@ -29,5 +29,10 @@ namespace TaskPlanning
             CostEvaluator = costEvaluator;
             Now = now;
         }
+
+        public PalletLoadingPointResolution ResolveLoadingPoint(PalletMarker pallet)
+        {
+            return PalletLoadingPoint.ResolveAcceptedLoadingPoint(pallet, LoadingPoints);
+        }
     }
 }
