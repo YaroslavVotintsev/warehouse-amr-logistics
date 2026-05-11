@@ -4,6 +4,7 @@ namespace TaskPlanning
     {
         NearestDispatching,
         LookAheadNearestDispatching,
+        FifoDispatching,
         GreedyNearestFeasible = NearestDispatching
     }
 }

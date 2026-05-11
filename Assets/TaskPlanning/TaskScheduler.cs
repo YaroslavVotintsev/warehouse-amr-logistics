@@ -669,6 +669,8 @@ namespace TaskPlanning
         {
             switch (algorithm)
             {
+                case TaskPlanningAlgorithmType.FifoDispatching:
+                    return new FifoDispatching();
                 case TaskPlanningAlgorithmType.LookAheadNearestDispatching:
                     return new LookAheadNearestDispatching(waitForFutureImprovementPercent);
                 case TaskPlanningAlgorithmType.NearestDispatching:

@@ -3890,7 +3890,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c857a05f5717449abb5f70f0c282a218, type: 3}
   m_Name: 
   m_EditorClassIdentifier: TaskPlanning::TaskPlanning.TaskScheduler
-  algorithm: 1
+  algorithm: 2
   coordinator: {fileID: 1390016551}
   sceneGraph: {fileID: 1390016552}
   arrivalDistance: 0.08
