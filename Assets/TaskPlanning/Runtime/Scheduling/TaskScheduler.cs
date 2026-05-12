@@ -11,7 +11,8 @@ namespace TaskPlanning
 {
     public sealed class TaskScheduler : MonoBehaviour
     {
-        [SerializeField] private TaskPlanningAlgorithmType algorithm = TaskPlanningAlgorithmType.GreedyNearestFeasible;
+        [SerializeField] private TaskPlanningAlgorithmType algorithm = TaskPlanningAlgorithmType.FifoDispatching;
+        [SerializeField] private TaskPlanningFutureHandlingMode futureHandling = TaskPlanningFutureHandlingMode.ImmediateOnly;
         [SerializeField] private MapfCoordinator coordinator;
         [SerializeField] private MapfSceneGraph sceneGraph;
         [SerializeField] private float arrivalDistance = 0.08f;
@@ -30,6 +31,7 @@ namespace TaskPlanning
         private readonly Dictionary<TaskPlanningAmr, ActiveTaskExecution> _activeAssignments = new();
         private readonly HashSet<ITaskPlanningTask> _reportedInvalidDeliveryTasks = new();
         private ITaskDispatchAlgorithm _dispatchAlgorithm;
+        private ITaskPlanningFuturePolicy _futurePolicy;
         private RoadmapDistanceService _distances;
         private float _nextPendingRetryTime;
         private int _generatedRemovalTaskNumber;
@@ -38,7 +40,8 @@ namespace TaskPlanning
         {
             coordinator ??= FindAnyObjectByType<MapfCoordinator>();
             sceneGraph ??= FindAnyObjectByType<MapfSceneGraph>();
-            _dispatchAlgorithm = CreateAlgorithm(algorithm, waitForFutureImprovementPercent);
+            _dispatchAlgorithm = CreateAlgorithm(algorithm);
+            _futurePolicy = CreateFuturePolicy(futureHandling, waitForFutureImprovementPercent);
 
             if (autoDiscoverSceneObjects)
                 DiscoverSceneObjects();
@@ -111,13 +114,16 @@ namespace TaskPlanning
             var taskSnapshot = _pendingTasks.ToArray();
             ReportInvalidDeliveryTaskConfigurations(taskSnapshot);
             var evaluator = new TaskPlanningCostEvaluator(_distances, costWeights, costAmrSpeed, taskSnapshot, Time.time);
-            var candidateAmrs = GetDispatchCandidateAmrs(taskSnapshot, evaluator);
+            var candidateAmrs = GetDispatchCandidateAmrs(
+                taskSnapshot,
+                evaluator,
+                allowSoftReservations: algorithm != TaskPlanningAlgorithmType.FifoDispatching);
             if (candidateAmrs.Count == 0)
                 return;
 
             var futureAvailabilities = GetFutureAvailabilities();
             var problem = new DispatchProblem(taskSnapshot, candidateAmrs, loadingPoints, _distances, evaluator, Time.time, futureAvailabilities);
-            var plan = _dispatchAlgorithm.Solve(problem);
+            var plan = _futurePolicy.Solve(problem, _dispatchAlgorithm);
             foreach (var assignment in plan.Assignments)
             {
                 if (!TryStartAssignment(assignment))
@@ -492,7 +498,8 @@ namespace TaskPlanning
 
         private List<TaskPlanningAmr> GetDispatchCandidateAmrs(
             IReadOnlyList<ITaskPlanningTask> taskSnapshot,
-            TaskPlanningCostEvaluator evaluator)
+            TaskPlanningCostEvaluator evaluator,
+            bool allowSoftReservations = true)
         {
             var candidates = new List<TaskPlanningAmr>();
             foreach (var amr in amrs)
@@ -506,7 +513,7 @@ namespace TaskPlanning
                     continue;
                 }
 
-                if (CanOfferForSoftReassignment(amr, taskSnapshot, evaluator))
+                if (allowSoftReservations && CanOfferForSoftReassignment(amr, taskSnapshot, evaluator))
                     candidates.Add(amr);
             }
 
@@ -665,17 +672,31 @@ namespace TaskPlanning
                 _distances = new RoadmapDistanceService(sceneGraph);
         }
 
-        private static ITaskDispatchAlgorithm CreateAlgorithm(TaskPlanningAlgorithmType algorithm, float waitForFutureImprovementPercent)
+        private static ITaskDispatchAlgorithm CreateAlgorithm(TaskPlanningAlgorithmType algorithm)
         {
             switch (algorithm)
             {
                 case TaskPlanningAlgorithmType.FifoDispatching:
                     return new FifoDispatching();
-                case TaskPlanningAlgorithmType.LookAheadNearestDispatching:
-                    return new LookAheadNearestDispatching(waitForFutureImprovementPercent);
                 case TaskPlanningAlgorithmType.NearestDispatching:
                 default:
                     return new NearestDispatching();
+            }
+        }
+
+        private static ITaskPlanningFuturePolicy CreateFuturePolicy(
+            TaskPlanningFutureHandlingMode futureHandling,
+            float waitForFutureImprovementPercent)
+        {
+            switch (futureHandling)
+            {
+                case TaskPlanningFutureHandlingMode.LookAhead:
+                    return new LookAheadFuturePolicy(waitForFutureImprovementPercent);
+                case TaskPlanningFutureHandlingMode.RollingHorizon:
+                    return new RollingHorizonFuturePolicy();
+                case TaskPlanningFutureHandlingMode.ImmediateOnly:
+                default:
+                    return new ImmediateOnlyFuturePolicy();
             }
         }
 

@@ -33,80 +33,21 @@ namespace TaskPlanning
             ITaskPlanningTask task,
             HashSet<TaskPlanningAmr> usedAmrs)
         {
-            var best = default(DispatchAssignment);
-            foreach (var amr in problem.Amrs)
+            var best = default(DispatchCandidate);
+            foreach (var candidate in problem.Candidates)
             {
-                if (amr == null || amr.IsBusy || usedAmrs.Contains(amr))
-                    continue;
-
-                var candidate = EvaluateCandidate(problem, task, amr);
-                if (!candidate.IsValid || !candidate.Cost.IsFeasible)
+                if (!candidate.IsValid ||
+                    candidate.Task != task ||
+                    candidate.Amr == null ||
+                    candidate.Amr.IsBusy ||
+                    usedAmrs.Contains(candidate.Amr))
                     continue;
 
                 if (!best.IsValid || candidate.Score < best.Score)
                     best = candidate;
             }
 
-            return best;
-        }
-
-        private static DispatchAssignment EvaluateCandidate(
-            DispatchProblem problem,
-            ITaskPlanningTask task,
-            TaskPlanningAmr amr)
-        {
-            switch (task)
-            {
-                case DeliveryPlanningTask delivery:
-                    return EvaluateDeliveryCandidate(problem, delivery, amr);
-                case PalletRemovalPlanningTask removal:
-                    return EvaluateRemovalCandidate(problem, removal, amr);
-                default:
-                    return default;
-            }
-        }
-
-        private static DispatchAssignment EvaluateDeliveryCandidate(
-            DispatchProblem problem,
-            DeliveryPlanningTask task,
-            TaskPlanningAmr amr)
-        {
-            var loadingPointResolution = problem.ResolveLoadingPoint(task.Pallet);
-            if (!loadingPointResolution.IsResolved)
-                return default;
-
-            var loadingPoint = loadingPointResolution.LoadingPoint;
-            var cost = problem.CostEvaluator.Evaluate(amr, task, loadingPoint);
-            if (!cost.IsFeasible)
-                return default;
-
-            return new DispatchAssignment(
-                amr,
-                task,
-                task.Pallet,
-                loadingPoint,
-                task.Workstation,
-                null,
-                cost);
-        }
-
-        private static DispatchAssignment EvaluateRemovalCandidate(
-            DispatchProblem problem,
-            PalletRemovalPlanningTask task,
-            TaskPlanningAmr amr)
-        {
-            var cost = problem.CostEvaluator.Evaluate(amr, task);
-            if (!cost.IsFeasible)
-                return default;
-
-            return new DispatchAssignment(
-                amr,
-                task,
-                task.Pallet,
-                null,
-                task.SourceWorkstation,
-                task.Pallet.ParkingNode,
-                cost);
+            return best.IsValid ? best.ToAssignment() : default;
         }
     }
 }

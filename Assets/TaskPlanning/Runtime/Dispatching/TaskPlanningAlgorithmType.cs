@@ -2,9 +2,7 @@ namespace TaskPlanning
 {
     public enum TaskPlanningAlgorithmType
     {
-        NearestDispatching,
-        LookAheadNearestDispatching,
-        FifoDispatching,
-        GreedyNearestFeasible = NearestDispatching
+        FifoDispatching = 0,
+        NearestDispatching = 1,
     }
 }

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace TaskPlanning.Tests
 {
-    public sealed class LookAheadNearestDispatchingTests
+    public sealed class LookAheadFuturePolicyTests
     {
         [Test]
         public void LookaheadSuppressesImmediateAssignmentWhenFutureCostIsSufficientlyBetter()
@@ -85,10 +85,48 @@ namespace TaskPlanning.Tests
             }
         }
 
+        [Test]
+        public void RollingHorizonPlaceholderFallsBackToImmediateDispatch()
+        {
+            var fixture = CreateFixture("RollingHorizonPlaceholder");
+
+            try
+            {
+                var task = new DeliveryPlanningTask("D-RollingPlaceholder", fixture.Pallet, fixture.Workstation, 0f);
+                var plan = SolveWithPolicy(fixture, task, new RollingHorizonFuturePolicy(), now: 0f, includeFuture: true);
+
+                Assert.That(plan.Assignments, Has.Count.EqualTo(1));
+                Assert.That(plan.Assignments[0].Amr, Is.SameAs(fixture.FreeAmr));
+            }
+            finally
+            {
+                fixture.Destroy();
+            }
+        }
+
         private static DispatchPlan Solve(
             Fixture fixture,
             DeliveryPlanningTask task,
             float waitForFutureImprovementPercent,
+            float now,
+            bool includeFuture = true,
+            float agingWeight = 0f,
+            float maxAgingBonus = 0f)
+        {
+            return SolveWithPolicy(
+                fixture,
+                task,
+                new LookAheadFuturePolicy(waitForFutureImprovementPercent),
+                now,
+                includeFuture,
+                agingWeight,
+                maxAgingBonus);
+        }
+
+        private static DispatchPlan SolveWithPolicy(
+            Fixture fixture,
+            DeliveryPlanningTask task,
+            ITaskPlanningFuturePolicy futurePolicy,
             float now,
             bool includeFuture = true,
             float agingWeight = 0f,
@@ -130,7 +168,7 @@ namespace TaskPlanning.Tests
                 now,
                 future);
 
-            return new LookAheadNearestDispatching(waitForFutureImprovementPercent).Solve(problem);
+            return futurePolicy.Solve(problem, new NearestDispatching());
         }
 
         private static Fixture CreateFixture(string prefix)
