@@ -3878,6 +3878,11 @@ MonoBehaviour:
     pallet: {fileID: 709068845}
     workstation: {fileID: 577553417}
   selectedTaskIndexes: 00000000010000000200000003000000
+  automationMode: 1
+  scheduledScenario: {fileID: 11400000, guid: 7bf7ef8cd928ab148a54d81c102e1b4a, type: 2}
+  startScheduledScenarioOnPlay: 1
+  submitSameTimestampAsBatch: 1
+  scheduledScenarioStartDelaySeconds: 0
 --- !u!114 &870286945
 MonoBehaviour:
   m_ObjectHideFlags: 0

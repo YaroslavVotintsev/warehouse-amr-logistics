@@ -16,6 +16,8 @@ namespace TaskPlanning.Editor
             DrawDefaultInspector();
             EditorGUILayout.Space(10);
             DrawSubmitPanel((TaskPlanningMes)target);
+            EditorGUILayout.Space(10);
+            DrawScheduledScenarioPanel((TaskPlanningMes)target);
         }
 
         private static void DrawSubmitPanel(TaskPlanningMes mes)
@@ -48,6 +50,33 @@ namespace TaskPlanning.Editor
 
             if (!Application.isPlaying)
                 EditorGUILayout.HelpBox("Enter Play Mode to submit a task to the scheduler.", MessageType.Info);
+        }
+
+        private static void DrawScheduledScenarioPanel(TaskPlanningMes mes)
+        {
+            EditorGUILayout.LabelField("Scheduled Scenario", EditorStyles.boldLabel);
+
+            using (new EditorGUI.DisabledScope(!Application.isPlaying || mes.ScheduledScenario == null))
+            {
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    if (GUILayout.Button("Start"))
+                        mes.StartScheduledScenarioPlayback();
+
+                    if (GUILayout.Button("Stop"))
+                        mes.StopScheduledScenarioPlayback();
+
+                    if (GUILayout.Button("Restart"))
+                        mes.RestartScheduledScenarioPlayback();
+                }
+            }
+
+            if (mes.ScheduledScenario == null)
+                EditorGUILayout.HelpBox("Assign a scenario asset to enable scheduled MES playback.", MessageType.Info);
+            else if (!Application.isPlaying)
+                EditorGUILayout.HelpBox("Enter Play Mode to control scheduled MES playback.", MessageType.Info);
+            else
+                EditorGUILayout.LabelField("Running", mes.IsScheduledScenarioRunning ? "Yes" : "No");
         }
 
         private static int DrawPopup<T>(string label, int selectedIndex, T[] values, System.Func<T, string> labelSelector)
