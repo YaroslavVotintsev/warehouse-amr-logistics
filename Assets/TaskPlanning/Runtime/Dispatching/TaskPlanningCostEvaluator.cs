@@ -48,7 +48,17 @@ namespace TaskPlanning
             PalletLoadingPoint loadingPoint,
             double priorAssignmentEta)
         {
-            return EvaluateDelivery(startNode, task, loadingPoint, false, null, priorAssignmentEta);
+            return EvaluateFrom(startNode, task, loadingPoint, priorAssignmentEta, 0);
+        }
+
+        public CostEvaluation EvaluateFrom(
+            MapfNode startNode,
+            DeliveryPlanningTask task,
+            PalletLoadingPoint loadingPoint,
+            double priorAssignmentEta,
+            double additionalLoadingQueueEta)
+        {
+            return EvaluateDelivery(startNode, task, loadingPoint, false, null, priorAssignmentEta, additionalLoadingQueueEta);
         }
 
         private CostEvaluation EvaluateDelivery(
@@ -57,9 +67,15 @@ namespace TaskPlanning
             PalletLoadingPoint loadingPoint,
             bool allowReservedPallet,
             PalletMarker ignoredQueuedPallet,
-            double priorAssignmentEta)
+            double priorAssignmentEta,
+            double additionalLoadingQueueEta = 0)
         {
-            if (startNode == null || task?.Pallet == null || task.Workstation == null || loadingPoint == null || !Finite(priorAssignmentEta))
+            if (startNode == null ||
+                task?.Pallet == null ||
+                task.Workstation == null ||
+                loadingPoint == null ||
+                !Finite(priorAssignmentEta) ||
+                !Finite(additionalLoadingQueueEta))
                 return CostEvaluation.Infeasible;
 
             var pallet = task.Pallet;
@@ -80,6 +96,7 @@ namespace TaskPlanning
 
             var weights = DeliveryWeights;
             var loadingQueueEta = EstimateLoadingQueueEta(loadingPoint, ignoredQueuedPallet);
+            loadingQueueEta += System.Math.Max(0.0, additionalLoadingQueueEta);
             var blockedDeliveryBias = task.Workstation.HasBlockingPalletFor(pallet)
                 ? weights.blockedDeliveryBias
                 : 0.0;

@@ -3891,7 +3891,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: TaskPlanning::TaskPlanning.TaskScheduler
   algorithm: 1
-  futureHandling: 1
+  futureHandling: 2
+  rollingHorizon:
+    horizonSeconds: 30
+    maxWaves: 4
+    waitImprovementPercent: 10
   coordinator: {fileID: 1390016551}
   sceneGraph: {fileID: 1390016552}
   arrivalDistance: 0.08
@@ -3940,6 +3944,7 @@ MonoBehaviour:
   amrs:
   - {fileID: 108708341}
   - {fileID: 656281993}
+  - {fileID: 2083073565}
   loadingPoints:
   - {fileID: 989681079}
   - {fileID: 118687525}

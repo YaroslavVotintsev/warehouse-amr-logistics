@@ -13,6 +13,7 @@ namespace TaskPlanning
     {
         [SerializeField] private TaskPlanningAlgorithmType algorithm = TaskPlanningAlgorithmType.FifoDispatching;
         [SerializeField] private TaskPlanningFutureHandlingMode futureHandling = TaskPlanningFutureHandlingMode.ImmediateOnly;
+        [SerializeField] private RollingHorizonOptions rollingHorizon = new();
         [SerializeField] private MapfCoordinator coordinator;
         [SerializeField] private MapfSceneGraph sceneGraph;
         [SerializeField] private float arrivalDistance = 0.08f;
@@ -41,7 +42,7 @@ namespace TaskPlanning
             coordinator ??= FindAnyObjectByType<MapfCoordinator>();
             sceneGraph ??= FindAnyObjectByType<MapfSceneGraph>();
             _dispatchAlgorithm = CreateAlgorithm(algorithm);
-            _futurePolicy = CreateFuturePolicy(futureHandling, waitForFutureImprovementPercent);
+            _futurePolicy = CreateFuturePolicy(futureHandling, waitForFutureImprovementPercent, rollingHorizon);
 
             if (autoDiscoverSceneObjects)
                 DiscoverSceneObjects();
@@ -686,14 +687,15 @@ namespace TaskPlanning
 
         private static ITaskPlanningFuturePolicy CreateFuturePolicy(
             TaskPlanningFutureHandlingMode futureHandling,
-            float waitForFutureImprovementPercent)
+            float waitForFutureImprovementPercent,
+            RollingHorizonOptions rollingHorizonOptions)
         {
             switch (futureHandling)
             {
                 case TaskPlanningFutureHandlingMode.LookAhead:
                     return new LookAheadFuturePolicy(waitForFutureImprovementPercent);
                 case TaskPlanningFutureHandlingMode.RollingHorizon:
-                    return new RollingHorizonFuturePolicy();
+                    return new RollingHorizonFuturePolicy(rollingHorizonOptions);
                 case TaskPlanningFutureHandlingMode.ImmediateOnly:
                 default:
                     return new ImmediateOnlyFuturePolicy();

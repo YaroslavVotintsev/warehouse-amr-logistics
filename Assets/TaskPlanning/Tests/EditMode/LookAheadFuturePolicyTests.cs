@@ -85,25 +85,6 @@ namespace TaskPlanning.Tests
             }
         }
 
-        [Test]
-        public void RollingHorizonPlaceholderFallsBackToImmediateDispatch()
-        {
-            var fixture = CreateFixture("RollingHorizonPlaceholder");
-
-            try
-            {
-                var task = new DeliveryPlanningTask("D-RollingPlaceholder", fixture.Pallet, fixture.Workstation, 0f);
-                var plan = SolveWithPolicy(fixture, task, new RollingHorizonFuturePolicy(), now: 0f, includeFuture: true);
-
-                Assert.That(plan.Assignments, Has.Count.EqualTo(1));
-                Assert.That(plan.Assignments[0].Amr, Is.SameAs(fixture.FreeAmr));
-            }
-            finally
-            {
-                fixture.Destroy();
-            }
-        }
-
         private static DispatchPlan Solve(
             Fixture fixture,
             DeliveryPlanningTask task,

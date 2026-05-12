@@ -39,7 +39,7 @@ namespace TaskPlanning
                 if (!candidate.IsValid ||
                     candidate.Task != task ||
                     candidate.Amr == null ||
-                    candidate.Amr.IsBusy ||
+                    (candidate.Availability.IsImmediate && candidate.Amr.IsBusy) ||
                     usedAmrs.Contains(candidate.Amr))
                     continue;
 
