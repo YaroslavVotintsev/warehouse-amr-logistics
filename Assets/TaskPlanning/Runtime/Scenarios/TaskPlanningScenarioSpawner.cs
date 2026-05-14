@@ -16,7 +16,7 @@ namespace TaskPlanning
         public const string ScenarioAssetFolder = "Assets/TaskPlanning/Scenarios";
         public const string MetricOutputFolder = "Assets/TaskPlanning/Scenarios/Metrics";
 
-        [SerializeField] private TaskPlanningScenarioPreset preset = TaskPlanningScenarioPreset.LoadingPointBottleneck;
+        [SerializeField] private TaskPlanningScenarioPreset preset = TaskPlanningScenarioPreset.SideBayLoadingBottleneck;
         [SerializeField] private bool spawnOnStart;
         [SerializeField] private bool clearChildrenBeforeSpawn = true;
         [SerializeField] private bool saveScenarioAssetInProject = true;
@@ -224,6 +224,7 @@ namespace TaskPlanning
             GetOrAdd<MapfDebugGizmos>();
             GetOrAdd<TaskPlanningDebugGizmos>();
 
+            coordinator.Configure(sceneGraph, shouldPlanOnStart: false, shouldLogSceneSnapshotOnStart: true);
             scheduler.ConfigureScene(coordinator, sceneGraph, amrs, loadingPoints);
             mes.ConfigureScheduledScenario(scheduler, CreateScenarioAsset(scenario), autoStartOnPlay: true, batchSameTimestamp: true);
         }

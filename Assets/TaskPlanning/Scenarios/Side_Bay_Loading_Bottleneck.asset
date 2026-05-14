@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f50ab45e1c3e46029eebd7c87689e9c7, type: 3}
+  m_Name: Side_Bay_Loading_Bottleneck
+  m_EditorClassIdentifier: TaskPlanning::TaskPlanning.TaskPlanningScenarioAsset
+  scheduledTasks:
+  - timestampSeconds: 0
+    taskId: Bottleneck_A
+    palletId: Pallet_A
+    workstationId: 212
+  - timestampSeconds: 0
+    taskId: Bottleneck_B
+    palletId: Pallet_B
+    workstationId: 213
+  - timestampSeconds: 0
+    taskId: Bottleneck_C
+    palletId: Pallet_C
+    workstationId: 214
+  - timestampSeconds: 0
+    taskId: Bottleneck_D
+    palletId: Pallet_D
+    workstationId: 215
+  - timestampSeconds: 0
+    taskId: Bottleneck_E
+    palletId: Pallet_E
+    workstationId: 216

@@ -2,7 +2,7 @@ namespace TaskPlanning
 {
     public enum TaskPlanningScenarioPreset
     {
-        LoadingPointBottleneck,
-        LookAheadTrap
+        SideBayLoadingBottleneck,
+        SideBayLookAheadTrap
     }
 }

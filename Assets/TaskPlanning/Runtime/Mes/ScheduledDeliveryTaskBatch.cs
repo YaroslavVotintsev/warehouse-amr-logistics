@@ -5,15 +5,17 @@ namespace TaskPlanning
 {
     public sealed class ScheduledDeliveryTaskBatch
     {
+        private readonly List<DeliveryTaskRequest> _requests;
+
         public ScheduledDeliveryTaskBatch(float timestampSeconds, IEnumerable<DeliveryTaskRequest> requests)
         {
             TimestampSeconds = timestampSeconds;
-            Requests = requests != null
-                ? requests.Where(request => request != null).ToArray()
-                : System.Array.Empty<DeliveryTaskRequest>();
+            _requests = requests != null
+                ? requests.Where(request => request != null).ToList()
+                : new List<DeliveryTaskRequest>();
         }
 
         public float TimestampSeconds { get; }
-        public IReadOnlyList<DeliveryTaskRequest> Requests { get; }
+        public IReadOnlyList<DeliveryTaskRequest> Requests => _requests;
     }
 }

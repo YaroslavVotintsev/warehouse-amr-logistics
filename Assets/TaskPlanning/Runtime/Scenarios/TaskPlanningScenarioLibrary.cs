@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace TaskPlanning
@@ -9,8 +10,8 @@ namespace TaskPlanning
         {
             return new[]
             {
-                LoadingPointBottleneck(),
-                LookAheadTrap()
+                SideBayLoadingBottleneck(),
+                SideBayLookAheadTrap()
             };
         }
 
@@ -18,135 +19,118 @@ namespace TaskPlanning
         {
             return preset switch
             {
-                TaskPlanningScenarioPreset.LoadingPointBottleneck => LoadingPointBottleneck(),
-                TaskPlanningScenarioPreset.LookAheadTrap => LookAheadTrap(),
-                _ => LoadingPointBottleneck()
+                TaskPlanningScenarioPreset.SideBayLoadingBottleneck => SideBayLoadingBottleneck(),
+                TaskPlanningScenarioPreset.SideBayLookAheadTrap => SideBayLookAheadTrap(),
+                _ => SideBayLoadingBottleneck()
             };
         }
 
-        public static TaskPlanningScenario LoadingPointBottleneck()
+        public static TaskPlanningScenario SideBayLoadingBottleneck()
         {
+            var graph = LongSideBayCorridor(length: 18);
             var pallets = new[]
             {
-                Pallet("Pallet_A", "Pallet_A_Node", "Pallet_A_Node", load: 8f, unload: 4f),
-                Pallet("Pallet_B", "Pallet_B_Node", "Pallet_B_Node", load: 8f, unload: 4f),
-                Pallet("Pallet_C", "Pallet_C_Node", "Pallet_C_Node", load: 8f, unload: 4f),
-                Pallet("Pallet_D", "Pallet_D_Node", "Pallet_D_Node", load: 8f, unload: 4f)
+                Pallet("Pallet_A", "101", "212", load: 8f),
+                Pallet("Pallet_B", "102", "213", load: 8f),
+                Pallet("Pallet_C", "103", "214", load: 8f),
+                Pallet("Pallet_D", "104", "215", load: 8f),
+                Pallet("Pallet_E", "105", "216", load: 8f)
             };
-            var palletIds = new[] { "Pallet_A", "Pallet_B", "Pallet_C", "Pallet_D" };
+            var palletIds = pallets.Select(pallet => pallet.PalletId).ToArray();
 
             return new TaskPlanningScenario(
-                "Loading Point Bottleneck",
+                "Side Bay Loading Bottleneck",
+                graph.Nodes,
+                graph.Edges,
                 new[]
                 {
-                    Node("AMR_A_Start", 0, -1),
-                    Node("AMR_B_Start", 0, 0),
-                    Node("AMR_C_Start", 0, 1),
-                    Node("Pallet_A_Node", 2, -2),
-                    Node("Pallet_B_Node", 2, -0.7f),
-                    Node("Pallet_C_Node", 2, 0.7f),
-                    Node("Pallet_D_Node", 2, 2),
-                    Node("Loading_One_Node", 4, 0),
-                    Node("Workstation_One_Node", 7, -1.5f),
-                    Node("Workstation_Two_Node", 7, 0),
-                    Node("Workstation_Three_Node", 7, 1.5f)
-                },
-                new[]
-                {
-                    Edge("AMR_A_Start", "AMR_B_Start"),
-                    Edge("AMR_B_Start", "AMR_C_Start"),
-                    Edge("AMR_B_Start", "Pallet_B_Node"),
-                    Edge("Pallet_B_Node", "Pallet_A_Node"),
-                    Edge("Pallet_B_Node", "Pallet_C_Node"),
-                    Edge("Pallet_C_Node", "Pallet_D_Node"),
-                    Edge("Pallet_B_Node", "Loading_One_Node"),
-                    Edge("Pallet_C_Node", "Loading_One_Node"),
-                    Edge("Loading_One_Node", "Workstation_One_Node"),
-                    Edge("Loading_One_Node", "Workstation_Two_Node"),
-                    Edge("Loading_One_Node", "Workstation_Three_Node"),
-                    Edge("Workstation_One_Node", "Workstation_Two_Node"),
-                    Edge("Workstation_Two_Node", "Workstation_Three_Node")
-                },
-                new[]
-                {
-                    Amr("AMR_A", 0, "AMR_A_Start"),
-                    Amr("AMR_B", 1, "AMR_B_Start"),
-                    Amr("AMR_C", 2, "AMR_C_Start")
+                    Amr("AMR_0", 0, "200"),
+                    Amr("AMR_1", 1, "202"),
+                    Amr("AMR_2", 2, "204"),
+                    Amr("AMR_3", 3, "206"),
+                    Amr("AMR_4", 4, "208")
                 },
                 pallets,
                 new[]
                 {
-                    LoadingPoint("Loading_One", "Loading_One_Node", palletIds)
+                    LoadingPoint("110", "110", palletIds)
                 },
                 new[]
                 {
-                    Workstation("Workstation_One", "Workstation_One_Node", "Pallet_A", "Pallet_D"),
-                    Workstation("Workstation_Two", "Workstation_Two_Node", "Pallet_B"),
-                    Workstation("Workstation_Three", "Workstation_Three_Node", "Pallet_C")
+                    Workstation("212", "212", "Pallet_A"),
+                    Workstation("213", "213", "Pallet_B"),
+                    Workstation("214", "214", "Pallet_C"),
+                    Workstation("215", "215", "Pallet_D"),
+                    Workstation("216", "216", "Pallet_E")
                 },
                 new[]
                 {
-                    Task(0f, "Pallet_A", "Workstation_One", "Bottleneck_A"),
-                    Task(0f, "Pallet_B", "Workstation_Two", "Bottleneck_B"),
-                    Task(0f, "Pallet_C", "Workstation_Three", "Bottleneck_C"),
-                    Task(12f, "Pallet_D", "Workstation_One", "Bottleneck_D")
+                    Task(0f, "Pallet_A", "212", "Bottleneck_A"),
+                    Task(0f, "Pallet_B", "213", "Bottleneck_B"),
+                    Task(0f, "Pallet_C", "214", "Bottleneck_C"),
+                    Task(0f, "Pallet_D", "215", "Bottleneck_D"),
+                    Task(0f, "Pallet_E", "216", "Bottleneck_E")
                 });
         }
 
-        public static TaskPlanningScenario LookAheadTrap()
+        public static TaskPlanningScenario SideBayLookAheadTrap()
         {
+            var graph = LongSideBayCorridor(length: 18);
+
             return new TaskPlanningScenario(
-                "LookAhead Trap",
+                "Side Bay LookAhead Trap",
+                graph.Nodes,
+                graph.Edges,
                 new[]
                 {
-                    Node("Far_AMR_Start", 0, 0),
-                    Node("Corridor_One", 3, 0),
-                    Node("Corridor_Two", 6, 0),
-                    Node("Busy_AMR_Start", 8, 0),
-                    Node("Active_Pallet_Node", 9, 0),
-                    Node("Active_Load_Node", 10, 0),
-                    Node("Active_Workstation_Node", 12, 0),
-                    Node("Target_Pallet_Node", 12, 1),
-                    Node("Target_Load_Node", 13, 1),
-                    Node("Target_Workstation_Node", 14, 1)
+                    Amr("AMR_Far", 0, "200"),
+                    Amr("AMR_BusyCandidate", 1, "207")
                 },
                 new[]
                 {
-                    Edge("Far_AMR_Start", "Corridor_One"),
-                    Edge("Corridor_One", "Corridor_Two"),
-                    Edge("Corridor_Two", "Busy_AMR_Start"),
-                    Edge("Busy_AMR_Start", "Active_Pallet_Node"),
-                    Edge("Active_Pallet_Node", "Active_Load_Node"),
-                    Edge("Active_Load_Node", "Active_Workstation_Node"),
-                    Edge("Active_Workstation_Node", "Target_Pallet_Node"),
-                    Edge("Target_Pallet_Node", "Target_Load_Node"),
-                    Edge("Target_Load_Node", "Target_Workstation_Node")
+                    Pallet("Pallet_Primer", "108", "212", attach: 1f, detach: 1f, load: 6f, unload: 2f),
+                    Pallet("Pallet_Target", "112", "216", attach: 1f, detach: 1f, load: 2f, unload: 2f)
                 },
                 new[]
                 {
-                    Amr("AMR_Far", 0, "Far_AMR_Start"),
-                    Amr("AMR_BusyCandidate", 1, "Busy_AMR_Start")
+                    LoadingPoint("109", "109", "Pallet_Primer"),
+                    LoadingPoint("113", "113", "Pallet_Target")
                 },
                 new[]
                 {
-                    Pallet("Pallet_Active", "Active_Pallet_Node", "Active_Pallet_Node", attach: 1f, detach: 1f, load: 5f, unload: 3f),
-                    Pallet("Pallet_Target", "Target_Pallet_Node", "Target_Pallet_Node", attach: 1f, detach: 1f, load: 2f, unload: 3f)
+                    Workstation("212", "212", "Pallet_Primer"),
+                    Workstation("216", "216", "Pallet_Target")
                 },
                 new[]
                 {
-                    LoadingPoint("Loading_Active", "Active_Load_Node", "Pallet_Active"),
-                    LoadingPoint("Loading_Target", "Target_Load_Node", "Pallet_Target")
-                },
-                new[]
-                {
-                    Workstation("Workstation_Active", "Active_Workstation_Node", "Pallet_Active"),
-                    Workstation("Workstation_Target", "Target_Workstation_Node", "Pallet_Target")
-                },
-                new[]
-                {
-                    Task(0f, "Pallet_Active", "Workstation_Active", "PrimeBusyAmr"),
-                    Task(1f, "Pallet_Target", "Workstation_Target", "TrapTarget")
+                    Task(0f, "Pallet_Primer", "212", "PrimeBusyAmr"),
+                    Task(1f, "Pallet_Target", "216", "TrapTarget")
                 });
+        }
+
+        private static CorridorGraph LongSideBayCorridor(int length)
+        {
+            var nodes = new List<TaskPlanningScenarioNode>();
+            var edges = new List<TaskPlanningScenarioEdge>();
+
+            for (var i = 0; i <= length; i++)
+            {
+                nodes.Add(Node(i.ToString(), i, 0));
+                if (i > 0)
+                    edges.Add(Edge((i - 1).ToString(), i.ToString()));
+            }
+
+            for (var i = 0; i <= length; i++)
+            {
+                var north = (100 + i).ToString();
+                var south = (200 + i).ToString();
+                nodes.Add(Node(north, i, 1));
+                nodes.Add(Node(south, i, -1));
+                edges.Add(Edge(i.ToString(), north));
+                edges.Add(Edge(i.ToString(), south));
+            }
+
+            return new CorridorGraph(nodes, edges);
         }
 
         private static TaskPlanningScenarioNode Node(string id, float x, float y)
@@ -184,6 +168,14 @@ namespace TaskPlanning
             return new TaskPlanningScenarioLoadingPoint(id, nodeId, acceptedPalletIds);
         }
 
+        private static TaskPlanningScenarioLoadingPoint LoadingPoint(
+            string id,
+            string nodeId,
+            IReadOnlyList<string> acceptedPalletIds)
+        {
+            return new TaskPlanningScenarioLoadingPoint(id, nodeId, acceptedPalletIds);
+        }
+
         private static TaskPlanningScenarioWorkstation Workstation(
             string id,
             string nodeId,
@@ -195,6 +187,20 @@ namespace TaskPlanning
         private static ScheduledMesTask Task(float timestamp, string palletId, string workstationId, string taskId)
         {
             return new ScheduledMesTask(timestamp, palletId, workstationId, taskId);
+        }
+
+        private readonly struct CorridorGraph
+        {
+            public readonly IReadOnlyList<TaskPlanningScenarioNode> Nodes;
+            public readonly IReadOnlyList<TaskPlanningScenarioEdge> Edges;
+
+            public CorridorGraph(
+                IReadOnlyList<TaskPlanningScenarioNode> nodes,
+                IReadOnlyList<TaskPlanningScenarioEdge> edges)
+            {
+                Nodes = nodes;
+                Edges = edges;
+            }
         }
     }
 }

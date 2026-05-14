@@ -39,6 +39,13 @@ namespace Mapf.UnityAdapter
             s_loggedSceneSnapshotThisPlaySession = false;
         }
 
+        public void Configure(MapfSceneGraph graph, bool shouldPlanOnStart, bool shouldLogSceneSnapshotOnStart = true)
+        {
+            sceneGraph = graph;
+            planOnStart = shouldPlanOnStart;
+            logSceneSnapshotOnStart = shouldLogSceneSnapshotOnStart;
+        }
+
         private async void Start()
         {
             if (planOnStart)

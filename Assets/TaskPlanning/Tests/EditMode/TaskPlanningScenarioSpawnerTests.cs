@@ -9,8 +9,8 @@ namespace TaskPlanning.Tests
 {
     public sealed class TaskPlanningScenarioSpawnerTests
     {
-        [TestCase(TaskPlanningScenarioPreset.LoadingPointBottleneck)]
-        [TestCase(TaskPlanningScenarioPreset.LookAheadTrap)]
+        [TestCase(TaskPlanningScenarioPreset.SideBayLoadingBottleneck)]
+        [TestCase(TaskPlanningScenarioPreset.SideBayLookAheadTrap)]
         public void SpawnerCreatesCompleteScenarioUnderSpawner(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerTest");
@@ -24,7 +24,9 @@ namespace TaskPlanning.Tests
                 spawner.Spawn();
 
                 Assert.That(root.GetComponent<MapfSceneGraph>(), Is.Not.Null);
-                Assert.That(root.GetComponent<MapfCoordinator>(), Is.Not.Null);
+                var coordinator = root.GetComponent<MapfCoordinator>();
+                Assert.That(coordinator, Is.Not.Null);
+                Assert.That(TaskPlanningTestHelpers.GetField<bool>(coordinator, "planOnStart"), Is.False);
                 Assert.That(root.GetComponent<TaskScheduler>(), Is.Not.Null);
                 Assert.That(root.GetComponent<TaskPlanningMes>(), Is.Not.Null);
                 Assert.That(root.GetComponent<MapfDebugGizmos>(), Is.Not.Null);
@@ -46,8 +48,8 @@ namespace TaskPlanning.Tests
             }
         }
 
-        [TestCase(TaskPlanningScenarioPreset.LoadingPointBottleneck)]
-        [TestCase(TaskPlanningScenarioPreset.LookAheadTrap)]
+        [TestCase(TaskPlanningScenarioPreset.SideBayLoadingBottleneck)]
+        [TestCase(TaskPlanningScenarioPreset.SideBayLookAheadTrap)]
         public void SpawnerWiresScheduledMesScenario(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerMesTest");
@@ -74,8 +76,8 @@ namespace TaskPlanning.Tests
             }
         }
 
-        [TestCase(TaskPlanningScenarioPreset.LoadingPointBottleneck)]
-        [TestCase(TaskPlanningScenarioPreset.LookAheadTrap)]
+        [TestCase(TaskPlanningScenarioPreset.SideBayLoadingBottleneck)]
+        [TestCase(TaskPlanningScenarioPreset.SideBayLookAheadTrap)]
         public void SpawnedPalletsResolveExactlyOneLoadingPoint(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerCompatibilityTest");
@@ -103,8 +105,8 @@ namespace TaskPlanning.Tests
             }
         }
 
-        [TestCase(TaskPlanningScenarioPreset.LoadingPointBottleneck)]
-        [TestCase(TaskPlanningScenarioPreset.LookAheadTrap)]
+        [TestCase(TaskPlanningScenarioPreset.SideBayLoadingBottleneck)]
+        [TestCase(TaskPlanningScenarioPreset.SideBayLookAheadTrap)]
         public void SpawnerConfiguresSchedulerWithSpawnedObjects(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerSchedulerTest");
@@ -124,6 +126,46 @@ namespace TaskPlanning.Tests
                 Assert.That(autoDiscover, Is.False);
                 Assert.That(configuredAmrs, Is.EquivalentTo(root.GetComponentsInChildren<TaskPlanningAmr>()));
                 Assert.That(configuredLoadingPoints, Is.EquivalentTo(root.GetComponentsInChildren<PalletLoadingPoint>()));
+            }
+            finally
+            {
+                var mes = root != null ? root.GetComponent<TaskPlanningMes>() : null;
+                var generatedScenario = mes != null ? mes.ScheduledScenario : null;
+                TaskPlanningTestHelpers.Destroy(root);
+                TaskPlanningTestHelpers.Destroy(generatedScenario);
+            }
+        }
+
+        [TestCase(TaskPlanningScenarioPreset.SideBayLoadingBottleneck)]
+        [TestCase(TaskPlanningScenarioPreset.SideBayLookAheadTrap)]
+        public void SpawnerNamesNodesAndPointsByTheirNumericIds(TaskPlanningScenarioPreset preset)
+        {
+            var root = new GameObject("TaskPlanningScenarioSpawnerNamesTest");
+            var spawner = root.AddComponent<TaskPlanningScenarioSpawner>();
+            TaskPlanningTestHelpers.SetField(spawner, "preset", preset);
+            TaskPlanningTestHelpers.SetField(spawner, "saveScenarioAssetInProject", false);
+
+            try
+            {
+                spawner.Spawn();
+
+                foreach (var node in root.GetComponentsInChildren<MapfNode>())
+                {
+                    Assert.That(node.name, Is.EqualTo(node.StableId));
+                    Assert.That(int.TryParse(node.StableId, out _), Is.True, $"Node id '{node.StableId}' should be numeric.");
+                }
+
+                foreach (var loadingPoint in root.GetComponentsInChildren<PalletLoadingPoint>())
+                {
+                    Assert.That(loadingPoint.name, Is.EqualTo(loadingPoint.Node.StableId));
+                    Assert.That(loadingPoint.LoadingPointId, Is.EqualTo(loadingPoint.Node.StableId));
+                }
+
+                foreach (var workstation in root.GetComponentsInChildren<WorkstationDeliveryPoint>())
+                {
+                    Assert.That(workstation.name, Is.EqualTo(workstation.Node.StableId));
+                    Assert.That(workstation.WorkstationId, Is.EqualTo(workstation.Node.StableId));
+                }
             }
             finally
             {
