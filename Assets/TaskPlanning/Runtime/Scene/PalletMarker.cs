@@ -48,6 +48,26 @@ namespace TaskPlanning
             _originalParent = transform.parent;
         }
 
+        public void Configure(
+            string id,
+            MapfNode current,
+            MapfNode parking,
+            float attachSeconds,
+            float detachSeconds,
+            float loadSeconds,
+            float unloadSeconds)
+        {
+            palletId = id;
+            currentNode = current;
+            parkingNode = parking;
+            attachDurationSeconds = Mathf.Max(0f, attachSeconds);
+            detachDurationSeconds = Mathf.Max(0f, detachSeconds);
+            loadDurationSeconds = Mathf.Max(0f, loadSeconds);
+            unloadDurationSeconds = Mathf.Max(0f, unloadSeconds);
+            if (currentNode != null)
+                transform.position = new Vector3(currentNode.transform.position.x, currentNode.transform.position.y, transform.position.z);
+        }
+
         public bool TryReserve()
         {
             if (!IsAvailable)

@@ -48,6 +48,27 @@ namespace TaskPlanning
                 DiscoverSceneObjects();
         }
 
+        public void ConfigureScene(
+            MapfCoordinator mapfCoordinator,
+            MapfSceneGraph graph,
+            IEnumerable<TaskPlanningAmr> scenarioAmrs,
+            IEnumerable<PalletLoadingPoint> scenarioLoadingPoints)
+        {
+            coordinator = mapfCoordinator;
+            sceneGraph = graph;
+            amrs = scenarioAmrs?.Where(amr => amr != null).OrderBy(amr => amr.AmrId).ToList() ?? new List<TaskPlanningAmr>();
+            loadingPoints = scenarioLoadingPoints?.Where(point => point != null).OrderBy(point => point.LoadingPointId).ToList() ?? new List<PalletLoadingPoint>();
+            autoDiscoverSceneObjects = false;
+        }
+
+        public void ConfigurePlanningMode(TaskPlanningAlgorithmType dispatcher, TaskPlanningFutureHandlingMode handlingMode)
+        {
+            algorithm = dispatcher;
+            futureHandling = handlingMode;
+            _dispatchAlgorithm = CreateAlgorithm(algorithm);
+            _futurePolicy = CreateFuturePolicy(futureHandling, waitForFutureImprovementPercent, rollingHorizon);
+        }
+
         private void Start()
         {
             RefreshDistances();

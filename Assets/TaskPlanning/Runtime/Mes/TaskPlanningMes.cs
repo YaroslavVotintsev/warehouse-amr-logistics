@@ -53,6 +53,22 @@ namespace TaskPlanning
         public TaskPlanningScenarioAsset ScheduledScenario => scheduledScenario;
         public bool IsScheduledScenarioRunning => _scheduledScenarioRunning;
 
+        public void ConfigureScheduledScenario(
+            TaskScheduler taskScheduler,
+            TaskPlanningScenarioAsset scenario,
+            bool autoStartOnPlay = true,
+            bool batchSameTimestamp = true)
+        {
+            scheduler = taskScheduler;
+            scheduledScenario = scenario;
+            automationMode = TaskPlanningMesAutomationMode.ScheduledScenario;
+            startScheduledScenarioOnPlay = autoStartOnPlay;
+            submitSameTimestampAsBatch = batchSameTimestamp;
+            _scheduledEntries = null;
+            _nextScheduledEntryIndex = 0;
+            _scheduledScenarioRunning = false;
+        }
+
         [ContextMenu("Submit Selected Tasks")]
         public void SubmitSelectedTasks()
         {

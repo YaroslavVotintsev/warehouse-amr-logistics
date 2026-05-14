@@ -24,6 +24,17 @@ namespace TaskPlanning
         public int QueueLength => _waitingPallets.Count;
         public PalletMarker NextQueuedPallet => _waitingPallets.Count > 0 ? _waitingPallets.Peek() : null;
 
+        public void Configure(string id, MapfNode mapfNode, IEnumerable<PalletMarker> accepted)
+        {
+            workstationId = id;
+            node = mapfNode;
+            acceptedPallets = accepted?.Where(pallet => pallet != null).ToArray() ?? System.Array.Empty<PalletMarker>();
+            _reservedFor = null;
+            _waitingPallets.Clear();
+            if (node != null)
+                transform.position = node.transform.position;
+        }
+
         public bool CanReserve(PalletMarker pallet)
         {
             return Accepts(pallet) &&

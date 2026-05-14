@@ -30,6 +30,13 @@ namespace TaskPlanning
             _mapfAgent = GetComponent<MapfAgent>();
         }
 
+        public void Configure(string id, Transform mount = null)
+        {
+            amrId = id;
+            palletMount = mount;
+            _mapfAgent = GetComponent<MapfAgent>();
+        }
+
         public bool TryReserve()
         {
             if (IsBusy)
