@@ -21,8 +21,12 @@ namespace TaskPlanning
         private Dictionary<string, PalletMarker> _palletsById;
         private Dictionary<string, WorkstationDeliveryPoint> _workstationsById;
         private bool _scheduledScenarioRunning;
+        private bool _scheduledScenarioSubmissionCompleted;
         private float _scheduledScenarioStartTime;
         private int _nextScheduledEntryIndex;
+
+        public event Action<TaskPlanningScenarioAsset, int> ScheduledScenarioStarted;
+        public event Action<TaskPlanningScenarioAsset> ScheduledScenarioSubmissionCompleted;
 
         private void Awake()
         {
@@ -52,6 +56,7 @@ namespace TaskPlanning
         public TaskScheduler Scheduler => scheduler;
         public TaskPlanningScenarioAsset ScheduledScenario => scheduledScenario;
         public bool IsScheduledScenarioRunning => _scheduledScenarioRunning;
+        public int ScheduledScenarioTaskCount => scheduledScenario == null ? 0 : scheduledScenario.OrderedTasks().Count;
 
         public void ConfigureScheduledScenario(
             TaskScheduler taskScheduler,
@@ -67,6 +72,7 @@ namespace TaskPlanning
             _scheduledEntries = null;
             _nextScheduledEntryIndex = 0;
             _scheduledScenarioRunning = false;
+            _scheduledScenarioSubmissionCompleted = false;
         }
 
         [ContextMenu("Submit Selected Tasks")]
@@ -142,8 +148,10 @@ namespace TaskPlanning
                 return;
 
             _scheduledScenarioRunning = true;
+            _scheduledScenarioSubmissionCompleted = false;
             _scheduledScenarioStartTime = Time.time + scheduledScenarioStartDelaySeconds;
             Debug.Log($"MES scheduled scenario started: scenario={scheduledScenario.name} tasks={_scheduledEntries.Count}", this);
+            ScheduledScenarioStarted?.Invoke(scheduledScenario, _scheduledEntries.Count);
         }
 
         [ContextMenu("Stop Scheduled Scenario")]
@@ -197,7 +205,14 @@ namespace TaskPlanning
             }
 
             if (_nextScheduledEntryIndex >= _scheduledEntries.Count)
+            {
                 _scheduledScenarioRunning = false;
+                if (!_scheduledScenarioSubmissionCompleted)
+                {
+                    _scheduledScenarioSubmissionCompleted = true;
+                    ScheduledScenarioSubmissionCompleted?.Invoke(scheduledScenario);
+                }
+            }
 
             return dueBatches;
         }
@@ -237,6 +252,7 @@ namespace TaskPlanning
             _palletsById = BuildPalletIndex();
             _workstationsById = BuildWorkstationIndex();
             _nextScheduledEntryIndex = 0;
+            _scheduledScenarioSubmissionCompleted = false;
             return true;
         }
 

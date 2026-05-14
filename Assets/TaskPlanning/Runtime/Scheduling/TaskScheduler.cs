@@ -37,6 +37,18 @@ namespace TaskPlanning
         private float _nextPendingRetryTime;
         private int _generatedRemovalTaskNumber;
 
+        public event Action<DispatchAssignment> AssignmentStarted;
+        public event Action<DispatchAssignment, TaskPlanningAssignmentActionType, float> AssignmentActionTimeRecorded;
+        public event Action<DispatchAssignment, float, float> AssignmentQueueWaitRecorded;
+        public event Action<DispatchAssignment> AssignmentCompleted;
+        public event Action<DeliveryPlanningTask, DispatchAssignment> DeliveryTaskCompleted;
+
+        public TaskPlanningAlgorithmType Algorithm => algorithm;
+        public TaskPlanningFutureHandlingMode FutureHandling => futureHandling;
+        public TaskPlanningCostWeights CostWeights => costWeights;
+        public bool IsIdle => _pendingTasks.Count == 0 && _activeAssignments.Count == 0;
+        public IReadOnlyList<TaskPlanningAmr> ConfiguredAmrs => amrs;
+
         private void Awake()
         {
             coordinator ??= FindAnyObjectByType<MapfCoordinator>();
@@ -239,6 +251,7 @@ namespace TaskPlanning
             execution.Phase = ActiveTaskPhase.Attaching;
             assignment.Pallet.MarkAttaching();
             yield return new WaitForSeconds(assignment.Pallet.AttachDurationSeconds);
+            AssignmentActionTimeRecorded?.Invoke(assignment, TaskPlanningAssignmentActionType.Attach, assignment.Pallet.AttachDurationSeconds);
             assignment.Pallet.AttachTo(assignment.Amr);
             execution.HasAttachedPallet = true;
             execution.Phase = ActiveTaskPhase.WaitingForLoadingAndWorkstationTurn;
@@ -250,6 +263,7 @@ namespace TaskPlanning
             execution.Phase = ActiveTaskPhase.Loading;
             assignment.Pallet.MarkLoading();
             yield return new WaitForSeconds(assignment.Pallet.LoadDurationSeconds);
+            AssignmentActionTimeRecorded?.Invoke(assignment, TaskPlanningAssignmentActionType.Load, assignment.Pallet.LoadDurationSeconds);
             assignment.Pallet.MarkLoaded();
 
             execution.Phase = ActiveTaskPhase.MovingToWorkstation;
@@ -261,8 +275,10 @@ namespace TaskPlanning
             execution.Phase = ActiveTaskPhase.DetachingAtWorkstation;
             assignment.Pallet.MarkDetaching();
             yield return new WaitForSeconds(assignment.Pallet.DetachDurationSeconds);
+            AssignmentActionTimeRecorded?.Invoke(assignment, TaskPlanningAssignmentActionType.Detach, assignment.Pallet.DetachDurationSeconds);
             assignment.Pallet.DetachAt(request.Workstation.Node, PalletStatus.Unloading);
             assignment.Amr.Release();
+            AssignmentCompleted?.Invoke(assignment);
             CompleteActiveAssignment(assignment.Amr);
             TryDispatchPendingTasks();
 
@@ -282,6 +298,7 @@ namespace TaskPlanning
             }
 
             Debug.Log($"MES task completed: task={request.TaskId} amr={assignment.Amr.AmrId} pallet={assignment.Pallet.PalletId}", this);
+            DeliveryTaskCompleted?.Invoke(request, assignment);
             TryDispatchPendingTasks();
         }
 
@@ -292,6 +309,7 @@ namespace TaskPlanning
             execution.Phase = ActiveTaskPhase.Attaching;
             assignment.Pallet.MarkAttaching();
             yield return new WaitForSeconds(assignment.Pallet.AttachDurationSeconds);
+            AssignmentActionTimeRecorded?.Invoke(assignment, TaskPlanningAssignmentActionType.Attach, assignment.Pallet.AttachDurationSeconds);
             assignment.Pallet.AttachTo(assignment.Amr);
             execution.HasAttachedPallet = true;
 
@@ -300,11 +318,13 @@ namespace TaskPlanning
             execution.Phase = ActiveTaskPhase.DetachingAtParking;
             assignment.Pallet.MarkDetaching();
             yield return new WaitForSeconds(assignment.Pallet.DetachDurationSeconds);
+            AssignmentActionTimeRecorded?.Invoke(assignment, TaskPlanningAssignmentActionType.Detach, assignment.Pallet.DetachDurationSeconds);
             assignment.Pallet.DetachAt(assignment.RemovalTargetNode);
             assignment.Pallet.MarkUnloadedAvailable();
             assignment.Amr.Release();
 
             Debug.Log($"Pallet removal completed: task={request.TaskId} amr={assignment.Amr.AmrId} pallet={assignment.Pallet.PalletId}", this);
+            AssignmentCompleted?.Invoke(assignment);
             CompleteActiveAssignment(assignment.Amr);
             TryDispatchPendingTasks();
         }
@@ -320,23 +340,49 @@ namespace TaskPlanning
 
         private IEnumerator WaitForLoadingAndWorkstationTurn(DeliveryPlanningTask request, DispatchAssignment assignment)
         {
+            var loadingWaitSeconds = 0f;
+            var workstationWaitSeconds = 0f;
+            var lastSampleTime = Time.time;
             while (true)
             {
-                if (!assignment.LoadingPoint.CanReserveNext(assignment.Pallet) ||
-                    !request.Workstation.CanReserveNext(assignment.Pallet))
+                var waitingForLoadingPoint = !assignment.LoadingPoint.CanReserveNext(assignment.Pallet);
+                var waitingForWorkstation = !request.Workstation.CanReserveNext(assignment.Pallet);
+                if (waitingForLoadingPoint || waitingForWorkstation)
                 {
                     yield return null;
+                    AccumulateQueueWait(ref lastSampleTime, waitingForLoadingPoint, waitingForWorkstation, ref loadingWaitSeconds, ref workstationWaitSeconds);
                     continue;
                 }
 
                 if (assignment.LoadingPoint.TryReserveNext(assignment.Pallet) &&
                     request.Workstation.TryReserveNext(assignment.Pallet))
+                {
+                    AssignmentQueueWaitRecorded?.Invoke(assignment, loadingWaitSeconds, workstationWaitSeconds);
                     yield break;
+                }
 
                 assignment.LoadingPoint.ReleaseReservation(assignment.Pallet);
                 request.Workstation.ReleaseReservation(assignment.Pallet);
                 yield return null;
+                AccumulateQueueWait(ref lastSampleTime, waitingForLoadingPoint: true, waitingForWorkstation: true, ref loadingWaitSeconds, ref workstationWaitSeconds);
             }
+        }
+
+        private static void AccumulateQueueWait(
+            ref float lastSampleTime,
+            bool waitingForLoadingPoint,
+            bool waitingForWorkstation,
+            ref float loadingWaitSeconds,
+            ref float workstationWaitSeconds)
+        {
+            var now = Time.time;
+            var delta = Mathf.Max(0f, now - lastSampleTime);
+            lastSampleTime = now;
+
+            if (waitingForLoadingPoint)
+                loadingWaitSeconds += delta;
+            if (waitingForWorkstation)
+                workstationWaitSeconds += delta;
         }
 
         private IEnumerator WaitForAmrAt(TaskPlanningAmr amr, MapfNode goal)
@@ -652,6 +698,7 @@ namespace TaskPlanning
         {
             var execution = new ActiveTaskExecution(assignment);
             _activeAssignments[assignment.Amr] = execution;
+            AssignmentStarted?.Invoke(assignment);
             return execution;
         }
 

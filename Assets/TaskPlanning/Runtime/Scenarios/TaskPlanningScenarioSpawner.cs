@@ -15,6 +15,9 @@ namespace TaskPlanning
     {
         public const string ScenarioAssetFolder = "Assets/TaskPlanning/Scenarios";
         public const string MetricOutputFolder = "Assets/TaskPlanning/Scenarios/Metrics";
+        private const string MapfRootName = "MAPF";
+        private const string SchedulerRootName = "Scheduler";
+        private const string MesRootName = "MES";
 
         [SerializeField] private TaskPlanningScenarioPreset preset = TaskPlanningScenarioPreset.SideBayLoadingBottleneck;
         [SerializeField] private bool spawnOnStart;
@@ -36,6 +39,8 @@ namespace TaskPlanning
         [ContextMenu("Spawn Task Planning Scenario")]
         public void Spawn()
         {
+            RemoveLegacySystemComponentsFromSpawner();
+
             if (clearChildrenBeforeSpawn)
                 ClearChildren();
 
@@ -217,16 +222,23 @@ namespace TaskPlanning
             IReadOnlyList<TaskPlanningAmr> amrs,
             IReadOnlyList<PalletLoadingPoint> loadingPoints)
         {
-            var sceneGraph = GetOrAdd<MapfSceneGraph>();
-            var coordinator = GetOrAdd<MapfCoordinator>();
-            var scheduler = GetOrAdd<TaskScheduler>();
-            var mes = GetOrAdd<TaskPlanningMes>();
-            GetOrAdd<MapfDebugGizmos>();
-            GetOrAdd<TaskPlanningDebugGizmos>();
+            var mapfRoot = CreateChildRoot(MapfRootName);
+            var sceneGraph = mapfRoot.AddComponent<MapfSceneGraph>();
+            var coordinator = mapfRoot.AddComponent<MapfCoordinator>();
+            mapfRoot.AddComponent<MapfDebugGizmos>();
+
+            var schedulerRoot = CreateChildRoot(SchedulerRootName);
+            var scheduler = schedulerRoot.AddComponent<TaskScheduler>();
+            schedulerRoot.AddComponent<TaskPlanningDebugGizmos>();
+
+            var mesRoot = CreateChildRoot(MesRootName);
+            var mes = mesRoot.AddComponent<TaskPlanningMes>();
+            var metrics = mesRoot.AddComponent<TaskPlanningMetricsCollector>();
 
             coordinator.Configure(sceneGraph, shouldPlanOnStart: false, shouldLogSceneSnapshotOnStart: true);
             scheduler.ConfigureScene(coordinator, sceneGraph, amrs, loadingPoints);
             mes.ConfigureScheduledScenario(scheduler, CreateScenarioAsset(scenario), autoStartOnPlay: true, batchSameTimestamp: true);
+            metrics.Configure(mes, scheduler);
         }
 
         private TaskPlanningScenarioAsset CreateScenarioAsset(TaskPlanningScenario scenario)
@@ -275,13 +287,6 @@ namespace TaskPlanning
                     .ToArray();
         }
 
-        private TComponent GetOrAdd<TComponent>()
-            where TComponent : Component
-        {
-            var component = GetComponent<TComponent>();
-            return component != null ? component : gameObject.AddComponent<TComponent>();
-        }
-
         private void ClearChildren()
         {
             for (var i = transform.childCount - 1; i >= 0; i--)
@@ -291,6 +296,29 @@ namespace TaskPlanning
                     Destroy(child);
                 else
                     DestroyImmediate(child);
+            }
+        }
+
+        private void RemoveLegacySystemComponentsFromSpawner()
+        {
+            RemoveLegacySystemComponent<MapfSceneGraph>();
+            RemoveLegacySystemComponent<MapfCoordinator>();
+            RemoveLegacySystemComponent<MapfDebugGizmos>();
+            RemoveLegacySystemComponent<TaskScheduler>();
+            RemoveLegacySystemComponent<TaskPlanningDebugGizmos>();
+            RemoveLegacySystemComponent<TaskPlanningMes>();
+            RemoveLegacySystemComponent<TaskPlanningMetricsCollector>();
+        }
+
+        private void RemoveLegacySystemComponent<TComponent>()
+            where TComponent : Component
+        {
+            foreach (var component in GetComponents<TComponent>())
+            {
+                if (Application.isPlaying)
+                    Destroy(component);
+                else
+                    DestroyImmediate(component);
             }
         }
 

@@ -23,14 +23,27 @@ namespace TaskPlanning.Tests
             {
                 spawner.Spawn();
 
-                Assert.That(root.GetComponent<MapfSceneGraph>(), Is.Not.Null);
-                var coordinator = root.GetComponent<MapfCoordinator>();
+                Assert.That(root.GetComponent<MapfSceneGraph>(), Is.Null);
+                Assert.That(root.GetComponent<MapfCoordinator>(), Is.Null);
+                Assert.That(root.GetComponent<TaskScheduler>(), Is.Null);
+                Assert.That(root.GetComponent<TaskPlanningMes>(), Is.Null);
+                Assert.That(root.GetComponent<MapfDebugGizmos>(), Is.Null);
+                Assert.That(root.GetComponent<TaskPlanningDebugGizmos>(), Is.Null);
+                Assert.That(root.GetComponent<TaskPlanningMetricsCollector>(), Is.Null);
+
+                var mapfRoot = RequireChild(root, "MAPF");
+                var schedulerRoot = RequireChild(root, "Scheduler");
+                var mesRoot = RequireChild(root, "MES");
+
+                Assert.That(mapfRoot.GetComponent<MapfSceneGraph>(), Is.Not.Null);
+                var coordinator = mapfRoot.GetComponent<MapfCoordinator>();
                 Assert.That(coordinator, Is.Not.Null);
                 Assert.That(TaskPlanningTestHelpers.GetField<bool>(coordinator, "planOnStart"), Is.False);
-                Assert.That(root.GetComponent<TaskScheduler>(), Is.Not.Null);
-                Assert.That(root.GetComponent<TaskPlanningMes>(), Is.Not.Null);
-                Assert.That(root.GetComponent<MapfDebugGizmos>(), Is.Not.Null);
-                Assert.That(root.GetComponent<TaskPlanningDebugGizmos>(), Is.Not.Null);
+                Assert.That(mapfRoot.GetComponent<MapfDebugGizmos>(), Is.Not.Null);
+                Assert.That(schedulerRoot.GetComponent<TaskScheduler>(), Is.Not.Null);
+                Assert.That(schedulerRoot.GetComponent<TaskPlanningDebugGizmos>(), Is.Not.Null);
+                Assert.That(mesRoot.GetComponent<TaskPlanningMes>(), Is.Not.Null);
+                Assert.That(mesRoot.GetComponent<TaskPlanningMetricsCollector>(), Is.Not.Null);
 
                 Assert.That(root.GetComponentsInChildren<MapfNode>(), Has.Length.EqualTo(scenario.Nodes.Count));
                 Assert.That(root.GetComponentsInChildren<MapfEdge>(), Has.Length.EqualTo(scenario.Edges.Count));
@@ -41,7 +54,7 @@ namespace TaskPlanning.Tests
             }
             finally
             {
-                var mes = root != null ? root.GetComponent<TaskPlanningMes>() : null;
+                var mes = FindMes(root);
                 var generatedScenario = mes != null ? mes.ScheduledScenario : null;
                 TaskPlanningTestHelpers.Destroy(root);
                 TaskPlanningTestHelpers.Destroy(generatedScenario);
@@ -62,14 +75,14 @@ namespace TaskPlanning.Tests
             {
                 spawner.Spawn();
 
-                var mes = root.GetComponent<TaskPlanningMes>();
+                var mes = FindMes(root);
                 Assert.That(mes.ScheduledScenario, Is.Not.Null);
                 Assert.That(mes.ScheduledScenario.ScheduledTasks, Has.Count.EqualTo(scenario.ScheduledTasks.Count));
                 Assert.That(mes.ScheduledScenario.OrderedTasks().Select(task => task.taskId), Is.EqualTo(scenario.ScheduledTasks.OrderBy(task => task.timestampSeconds).Select(task => task.taskId)));
             }
             finally
             {
-                var mes = root != null ? root.GetComponent<TaskPlanningMes>() : null;
+                var mes = FindMes(root);
                 var generatedScenario = mes != null ? mes.ScheduledScenario : null;
                 TaskPlanningTestHelpers.Destroy(root);
                 TaskPlanningTestHelpers.Destroy(generatedScenario);
@@ -98,7 +111,7 @@ namespace TaskPlanning.Tests
             }
             finally
             {
-                var mes = root != null ? root.GetComponent<TaskPlanningMes>() : null;
+                var mes = FindMes(root);
                 var generatedScenario = mes != null ? mes.ScheduledScenario : null;
                 TaskPlanningTestHelpers.Destroy(root);
                 TaskPlanningTestHelpers.Destroy(generatedScenario);
@@ -118,7 +131,7 @@ namespace TaskPlanning.Tests
             {
                 spawner.Spawn();
 
-                var scheduler = root.GetComponent<TaskScheduler>();
+                var scheduler = root.GetComponentInChildren<TaskScheduler>();
                 var configuredAmrs = TaskPlanningTestHelpers.GetField<List<TaskPlanningAmr>>(scheduler, "amrs");
                 var configuredLoadingPoints = TaskPlanningTestHelpers.GetField<List<PalletLoadingPoint>>(scheduler, "loadingPoints");
                 var autoDiscover = TaskPlanningTestHelpers.GetField<bool>(scheduler, "autoDiscoverSceneObjects");
@@ -129,7 +142,7 @@ namespace TaskPlanning.Tests
             }
             finally
             {
-                var mes = root != null ? root.GetComponent<TaskPlanningMes>() : null;
+                var mes = FindMes(root);
                 var generatedScenario = mes != null ? mes.ScheduledScenario : null;
                 TaskPlanningTestHelpers.Destroy(root);
                 TaskPlanningTestHelpers.Destroy(generatedScenario);
@@ -169,11 +182,23 @@ namespace TaskPlanning.Tests
             }
             finally
             {
-                var mes = root != null ? root.GetComponent<TaskPlanningMes>() : null;
+                var mes = FindMes(root);
                 var generatedScenario = mes != null ? mes.ScheduledScenario : null;
                 TaskPlanningTestHelpers.Destroy(root);
                 TaskPlanningTestHelpers.Destroy(generatedScenario);
             }
+        }
+
+        private static GameObject RequireChild(GameObject root, string childName)
+        {
+            var child = root.transform.Find(childName);
+            Assert.That(child, Is.Not.Null, $"Expected spawned scenario root to contain child '{childName}'.");
+            return child.gameObject;
+        }
+
+        private static TaskPlanningMes FindMes(GameObject root)
+        {
+            return root != null ? root.GetComponentInChildren<TaskPlanningMes>() : null;
         }
     }
 }

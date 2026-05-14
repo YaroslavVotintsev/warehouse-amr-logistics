@@ -1,0 +1,60 @@
+﻿Task Planning Scenario Metrics
+Start timestamp: 2026-05-15 02:06:19
+Scenario name: Side_Bay_LookAhead_Trap
+Dispatcher algorithm: FifoDispatching
+Future handling policy: ImmediateOnly
+Total MES tasks: 2
+Cost weights:
+  Delivery: priorAssignmentEta=1, amrToPalletEta=1, attachTime=1, loadingQueueEta=1, palletToLoadingEta=1, loadTime=1, loadingToWorkstationEta=1, detachTime=1, blockedDeliveryBias=100, agingWeight=1, maxAgingBonus=300
+  Removal: priorAssignmentEta=1, amrToPalletEta=1, attachTime=1, palletToParkingEta=1, detachTime=1, blocksPendingDeliveryMultiplier=0.5, agingWeight=1, maxAgingBonus=300
+Makespan: 29.402 s
+Average task completion time: 24.633 s
+Average loading-point queue wait: 0 s
+Average workstation queue wait: 0 s
+
+AMR metrics:
+AMR AMR_BusyCandidate:
+  Travel distance: 10.996 units
+  Busy/assigned time: 18.868 s
+  Idle/unassigned time: 10.535 s
+  Action time: 8 s
+  Loading-point queue wait time: 0 s
+  Workstation blocking wait time: 0 s
+  Utilization: 64.606%
+  Completed delivery assignments: 1
+  Completed removal assignments: 0
+
+AMR AMR_Far:
+  Travel distance: 21.998 units
+  Busy/assigned time: 26.397 s
+  Idle/unassigned time: 3.005 s
+  Action time: 4 s
+  Loading-point queue wait time: 0 s
+  Workstation blocking wait time: 0 s
+  Utilization: 88.444%
+  Completed delivery assignments: 1
+  Completed removal assignments: 0
+
+All AMRs total:
+Total:
+  Travel distance: 32.994 units
+  Busy/assigned time: 45.265 s
+  Idle/unassigned time: 13.54 s
+  Action time: 12 s
+  Loading-point queue wait time: 0 s
+  Workstation blocking wait time: 0 s
+  Utilization: 76.525%
+  Completed delivery assignments: 2
+  Completed removal assignments: 0
+
+All AMRs average:
+Average:
+  Travel distance: 16.497 units
+  Busy/assigned time: 22.632 s
+  Idle/unassigned time: 6.77 s
+  Action time: 6 s
+  Loading-point queue wait time: 0 s
+  Workstation blocking wait time: 0 s
+  Utilization: 76.525%
+  Completed delivery assignments: 1
+  Completed removal assignments: 0
