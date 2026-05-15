@@ -20,7 +20,7 @@ namespace TaskPlanning
         private const string SchedulerRootName = "Scheduler";
         private const string MesRootName = "MES";
 
-        [SerializeField] private TaskPlanningScenarioPreset preset = TaskPlanningScenarioPreset.SideBayLoadingBottleneck;
+        [SerializeField] private TaskPlanningScenarioPreset preset = TaskPlanningScenarioPreset.FifoAssignmentTrap;
         [SerializeField] private bool spawnOnStart;
         [SerializeField] private bool clearChildrenBeforeSpawn = true;
         [FormerlySerializedAs("saveScenarioAssetInProject")]

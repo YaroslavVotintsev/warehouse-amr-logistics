@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f50ab45e1c3e46029eebd7c87689e9c7, type: 3}
-  m_Name: Side_Bay_LookAhead_Trap
-  m_EditorClassIdentifier: TaskPlanning::TaskPlanning.TaskPlanningScenarioAsset
+  m_Name: FIFO_Assignment_Trap
+  m_EditorClassIdentifier: TaskPlanning::TaskPlanning.TaskPlanningMesScheduledScenarioAsset
   scheduledTasks:
   - timestampSeconds: 0
-    taskId: PrimeBusyAmr
-    palletId: Pallet_Primer
-    workstationId: 212
-  - timestampSeconds: 1
-    taskId: TrapTarget
-    palletId: Pallet_Target
-    workstationId: 216
+    taskId: FifoTrap_OldFirst
+    palletId: Pallet_Old
+    workstationId: 211
+  - timestampSeconds: 0
+    taskId: FifoTrap_NeedsLeftAmr
+    palletId: Pallet_New
+    workstationId: 202

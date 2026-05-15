@@ -160,6 +160,9 @@ namespace TaskPlanning.Tests
                     Path.GetFullPath(collector.LastReportPath),
                     Does.StartWith(Path.GetFullPath(TaskPlanningMetricsCollector.DefaultMetricsFolder)));
                 Assert.That(Path.GetExtension(collector.LastReportPath), Is.EqualTo(".txt"));
+                Assert.That(
+                    Path.GetFileName(collector.LastReportPath),
+                    Does.Match(@"^MetricsFileScenario_Unknown_Unknown_\d{3}\.txt$"));
                 Assert.That(File.Exists(collector.LastReportPath), Is.True);
             }
             finally

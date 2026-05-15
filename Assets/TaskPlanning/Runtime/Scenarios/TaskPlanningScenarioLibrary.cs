@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace TaskPlanning
@@ -10,8 +9,7 @@ namespace TaskPlanning
         {
             return new[]
             {
-                SideBayLoadingBottleneck(),
-                SideBayLookAheadTrap()
+                FifoAssignmentTrap()
             };
         }
 
@@ -19,96 +17,47 @@ namespace TaskPlanning
         {
             return preset switch
             {
-                TaskPlanningScenarioPreset.SideBayLoadingBottleneck => SideBayLoadingBottleneck(),
-                TaskPlanningScenarioPreset.SideBayLookAheadTrap => SideBayLookAheadTrap(),
-                _ => SideBayLoadingBottleneck()
+                TaskPlanningScenarioPreset.FifoAssignmentTrap => FifoAssignmentTrap(),
+                _ => FifoAssignmentTrap()
             };
         }
 
-        public static TaskPlanningScenario SideBayLoadingBottleneck()
+        public static TaskPlanningScenario FifoAssignmentTrap()
         {
-            var graph = LongSideBayCorridor(length: 18);
-            var pallets = new[]
-            {
-                Pallet("Pallet_A", "101", "212", load: 8f),
-                Pallet("Pallet_B", "102", "213", load: 8f),
-                Pallet("Pallet_C", "103", "214", load: 8f),
-                Pallet("Pallet_D", "104", "215", load: 8f),
-                Pallet("Pallet_E", "105", "216", load: 8f)
-            };
-            var palletIds = pallets.Select(pallet => pallet.PalletId).ToArray();
+            var graph = LongCorridorWithBays(length: 22);
 
             return new TaskPlanningScenario(
-                "Side Bay Loading Bottleneck",
+                "FIFO Assignment Trap",
                 graph.Nodes,
                 graph.Edges,
                 new[]
                 {
-                    Amr("AMR_0", 0, "200"),
-                    Amr("AMR_1", 1, "202"),
-                    Amr("AMR_2", 2, "204"),
-                    Amr("AMR_3", 3, "206"),
-                    Amr("AMR_4", 4, "208")
-                },
-                pallets,
-                new[]
-                {
-                    LoadingPoint("110", "110", palletIds)
+                    Amr("AMR_Left", 0, "200"),
+                    Amr("AMR_Right", 1, "219")
                 },
                 new[]
                 {
-                    Workstation("212", "212", "Pallet_A"),
-                    Workstation("213", "213", "Pallet_B"),
-                    Workstation("214", "214", "Pallet_C"),
-                    Workstation("215", "215", "Pallet_D"),
-                    Workstation("216", "216", "Pallet_E")
+                    Pallet("Pallet_Old", "109", "211", attach: 1f, detach: 1f, load: 1f, unload: 1f),
+                    Pallet("Pallet_New", "100", "202", attach: 1f, detach: 1f, load: 1f, unload: 1f)
                 },
                 new[]
                 {
-                    Task(0f, "Pallet_A", "212", "Bottleneck_A"),
-                    Task(0f, "Pallet_B", "213", "Bottleneck_B"),
-                    Task(0f, "Pallet_C", "214", "Bottleneck_C"),
-                    Task(0f, "Pallet_D", "215", "Bottleneck_D"),
-                    Task(0f, "Pallet_E", "216", "Bottleneck_E")
+                    LoadingPoint("110", "110", "Pallet_Old"),
+                    LoadingPoint("101", "101", "Pallet_New")
+                },
+                new[]
+                {
+                    Workstation("211", "211", "Pallet_Old"),
+                    Workstation("202", "202", "Pallet_New")
+                },
+                new[]
+                {
+                    Task(0f, "Pallet_Old", "211", "FifoTrap_OldFirst"),
+                    Task(0f, "Pallet_New", "202", "FifoTrap_NeedsLeftAmr")
                 });
         }
 
-        public static TaskPlanningScenario SideBayLookAheadTrap()
-        {
-            var graph = LongSideBayCorridor(length: 18);
-
-            return new TaskPlanningScenario(
-                "Side Bay LookAhead Trap",
-                graph.Nodes,
-                graph.Edges,
-                new[]
-                {
-                    Amr("AMR_Far", 0, "200"),
-                    Amr("AMR_BusyCandidate", 1, "207")
-                },
-                new[]
-                {
-                    Pallet("Pallet_Primer", "108", "212", attach: 1f, detach: 1f, load: 6f, unload: 2f),
-                    Pallet("Pallet_Target", "112", "216", attach: 1f, detach: 1f, load: 2f, unload: 2f)
-                },
-                new[]
-                {
-                    LoadingPoint("109", "109", "Pallet_Primer"),
-                    LoadingPoint("113", "113", "Pallet_Target")
-                },
-                new[]
-                {
-                    Workstation("212", "212", "Pallet_Primer"),
-                    Workstation("216", "216", "Pallet_Target")
-                },
-                new[]
-                {
-                    Task(0f, "Pallet_Primer", "212", "PrimeBusyAmr"),
-                    Task(1f, "Pallet_Target", "216", "TrapTarget")
-                });
-        }
-
-        private static CorridorGraph LongSideBayCorridor(int length)
+        private static CorridorGraph LongCorridorWithBays(int length)
         {
             var nodes = new List<TaskPlanningScenarioNode>();
             var edges = new List<TaskPlanningScenarioEdge>();

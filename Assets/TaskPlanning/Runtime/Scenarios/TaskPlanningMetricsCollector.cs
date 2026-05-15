@@ -384,10 +384,24 @@ namespace TaskPlanning
             Directory.CreateDirectory(folder);
 
             var scenarioFileName = SanitizeFileName(string.IsNullOrWhiteSpace(_scenarioName) ? "Scenario" : _scenarioName);
-            var fileName = $"{scenarioFileName}_{_startTimestamp:yyyyMMdd_HHmmss_fff}.txt";
-            var path = Path.Combine(folder, fileName);
+            var dispatcherFileName = SanitizeFileName(SchedulerAlgorithmLabel());
+            var futurePolicyFileName = SanitizeFileName(SchedulerFutureHandlingLabel());
+            var fileNamePrefix = $"{scenarioFileName}_{dispatcherFileName}_{futurePolicyFileName}";
+            var path = NextSerialReportPath(folder, fileNamePrefix);
             File.WriteAllText(path, reportText, Encoding.UTF8);
             return path;
+        }
+
+        private static string NextSerialReportPath(string folder, string fileNamePrefix)
+        {
+            for (var serialNumber = 1; serialNumber < int.MaxValue; serialNumber++)
+            {
+                var path = Path.Combine(folder, $"{fileNamePrefix}_{serialNumber:000}.txt");
+                if (!File.Exists(path))
+                    return path;
+            }
+
+            throw new IOException($"Could not create a unique metrics report path for '{fileNamePrefix}'.");
         }
 
         private string SchedulerAlgorithmLabel()
