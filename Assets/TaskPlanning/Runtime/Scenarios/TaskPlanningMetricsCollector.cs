@@ -79,7 +79,7 @@ namespace TaskPlanning
             Subscribe();
         }
 
-        public void BeginScenario(TaskPlanningScenarioAsset scenario, int totalTasks, float startTime)
+        public void BeginScenario(TaskPlanningMesScheduledScenarioAsset scenario, int totalTasks, float startTime)
         {
             ResetMetrics();
             _isRunning = true;
@@ -97,7 +97,7 @@ namespace TaskPlanning
             }
         }
 
-        public void BeginScenario(TaskPlanningScenarioAsset scenario, int totalTasks)
+        public void BeginScenario(TaskPlanningMesScheduledScenarioAsset scenario, int totalTasks)
         {
             BeginScenario(scenario, totalTasks, Time.time);
         }
@@ -272,12 +272,12 @@ namespace TaskPlanning
             _isSubscribed = false;
         }
 
-        private void OnScheduledScenarioStarted(TaskPlanningScenarioAsset scenario, int totalTasks)
+        private void OnScheduledScenarioStarted(TaskPlanningMesScheduledScenarioAsset scenario, int totalTasks)
         {
             BeginScenario(scenario, totalTasks, Time.time);
         }
 
-        private void OnScheduledScenarioSubmissionCompleted(TaskPlanningScenarioAsset scenario)
+        private void OnScheduledScenarioSubmissionCompleted(TaskPlanningMesScheduledScenarioAsset scenario)
         {
             _submissionsComplete = true;
         }

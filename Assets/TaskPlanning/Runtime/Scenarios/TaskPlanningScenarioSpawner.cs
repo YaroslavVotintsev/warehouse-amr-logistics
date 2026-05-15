@@ -4,6 +4,7 @@ using System.Linq;
 using Mapf.Authoring;
 using Mapf.UnityAdapter;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -13,7 +14,7 @@ namespace TaskPlanning
 {
     public sealed class TaskPlanningScenarioSpawner : MonoBehaviour
     {
-        public const string ScenarioAssetFolder = "Assets/TaskPlanning/Scenarios";
+        public const string MesScheduledScenarioAssetFolder = "Assets/TaskPlanning/Scenarios";
         public const string MetricOutputFolder = "Assets/TaskPlanning/Scenarios/Metrics";
         private const string MapfRootName = "MAPF";
         private const string SchedulerRootName = "Scheduler";
@@ -22,7 +23,8 @@ namespace TaskPlanning
         [SerializeField] private TaskPlanningScenarioPreset preset = TaskPlanningScenarioPreset.SideBayLoadingBottleneck;
         [SerializeField] private bool spawnOnStart;
         [SerializeField] private bool clearChildrenBeforeSpawn = true;
-        [SerializeField] private bool saveScenarioAssetInProject = true;
+        [FormerlySerializedAs("saveScenarioAssetInProject")]
+        [SerializeField] private bool saveMesScheduledScenarioAssetInProject = true;
         [SerializeField] private Sprite agentSprite;
         [SerializeField] private Sprite palletSprite;
         [SerializeField] private Color[] amrColors = { Color.cyan, Color.yellow, Color.magenta, Color.green };
@@ -237,21 +239,21 @@ namespace TaskPlanning
 
             coordinator.Configure(sceneGraph, shouldPlanOnStart: false, shouldLogSceneSnapshotOnStart: true);
             scheduler.ConfigureScene(coordinator, sceneGraph, amrs, loadingPoints);
-            mes.ConfigureScheduledScenario(scheduler, CreateScenarioAsset(scenario), autoStartOnPlay: true, batchSameTimestamp: true);
+            mes.ConfigureScheduledScenario(scheduler, CreateMesScheduledScenarioAsset(scenario), autoStartOnPlay: true, batchSameTimestamp: true);
             metrics.Configure(mes, scheduler);
         }
 
-        private TaskPlanningScenarioAsset CreateScenarioAsset(TaskPlanningScenario scenario)
+        private TaskPlanningMesScheduledScenarioAsset CreateMesScheduledScenarioAsset(TaskPlanningScenario scenario)
         {
 #if UNITY_EDITOR
-            if (saveScenarioAssetInProject)
+            if (saveMesScheduledScenarioAssetInProject)
             {
                 EnsureScenarioFolders();
-                var path = $"{ScenarioAssetFolder}/{SanitizeFileName(scenario.Name)}.asset";
-                var asset = AssetDatabase.LoadAssetAtPath<TaskPlanningScenarioAsset>(path);
+                var path = $"{MesScheduledScenarioAssetFolder}/{SanitizeFileName(scenario.Name)}.asset";
+                var asset = AssetDatabase.LoadAssetAtPath<TaskPlanningMesScheduledScenarioAsset>(path);
                 if (asset == null)
                 {
-                    asset = ScriptableObject.CreateInstance<TaskPlanningScenarioAsset>();
+                    asset = ScriptableObject.CreateInstance<TaskPlanningMesScheduledScenarioAsset>();
                     AssetDatabase.CreateAsset(asset, path);
                 }
 
@@ -262,7 +264,7 @@ namespace TaskPlanning
             }
 #endif
 
-            var transient = TaskPlanningScenarioAsset.Create(scenario.ScheduledTasks);
+            var transient = TaskPlanningMesScheduledScenarioAsset.Create(scenario.ScheduledTasks);
             transient.name = scenario.Name;
             return transient;
         }
@@ -326,7 +328,7 @@ namespace TaskPlanning
         private static void EnsureScenarioFolders()
         {
             EnsureFolder("Assets/TaskPlanning", "Scenarios");
-            EnsureFolder(ScenarioAssetFolder, "Metrics");
+            EnsureFolder(MesScheduledScenarioAssetFolder, "Metrics");
         }
 
         private static void EnsureFolder(string parent, string child)

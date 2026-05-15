@@ -5,17 +5,17 @@ using UnityEngine;
 namespace TaskPlanning
 {
     [CreateAssetMenu(
-        fileName = "TaskPlanningScenario",
+        fileName = "TaskPlanningMesScheduledScenario",
         menuName = "Task Planning/MES Scheduled Scenario")]
-    public sealed class TaskPlanningScenarioAsset : ScriptableObject
+    public sealed class TaskPlanningMesScheduledScenarioAsset : ScriptableObject
     {
         [SerializeField] private List<ScheduledMesTask> scheduledTasks = new();
 
         public IReadOnlyList<ScheduledMesTask> ScheduledTasks => scheduledTasks;
 
-        public static TaskPlanningScenarioAsset Create(IEnumerable<ScheduledMesTask> tasks)
+        public static TaskPlanningMesScheduledScenarioAsset Create(IEnumerable<ScheduledMesTask> tasks)
         {
-            var scenario = CreateInstance<TaskPlanningScenarioAsset>();
+            var scenario = CreateInstance<TaskPlanningMesScheduledScenarioAsset>();
             scenario.SetTasks(tasks);
             return scenario;
         }

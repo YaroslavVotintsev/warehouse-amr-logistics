@@ -6,9 +6,9 @@ namespace TaskPlanning.Tests
     public sealed class TaskPlanningMesScenarioTests
     {
         [Test]
-        public void ScenarioAssetCanBeCreatedFromCode()
+        public void MesScheduledScenarioAssetCanBeCreatedFromCode()
         {
-            var scenario = TaskPlanningScenarioAsset.Create(new[]
+            var scenario = TaskPlanningMesScheduledScenarioAsset.Create(new[]
             {
                 new ScheduledMesTask(5f, "Pallet-B", "Workstation-B", "Task-B"),
                 new ScheduledMesTask(1f, "Pallet-A", "Workstation-A", "Task-A")
@@ -36,7 +36,7 @@ namespace TaskPlanning.Tests
             var palletB = TaskPlanningTestHelpers.CreatePallet("MesScenarioBatch_PalletB");
             var workstationA = TaskPlanningTestHelpers.CreateWorkstation("MesScenarioBatch_WorkstationA", null, palletA);
             var workstationB = TaskPlanningTestHelpers.CreateWorkstation("MesScenarioBatch_WorkstationB", null, palletB);
-            var scenario = TaskPlanningScenarioAsset.Create(new[]
+            var scenario = TaskPlanningMesScheduledScenarioAsset.Create(new[]
             {
                 new ScheduledMesTask(0f, palletA.PalletId, workstationA.WorkstationId, "Task-A"),
                 new ScheduledMesTask(0f, palletB.PalletId, workstationB.WorkstationId, "Task-B")
@@ -73,7 +73,7 @@ namespace TaskPlanning.Tests
             var mes = TaskPlanningTestHelpers.CreateComponent<TaskPlanningMes>("MesScenarioInvalid_Mes");
             var pallet = TaskPlanningTestHelpers.CreatePallet("MesScenarioInvalid_Pallet");
             var workstation = TaskPlanningTestHelpers.CreateWorkstation("MesScenarioInvalid_Workstation", null, pallet);
-            var scenario = TaskPlanningScenarioAsset.Create(new[]
+            var scenario = TaskPlanningMesScheduledScenarioAsset.Create(new[]
             {
                 new ScheduledMesTask(0f, "MissingPallet", workstation.WorkstationId, "Invalid"),
                 new ScheduledMesTask(0f, pallet.PalletId, workstation.WorkstationId, "Valid")

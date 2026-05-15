@@ -169,9 +169,9 @@ namespace TaskPlanning.Tests
             }
         }
 
-        private static TaskPlanningScenarioAsset CreateScenario(string name)
+        private static TaskPlanningMesScheduledScenarioAsset CreateScenario(string name)
         {
-            var scenario = TaskPlanningScenarioAsset.Create(new[]
+            var scenario = TaskPlanningMesScheduledScenarioAsset.Create(new[]
             {
                 new ScheduledMesTask(0f, "Pallet-A", "Workstation-A", "Task-A")
             });

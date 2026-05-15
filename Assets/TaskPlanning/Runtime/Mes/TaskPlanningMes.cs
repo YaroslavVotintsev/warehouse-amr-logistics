@@ -11,7 +11,7 @@ namespace TaskPlanning
         [SerializeField] private List<DeliveryTaskRequest> inspectorTasks = new();
         [SerializeField] private int[] selectedTaskIndexes = Array.Empty<int>();
         [SerializeField] private TaskPlanningMesAutomationMode automationMode = TaskPlanningMesAutomationMode.ManualOnly;
-        [SerializeField] private TaskPlanningScenarioAsset scheduledScenario;
+        [SerializeField] private TaskPlanningMesScheduledScenarioAsset scheduledScenario;
         [SerializeField] private bool startScheduledScenarioOnPlay = true;
         [SerializeField] private bool submitSameTimestampAsBatch = true;
         [SerializeField, Min(0f)] private float scheduledScenarioStartDelaySeconds;
@@ -25,8 +25,8 @@ namespace TaskPlanning
         private float _scheduledScenarioStartTime;
         private int _nextScheduledEntryIndex;
 
-        public event Action<TaskPlanningScenarioAsset, int> ScheduledScenarioStarted;
-        public event Action<TaskPlanningScenarioAsset> ScheduledScenarioSubmissionCompleted;
+        public event Action<TaskPlanningMesScheduledScenarioAsset, int> ScheduledScenarioStarted;
+        public event Action<TaskPlanningMesScheduledScenarioAsset> ScheduledScenarioSubmissionCompleted;
 
         private void Awake()
         {
@@ -54,13 +54,13 @@ namespace TaskPlanning
         }
 
         public TaskScheduler Scheduler => scheduler;
-        public TaskPlanningScenarioAsset ScheduledScenario => scheduledScenario;
+        public TaskPlanningMesScheduledScenarioAsset ScheduledScenario => scheduledScenario;
         public bool IsScheduledScenarioRunning => _scheduledScenarioRunning;
         public int ScheduledScenarioTaskCount => scheduledScenario == null ? 0 : scheduledScenario.OrderedTasks().Count;
 
         public void ConfigureScheduledScenario(
             TaskScheduler taskScheduler,
-            TaskPlanningScenarioAsset scenario,
+            TaskPlanningMesScheduledScenarioAsset scenario,
             bool autoStartOnPlay = true,
             bool batchSameTimestamp = true)
         {

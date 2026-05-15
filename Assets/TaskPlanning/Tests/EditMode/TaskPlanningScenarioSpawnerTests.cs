@@ -16,7 +16,7 @@ namespace TaskPlanning.Tests
             var root = new GameObject("TaskPlanningScenarioSpawnerTest");
             var spawner = root.AddComponent<TaskPlanningScenarioSpawner>();
             TaskPlanningTestHelpers.SetField(spawner, "preset", preset);
-            TaskPlanningTestHelpers.SetField(spawner, "saveScenarioAssetInProject", false);
+            TaskPlanningTestHelpers.SetField(spawner, "saveMesScheduledScenarioAssetInProject", false);
             var scenario = TaskPlanningScenarioLibrary.Get(preset);
 
             try
@@ -68,7 +68,7 @@ namespace TaskPlanning.Tests
             var root = new GameObject("TaskPlanningScenarioSpawnerMesTest");
             var spawner = root.AddComponent<TaskPlanningScenarioSpawner>();
             TaskPlanningTestHelpers.SetField(spawner, "preset", preset);
-            TaskPlanningTestHelpers.SetField(spawner, "saveScenarioAssetInProject", false);
+            TaskPlanningTestHelpers.SetField(spawner, "saveMesScheduledScenarioAssetInProject", false);
             var scenario = TaskPlanningScenarioLibrary.Get(preset);
 
             try
@@ -96,7 +96,7 @@ namespace TaskPlanning.Tests
             var root = new GameObject("TaskPlanningScenarioSpawnerCompatibilityTest");
             var spawner = root.AddComponent<TaskPlanningScenarioSpawner>();
             TaskPlanningTestHelpers.SetField(spawner, "preset", preset);
-            TaskPlanningTestHelpers.SetField(spawner, "saveScenarioAssetInProject", false);
+            TaskPlanningTestHelpers.SetField(spawner, "saveMesScheduledScenarioAssetInProject", false);
 
             try
             {
@@ -125,7 +125,7 @@ namespace TaskPlanning.Tests
             var root = new GameObject("TaskPlanningScenarioSpawnerSchedulerTest");
             var spawner = root.AddComponent<TaskPlanningScenarioSpawner>();
             TaskPlanningTestHelpers.SetField(spawner, "preset", preset);
-            TaskPlanningTestHelpers.SetField(spawner, "saveScenarioAssetInProject", false);
+            TaskPlanningTestHelpers.SetField(spawner, "saveMesScheduledScenarioAssetInProject", false);
 
             try
             {
@@ -156,7 +156,7 @@ namespace TaskPlanning.Tests
             var root = new GameObject("TaskPlanningScenarioSpawnerNamesTest");
             var spawner = root.AddComponent<TaskPlanningScenarioSpawner>();
             TaskPlanningTestHelpers.SetField(spawner, "preset", preset);
-            TaskPlanningTestHelpers.SetField(spawner, "saveScenarioAssetInProject", false);
+            TaskPlanningTestHelpers.SetField(spawner, "saveMesScheduledScenarioAssetInProject", false);
 
             try
             {
