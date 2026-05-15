@@ -3896,7 +3896,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: TaskPlanning::TaskPlanning.TaskScheduler
   algorithm: 1
-  futureHandling: 2
+  futureHandling: 1
   rollingHorizon:
     horizonSeconds: 30
     maxWaves: 4

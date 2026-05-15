@@ -7,6 +7,7 @@ namespace TaskPlanning
         public IReadOnlyList<ITaskPlanningTask> Tasks { get; }
         public IReadOnlyList<TaskPlanningAmr> Amrs { get; }
         public IReadOnlyList<AmrFutureAvailability> FutureAvailabilities { get; }
+        public IReadOnlyList<SoftReassignmentOption> SoftReassignmentOptions { get; }
         public IReadOnlyList<PalletLoadingPoint> LoadingPoints { get; }
         public IReadOnlyList<DispatchCandidate> Candidates { get; }
         public RoadmapDistanceService Distances { get; }
@@ -21,11 +22,13 @@ namespace TaskPlanning
             TaskPlanningCostEvaluator costEvaluator,
             float now,
             IReadOnlyList<AmrFutureAvailability> futureAvailabilities = null,
-            IReadOnlyList<DispatchCandidate> candidates = null)
+            IReadOnlyList<DispatchCandidate> candidates = null,
+            IReadOnlyList<SoftReassignmentOption> softReassignmentOptions = null)
         {
             Tasks = tasks ?? System.Array.Empty<ITaskPlanningTask>();
             Amrs = amrs ?? System.Array.Empty<TaskPlanningAmr>();
             FutureAvailabilities = futureAvailabilities ?? System.Array.Empty<AmrFutureAvailability>();
+            SoftReassignmentOptions = softReassignmentOptions ?? System.Array.Empty<SoftReassignmentOption>();
             LoadingPoints = loadingPoints ?? System.Array.Empty<PalletLoadingPoint>();
             Distances = distances;
             CostEvaluator = costEvaluator;
@@ -48,7 +51,8 @@ namespace TaskPlanning
                 CostEvaluator,
                 Now,
                 FutureAvailabilities,
-                candidates);
+                candidates,
+                SoftReassignmentOptions);
         }
     }
 }

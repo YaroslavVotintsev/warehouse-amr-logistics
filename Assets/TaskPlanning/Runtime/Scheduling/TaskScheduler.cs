@@ -148,15 +148,24 @@ namespace TaskPlanning
             var taskSnapshot = _pendingTasks.ToArray();
             ReportInvalidDeliveryTaskConfigurations(taskSnapshot);
             var evaluator = new TaskPlanningCostEvaluator(_distances, costWeights, costAmrSpeed, taskSnapshot, Time.time);
-            var candidateAmrs = GetDispatchCandidateAmrs(
+            var candidateAmrs = GetFreeDispatchCandidateAmrs();
+            var softReassignmentOptions = BuildSoftReassignmentOptions(
                 taskSnapshot,
                 evaluator,
                 allowSoftReservations: algorithm != TaskPlanningAlgorithmType.FifoDispatching);
-            if (candidateAmrs.Count == 0)
+            if (candidateAmrs.Count == 0 && softReassignmentOptions.Count == 0)
                 return;
 
             var futureAvailabilities = GetFutureAvailabilities();
-            var problem = new DispatchProblem(taskSnapshot, candidateAmrs, loadingPoints, _distances, evaluator, Time.time, futureAvailabilities);
+            var problem = new DispatchProblem(
+                taskSnapshot,
+                candidateAmrs,
+                loadingPoints,
+                _distances,
+                evaluator,
+                Time.time,
+                futureAvailabilities,
+                softReassignmentOptions: softReassignmentOptions);
             var plan = _futurePolicy.Solve(problem, _dispatchAlgorithm);
             foreach (var assignment in plan.Assignments)
             {
@@ -174,9 +183,10 @@ namespace TaskPlanning
 
             if (_activeAssignments.TryGetValue(assignment.Amr, out var activeAssignment))
             {
-                if (!CanReplaceActiveAssignment(activeAssignment, assignment))
+                if (!CanStartSoftReassignment(activeAssignment, assignment))
                     return false;
 
+                LogSoftReassignment(activeAssignment, assignment);
                 CancelActiveAssignment(activeAssignment, true);
             }
 
@@ -564,10 +574,7 @@ namespace TaskPlanning
             return total;
         }
 
-        private List<TaskPlanningAmr> GetDispatchCandidateAmrs(
-            IReadOnlyList<ITaskPlanningTask> taskSnapshot,
-            TaskPlanningCostEvaluator evaluator,
-            bool allowSoftReservations = true)
+        private List<TaskPlanningAmr> GetFreeDispatchCandidateAmrs()
         {
             var candidates = new List<TaskPlanningAmr>();
             foreach (var amr in amrs)
@@ -578,68 +585,79 @@ namespace TaskPlanning
                 if (!amr.IsBusy)
                 {
                     candidates.Add(amr);
-                    continue;
                 }
-
-                if (allowSoftReservations && CanOfferForSoftReassignment(amr, taskSnapshot, evaluator))
-                    candidates.Add(amr);
             }
 
             return candidates;
         }
 
-        private bool CanOfferForSoftReassignment(
-            TaskPlanningAmr amr,
+        private List<SoftReassignmentOption> BuildSoftReassignmentOptions(
             IReadOnlyList<ITaskPlanningTask> taskSnapshot,
-            TaskPlanningCostEvaluator evaluator)
+            TaskPlanningCostEvaluator evaluator,
+            bool allowSoftReservations)
         {
+            var options = new List<SoftReassignmentOption>();
             if (!enableSoftAmrReservations ||
+                !allowSoftReservations ||
                 taskSnapshot.Count == 0 ||
-                !_activeAssignments.TryGetValue(amr, out var activeAssignment) ||
-                !activeAssignment.CanReassign)
-                return false;
+                _activeAssignments.Count == 0)
+                return options;
 
-            var currentCost = EvaluateActiveAssignment(activeAssignment, evaluator);
-            if (!currentCost.IsFeasible)
-                return false;
-
-            foreach (var task in taskSnapshot)
+            foreach (var activeAssignment in _activeAssignments.Values)
             {
-                foreach (var cost in EvaluatePotentialReassignmentCosts(amr, task, evaluator))
-                {
-                    if (!cost.IsFeasible)
-                        continue;
+                if (!activeAssignment.CanReassign)
+                    continue;
 
-                    if (IsEnoughReassignmentImprovement(currentCost.TotalCost, cost.TotalCost))
-                        return true;
+                var activeCost = EvaluateActiveAssignment(activeAssignment, evaluator);
+                if (!activeCost.IsFeasible)
+                    continue;
+
+                foreach (var task in taskSnapshot)
+                {
+                    foreach (var replacementCost in EvaluatePotentialReassignmentCosts(activeAssignment.Assignment.Amr, task, evaluator))
+                    {
+                        if (!replacementCost.IsFeasible)
+                            continue;
+
+                        var improvementPercent = ReassignmentImprovementPercent(activeCost.TotalCost, replacementCost.TotalCost);
+                        if (improvementPercent < Math.Max(0.0, reassignmentCostImprovementPercent))
+                            continue;
+
+                        options.Add(new SoftReassignmentOption(
+                            activeAssignment.Assignment,
+                            task,
+                            activeCost,
+                            replacementCost,
+                            improvementPercent));
+                    }
                 }
             }
 
-            return false;
+            return options;
         }
 
-        private bool CanReplaceActiveAssignment(ActiveTaskExecution activeAssignment, DispatchAssignment replacement)
+        private bool CanStartSoftReassignment(ActiveTaskExecution activeAssignment, DispatchAssignment replacement)
         {
-            if (!enableSoftAmrReservations || !activeAssignment.CanReassign)
+            if (!enableSoftAmrReservations ||
+                !activeAssignment.CanReassign ||
+                !replacement.ReplacesActiveAssignment)
                 return false;
 
-            var taskSnapshot = _pendingTasks.ToArray();
-            var evaluator = new TaskPlanningCostEvaluator(_distances, costWeights, costAmrSpeed, taskSnapshot, Time.time);
-            var currentCost = EvaluateActiveAssignment(activeAssignment, evaluator);
-            if (!currentCost.IsFeasible)
-                return false;
+            var option = replacement.SoftReassignment;
+            return option.ActiveAmr == activeAssignment.Assignment.Amr &&
+                option.ActiveTask == activeAssignment.Assignment.Task &&
+                option.ReplacementTask == replacement.Task;
+        }
 
-            var improvement = currentCost.TotalCost - replacement.Score;
-            if (!IsEnoughReassignmentImprovement(currentCost.TotalCost, replacement.Score))
-                return false;
-
-            var improvementPercent = ReassignmentImprovementPercent(currentCost.TotalCost, replacement.Score);
+        private void LogSoftReassignment(ActiveTaskExecution activeAssignment, DispatchAssignment replacement)
+        {
+            var option = replacement.SoftReassignment;
+            var improvement = option.ActiveCost.TotalCost - replacement.Score;
             Debug.Log(
                 $"Task reassigned before pallet attach: amr={activeAssignment.Assignment.Amr.AmrId} " +
                 $"from={activeAssignment.Assignment.Task.TaskId} to={replacement.Task.TaskId} " +
-                $"improvement={improvement:0.###} ({improvementPercent:0.##}%)",
+                $"improvement={improvement:0.###} ({option.ImprovementPercent:0.##}%)",
                 this);
-            return true;
         }
 
         private CostEvaluation EvaluateActiveAssignment(

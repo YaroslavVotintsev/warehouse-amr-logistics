@@ -10,8 +10,10 @@ namespace TaskPlanning
         public readonly WorkstationDeliveryPoint Workstation;
         public readonly Mapf.Authoring.MapfNode RemovalTargetNode;
         public readonly CostEvaluation Cost;
+        public readonly SoftReassignmentOption SoftReassignment;
 
         public double Score => Cost.TotalCost;
+        public bool ReplacesActiveAssignment => SoftReassignment.IsValid;
 
         public DispatchAssignment(
             TaskPlanningAmr amr,
@@ -20,7 +22,8 @@ namespace TaskPlanning
             PalletLoadingPoint loadingPoint,
             WorkstationDeliveryPoint workstation,
             Mapf.Authoring.MapfNode removalTargetNode,
-            CostEvaluation cost)
+            CostEvaluation cost,
+            SoftReassignmentOption softReassignment = default)
         {
             IsValid = amr != null && task != null && pallet != null;
             Amr = amr;
@@ -30,6 +33,7 @@ namespace TaskPlanning
             Workstation = workstation;
             RemovalTargetNode = removalTargetNode;
             Cost = cost;
+            SoftReassignment = softReassignment;
         }
     }
 }

@@ -30,6 +30,27 @@ namespace TaskPlanning
                 }
             }
 
+            foreach (var option in problem.SoftReassignmentOptions)
+            {
+                if (!option.IsValid || !ContainsTask(problem.Tasks, option.ReplacementTask))
+                    continue;
+
+                var amr = option.Amr;
+                if (amr == null)
+                    continue;
+
+                var startNode = problem.Distances.NearestNode(amr.transform.position);
+                var availability = new DispatchAvailability(
+                    amr,
+                    startNode,
+                    problem.Now,
+                    0,
+                    DispatchAvailabilityType.SoftReassignment);
+                var candidate = EvaluateCandidate(problem, option.ReplacementTask, availability, option);
+                if (candidate.IsValid)
+                    candidates.Add(candidate);
+            }
+
             return candidates;
         }
 
@@ -64,14 +85,15 @@ namespace TaskPlanning
         private static DispatchCandidate EvaluateCandidate(
             DispatchProblem problem,
             ITaskPlanningTask task,
-            DispatchAvailability availability)
+            DispatchAvailability availability,
+            SoftReassignmentOption softReassignment = default)
         {
             switch (task)
             {
                 case DeliveryPlanningTask delivery:
-                    return EvaluateDeliveryCandidate(problem, delivery, availability);
+                    return EvaluateDeliveryCandidate(problem, delivery, availability, softReassignment);
                 case PalletRemovalPlanningTask removal:
-                    return EvaluateRemovalCandidate(problem, removal, availability);
+                    return EvaluateRemovalCandidate(problem, removal, availability, softReassignment);
                 default:
                     return default;
             }
@@ -80,7 +102,8 @@ namespace TaskPlanning
         private static DispatchCandidate EvaluateDeliveryCandidate(
             DispatchProblem problem,
             DeliveryPlanningTask task,
-            DispatchAvailability availability)
+            DispatchAvailability availability,
+            SoftReassignmentOption softReassignment)
         {
             var loadingPointResolution = problem.ResolveLoadingPoint(task.Pallet);
             if (!loadingPointResolution.IsResolved)
@@ -100,13 +123,15 @@ namespace TaskPlanning
                 loadingPoint,
                 task.Workstation,
                 null,
-                cost);
+                cost,
+                softReassignment);
         }
 
         private static DispatchCandidate EvaluateRemovalCandidate(
             DispatchProblem problem,
             PalletRemovalPlanningTask task,
-            DispatchAvailability availability)
+            DispatchAvailability availability,
+            SoftReassignmentOption softReassignment)
         {
             var cost = availability.IsImmediate
                 ? problem.CostEvaluator.Evaluate(availability.Amr, task)
@@ -121,7 +146,22 @@ namespace TaskPlanning
                 null,
                 task.SourceWorkstation,
                 task.Pallet.ParkingNode,
-                cost);
+                cost,
+                softReassignment);
+        }
+
+        private static bool ContainsTask(IReadOnlyList<ITaskPlanningTask> tasks, ITaskPlanningTask task)
+        {
+            if (task == null)
+                return false;
+
+            foreach (var candidateTask in tasks)
+            {
+                if (candidateTask == task)
+                    return true;
+            }
+
+            return false;
         }
     }
 }
