@@ -1,0 +1,60 @@
+﻿Task Planning Scenario Metrics
+Start timestamp: 2026-05-15 07:55:57
+Scenario name: Future_Wait_Trap
+Dispatcher algorithm: NearestDispatching
+Future handling policy: ImmediateOnly
+Total MES tasks: 2
+Cost weights:
+  Delivery: priorAssignmentEta=1, amrToPalletEta=1, attachTime=1, loadingQueueEta=1, palletToLoadingEta=1, loadTime=1, loadingToWorkstationEta=1, detachTime=1, blockedDeliveryBias=100, agingWeight=1, maxAgingBonus=300
+  Removal: priorAssignmentEta=1, amrToPalletEta=1, attachTime=1, palletToParkingEta=1, detachTime=1, blocksPendingDeliveryMultiplier=0.5, agingWeight=1, maxAgingBonus=300
+Makespan: 40.808 s
+Average task completion time: 28.329 s
+Average loading-point queue wait: 0 s
+Average workstation queue wait: 0 s
+
+AMR metrics:
+AMR AMR_Future:
+  Travel distance: 7.998 units
+  Busy/assigned time: 15.856 s
+  Idle/unassigned time: 24.952 s
+  Action time: 8 s
+  Loading-point queue wait time: 0 s
+  Workstation blocking wait time: 0 s
+  Utilization: 39.16%
+  Completed delivery assignments: 1
+  Completed removal assignments: 0
+
+AMR AMR_Remote:
+  Travel distance: 35.999 units
+  Busy/assigned time: 38.798 s
+  Idle/unassigned time: 2.01 s
+  Action time: 3 s
+  Loading-point queue wait time: 0 s
+  Workstation blocking wait time: 0 s
+  Utilization: 95.589%
+  Completed delivery assignments: 1
+  Completed removal assignments: 0
+
+All AMRs total:
+Total:
+  Travel distance: 43.996 units
+  Busy/assigned time: 54.654 s
+  Idle/unassigned time: 26.962 s
+  Action time: 11 s
+  Loading-point queue wait time: 0 s
+  Workstation blocking wait time: 0 s
+  Utilization: 67.374%
+  Completed delivery assignments: 2
+  Completed removal assignments: 0
+
+All AMRs average:
+Average:
+  Travel distance: 21.998 units
+  Busy/assigned time: 27.327 s
+  Idle/unassigned time: 13.481 s
+  Action time: 5.5 s
+  Loading-point queue wait time: 0 s
+  Workstation blocking wait time: 0 s
+  Utilization: 67.374%
+  Completed delivery assignments: 1
+  Completed removal assignments: 0

@@ -10,6 +10,8 @@ namespace TaskPlanning.Tests
     public sealed class TaskPlanningScenarioSpawnerTests
     {
         [TestCase(TaskPlanningScenarioPreset.FifoAssignmentTrap)]
+        [TestCase(TaskPlanningScenarioPreset.FutureWaitTrap)]
+        [TestCase(TaskPlanningScenarioPreset.FutureCapacityTrap)]
         public void SpawnerCreatesCompleteScenarioUnderSpawner(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerTest");
@@ -61,6 +63,8 @@ namespace TaskPlanning.Tests
         }
 
         [TestCase(TaskPlanningScenarioPreset.FifoAssignmentTrap)]
+        [TestCase(TaskPlanningScenarioPreset.FutureWaitTrap)]
+        [TestCase(TaskPlanningScenarioPreset.FutureCapacityTrap)]
         public void SpawnerWiresScheduledMesScenario(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerMesTest");
@@ -88,6 +92,8 @@ namespace TaskPlanning.Tests
         }
 
         [TestCase(TaskPlanningScenarioPreset.FifoAssignmentTrap)]
+        [TestCase(TaskPlanningScenarioPreset.FutureWaitTrap)]
+        [TestCase(TaskPlanningScenarioPreset.FutureCapacityTrap)]
         public void SpawnedPalletsResolveExactlyOneLoadingPoint(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerCompatibilityTest");
@@ -116,6 +122,8 @@ namespace TaskPlanning.Tests
         }
 
         [TestCase(TaskPlanningScenarioPreset.FifoAssignmentTrap)]
+        [TestCase(TaskPlanningScenarioPreset.FutureWaitTrap)]
+        [TestCase(TaskPlanningScenarioPreset.FutureCapacityTrap)]
         public void SpawnerConfiguresSchedulerWithSpawnedObjects(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerSchedulerTest");
@@ -146,6 +154,8 @@ namespace TaskPlanning.Tests
         }
 
         [TestCase(TaskPlanningScenarioPreset.FifoAssignmentTrap)]
+        [TestCase(TaskPlanningScenarioPreset.FutureWaitTrap)]
+        [TestCase(TaskPlanningScenarioPreset.FutureCapacityTrap)]
         public void SpawnerNamesNodesAndPointsByTheirNumericIds(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerNamesTest");
