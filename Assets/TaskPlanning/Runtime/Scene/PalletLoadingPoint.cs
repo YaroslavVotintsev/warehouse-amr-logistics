@@ -17,6 +17,7 @@ namespace TaskPlanning
 
         public string LoadingPointId => string.IsNullOrWhiteSpace(loadingPointId) ? name : loadingPointId.Trim();
         public MapfNode Node => node;
+        public IReadOnlyList<PalletMarker> AcceptedPallets => acceptedPallets ?? System.Array.Empty<PalletMarker>();
         public int AcceptedPalletCount => acceptedPallets?.Length ?? 0;
         public bool IsReserved => _reservedFor != null;
         public PalletMarker ReservedFor => _reservedFor;

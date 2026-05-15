@@ -4242,7 +4242,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Mapf.Runtime::Mapf.UnityAdapter.MapfCoordinator
   sceneGraph: {fileID: 594050208}
-  settings: {fileID: 0}
+  settings: {fileID: 11400000, guid: 5709351d6f626ed4199c8321c756e593, type: 2}
   planOnStart: 0
   logSceneSnapshotOnStart: 1
 --- !u!4 &594050211
@@ -7984,7 +7984,7 @@ MonoBehaviour:
       blocksPendingDeliveryMultiplier: 0.5
       agingWeight: 0
       maxAgingBonus: 300
-  enableSoftAmrReservations: 0
+  enableSoftAmrReservations: 1
   reassignmentCostImprovementPercent: 15
   waitForFutureImprovementPercent: 15
   autoDiscoverSceneObjects: 1

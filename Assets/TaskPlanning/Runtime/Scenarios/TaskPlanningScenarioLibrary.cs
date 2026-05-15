@@ -115,7 +115,7 @@ namespace TaskPlanning
                     Pallet("Pallet_Primer_A", "126", "228", attach: 1f, detach: 1f, load: 8f, unload: 1f),
                     Pallet("Pallet_Primer_B", "132", "234", attach: 1f, detach: 1f, load: 12f, unload: 1f),
                     Pallet("Pallet_Target_A", "123", "225", attach: 1f, detach: 1f, load: 1f, unload: 1f),
-                    Pallet("Pallet_Target_B", "127", "229", attach: 1f, detach: 1f, load: 1f, unload: 1f),
+                    Pallet("Pallet_Target_B", "129", "229", attach: 1f, detach: 1f, load: 1f, unload: 1f),
                     Pallet("Pallet_Target_C", "130", "232", attach: 1f, detach: 1f, load: 1f, unload: 1f),
                     Pallet("Pallet_Target_D", "134", "236", attach: 1f, detach: 1f, load: 1f, unload: 1f)
                 },

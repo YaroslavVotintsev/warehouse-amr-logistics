@@ -194,6 +194,28 @@ namespace TaskPlanning.Tests
             }
         }
 
+        [TestCase(TaskPlanningScenarioPreset.FifoAssignmentTrap)]
+        [TestCase(TaskPlanningScenarioPreset.FutureWaitTrap)]
+        [TestCase(TaskPlanningScenarioPreset.FutureCapacityTrap)]
+        public void ScenarioPalletsDoNotSpawnOnLoadingOrWorkstationNodes(TaskPlanningScenarioPreset preset)
+        {
+            var scenario = TaskPlanningScenarioLibrary.Get(preset);
+            var loadingPointNodeIds = scenario.LoadingPoints.Select(point => point.NodeId).ToHashSet();
+            var workstationNodeIds = scenario.Workstations.Select(point => point.NodeId).ToHashSet();
+
+            foreach (var pallet in scenario.Pallets)
+            {
+                Assert.That(
+                    loadingPointNodeIds.Contains(pallet.CurrentNodeId),
+                    Is.False,
+                    $"{scenario.Name}: pallet '{pallet.PalletId}' should not spawn on loading point node '{pallet.CurrentNodeId}'.");
+                Assert.That(
+                    workstationNodeIds.Contains(pallet.CurrentNodeId),
+                    Is.False,
+                    $"{scenario.Name}: pallet '{pallet.PalletId}' should not spawn on workstation node '{pallet.CurrentNodeId}'.");
+            }
+        }
+
         private static GameObject RequireChild(GameObject root, string childName)
         {
             var child = root.transform.Find(childName);

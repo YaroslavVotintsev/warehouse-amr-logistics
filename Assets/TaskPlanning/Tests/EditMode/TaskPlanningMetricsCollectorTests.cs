@@ -24,7 +24,7 @@ namespace TaskPlanning.Tests
             }
             finally
             {
-                DeleteReport(collector.LastReportPath);
+                DeleteReports(collector);
                 TaskPlanningTestHelpers.Destroy(scenario, collector.gameObject);
             }
         }
@@ -47,18 +47,18 @@ namespace TaskPlanning.Tests
                 var report = collector.FinalizeAndWriteReport(5f);
 
                 Assert.That(report, Does.Contain("Scenario name: MetricsReportScenario"));
-                Assert.That(report, Does.Contain("Dispatcher algorithm: NearestDispatching"));
-                Assert.That(report, Does.Contain("Future handling policy: LookAhead"));
                 Assert.That(report, Does.Contain("Total MES tasks: 1"));
-                Assert.That(report, Does.Contain("Cost weights:"));
                 Assert.That(report, Does.Contain("Makespan: 5 s"));
                 Assert.That(report, Does.Contain("AMR Metrics_Report_AMR:"));
                 Assert.That(report, Does.Contain("All AMRs total:"));
                 Assert.That(report, Does.Contain("All AMRs average:"));
+                Assert.That(collector.LastConfigReportText, Does.Contain("Dispatcher algorithm: NearestDispatching"));
+                Assert.That(collector.LastConfigReportText, Does.Contain("Future handling policy: LookAhead"));
+                Assert.That(collector.LastConfigReportText, Does.Contain("Cost weights:"));
             }
             finally
             {
-                DeleteReport(collector.LastReportPath);
+                DeleteReports(collector);
                 TaskPlanningTestHelpers.Destroy(scenario, amr.gameObject, scheduler.gameObject, collector.gameObject);
             }
         }
@@ -94,7 +94,7 @@ namespace TaskPlanning.Tests
             }
             finally
             {
-                DeleteReport(collector.LastReportPath);
+                DeleteReports(collector);
                 TaskPlanningTestHelpers.Destroy(
                     scenario,
                     workstation.gameObject,
@@ -134,7 +134,7 @@ namespace TaskPlanning.Tests
             }
             finally
             {
-                DeleteReport(collector.LastReportPath);
+                DeleteReports(collector);
                 TaskPlanningTestHelpers.Destroy(
                     scenario,
                     workstation.gameObject,
@@ -145,7 +145,7 @@ namespace TaskPlanning.Tests
         }
 
         [Test]
-        public void ReportWriterCreatesTxtFileInExpectedTaskPlanningMetricsFolder()
+        public void ReportWriterCreatesThreeTxtFilesInExpectedTaskPlanningMetricsFolder()
         {
             var collector = TaskPlanningTestHelpers.CreateComponent<TaskPlanningMetricsCollector>("Metrics_File_Collector");
             var scenario = CreateScenario("MetricsFileScenario");
@@ -159,16 +159,80 @@ namespace TaskPlanning.Tests
                 Assert.That(
                     Path.GetFullPath(collector.LastReportPath),
                     Does.StartWith(Path.GetFullPath(TaskPlanningMetricsCollector.DefaultMetricsFolder)));
+                Assert.That(
+                    Path.GetFullPath(collector.LastConfigReportPath),
+                    Does.StartWith(Path.GetFullPath(TaskPlanningMetricsCollector.DefaultMetricsFolder)));
+                Assert.That(
+                    Path.GetFullPath(collector.LastTraceReportPath),
+                    Does.StartWith(Path.GetFullPath(TaskPlanningMetricsCollector.DefaultMetricsFolder)));
                 Assert.That(Path.GetExtension(collector.LastReportPath), Is.EqualTo(".txt"));
+                Assert.That(Path.GetExtension(collector.LastConfigReportPath), Is.EqualTo(".txt"));
+                Assert.That(Path.GetExtension(collector.LastTraceReportPath), Is.EqualTo(".txt"));
                 Assert.That(
                     Path.GetFileName(collector.LastReportPath),
-                    Does.Match(@"^MetricsFileScenario_Unknown_Unknown_\d{3}\.txt$"));
+                    Does.Match(@"^MetricsFileScenario_Unknown_Unknown_\d{3}_metrics\.txt$"));
+                Assert.That(
+                    Path.GetFileName(collector.LastConfigReportPath),
+                    Does.Match(@"^MetricsFileScenario_Unknown_Unknown_\d{3}_config\.txt$"));
+                Assert.That(
+                    Path.GetFileName(collector.LastTraceReportPath),
+                    Does.Match(@"^MetricsFileScenario_Unknown_Unknown_\d{3}_trace\.txt$"));
                 Assert.That(File.Exists(collector.LastReportPath), Is.True);
+                Assert.That(File.Exists(collector.LastConfigReportPath), Is.True);
+                Assert.That(File.Exists(collector.LastTraceReportPath), Is.True);
             }
             finally
             {
-                DeleteReport(collector.LastReportPath);
+                DeleteReports(collector);
                 TaskPlanningTestHelpers.Destroy(scenario, collector.gameObject);
+            }
+        }
+
+        [Test]
+        public void ConfigAndTraceReportsContainScenarioObjectsAndAssignmentEvents()
+        {
+            var collector = TaskPlanningTestHelpers.CreateComponent<TaskPlanningMetricsCollector>("Metrics_Trace_Collector");
+            var scheduler = TaskPlanningTestHelpers.CreateComponent<TaskScheduler>("Metrics_Trace_Scheduler");
+            var amr = TaskPlanningTestHelpers.CreateComponent<TaskPlanningAmr>("Metrics_Trace_AMR");
+            var pallet = TaskPlanningTestHelpers.CreatePallet("Metrics_Trace_Pallet");
+            var loadingPoint = TaskPlanningTestHelpers.CreateLoadingPoint("Metrics_Trace_Loading", null, pallet);
+            var workstation = TaskPlanningTestHelpers.CreateWorkstation("Metrics_Trace_Workstation", null, pallet);
+            var scenario = CreateScenario("MetricsTraceScenario");
+            var task = new DeliveryPlanningTask("Task-Trace", pallet, workstation, 0f);
+            var assignment = CreateAssignment(amr, task, pallet, workstation);
+
+            try
+            {
+                scheduler.ConfigureScene(null, null, new[] { amr }, new[] { loadingPoint });
+                collector.Configure(null, scheduler);
+                collector.BeginScenario(scenario, 1, 0f);
+                collector.RecordMesTasksSubmitted(new[] { new DeliveryTaskRequest("Task-Trace", pallet, workstation) }, 0f);
+                collector.RecordAssignmentStarted(assignment, 1f);
+                collector.RecordAssignmentPhaseChanged(assignment, "MovingToPallet", "Attaching", 2f);
+                collector.RecordAssignmentActionTime(assignment, TaskPlanningAssignmentActionType.Attach, 1f);
+                collector.RecordAssignmentCompleted(assignment, 5f);
+                collector.FinalizeAndWriteReport(6f);
+
+                Assert.That(collector.LastConfigReportText, Does.Contain("Scene Objects"));
+                Assert.That(collector.LastConfigReportText, Does.Contain("Metrics_Trace_Loading"));
+                Assert.That(collector.LastConfigReportText, Does.Contain("Metrics_Trace_Workstation"));
+                Assert.That(collector.LastTraceReportText, Does.Contain("MES_BATCH_RECEIVED"));
+                Assert.That(collector.LastTraceReportText, Does.Contain("ASSIGNMENT_STARTED"));
+                Assert.That(collector.LastTraceReportText, Does.Contain("ASSIGNMENT_PHASE"));
+                Assert.That(collector.LastTraceReportText, Does.Contain("Assignment Trace Summary"));
+                Assert.That(collector.LastTraceReportText, Does.Contain("Task-Trace"));
+            }
+            finally
+            {
+                DeleteReports(collector);
+                TaskPlanningTestHelpers.Destroy(
+                    scenario,
+                    workstation.gameObject,
+                    loadingPoint.gameObject,
+                    pallet.gameObject,
+                    amr.gameObject,
+                    scheduler.gameObject,
+                    collector.gameObject);
             }
         }
 
@@ -196,6 +260,16 @@ namespace TaskPlanning.Tests
                 workstation,
                 removalTargetNode: null,
                 new CostEvaluation(isFeasible: true, totalCost: 0));
+        }
+
+        private static void DeleteReports(TaskPlanningMetricsCollector collector)
+        {
+            if (collector == null)
+                return;
+
+            DeleteReport(collector.LastReportPath);
+            DeleteReport(collector.LastConfigReportPath);
+            DeleteReport(collector.LastTraceReportPath);
         }
 
         private static void DeleteReport(string path)

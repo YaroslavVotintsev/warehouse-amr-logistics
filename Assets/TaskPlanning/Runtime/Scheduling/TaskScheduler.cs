@@ -36,18 +36,30 @@ namespace TaskPlanning
         private RoadmapDistanceService _distances;
         private float _nextPendingRetryTime;
         private int _generatedRemovalTaskNumber;
+        private int _dispatchCycleNumber;
 
         public event Action<DispatchAssignment> AssignmentStarted;
         public event Action<DispatchAssignment, TaskPlanningAssignmentActionType, float> AssignmentActionTimeRecorded;
         public event Action<DispatchAssignment, float, float> AssignmentQueueWaitRecorded;
         public event Action<DispatchAssignment> AssignmentCompleted;
         public event Action<DeliveryPlanningTask, DispatchAssignment> DeliveryTaskCompleted;
+        public event Action<TaskPlanningDispatchCycleTrace> DispatchCycleCompleted;
+        public event Action<DispatchAssignment, DispatchAssignment> AssignmentReassigned;
+        public event Action<DispatchAssignment, string, string> AssignmentPhaseChanged;
 
         public TaskPlanningAlgorithmType Algorithm => algorithm;
         public TaskPlanningFutureHandlingMode FutureHandling => futureHandling;
+        public RollingHorizonOptions RollingHorizon => rollingHorizon;
         public TaskPlanningCostWeights CostWeights => costWeights;
+        public bool EnableSoftAmrReservations => enableSoftAmrReservations;
+        public float ReassignmentCostImprovementPercent => Mathf.Max(0f, reassignmentCostImprovementPercent);
+        public float WaitForFutureImprovementPercent => Mathf.Max(0f, waitForFutureImprovementPercent);
+        public float CostAmrSpeed => Mathf.Max(0.0001f, costAmrSpeed);
+        public float PendingRetryIntervalSeconds => Mathf.Max(0.05f, pendingRetryIntervalSeconds);
+        public float ArrivalDistance => Mathf.Max(0f, arrivalDistance);
         public bool IsIdle => _pendingTasks.Count == 0 && _activeAssignments.Count == 0;
         public IReadOnlyList<TaskPlanningAmr> ConfiguredAmrs => amrs;
+        public IReadOnlyList<PalletLoadingPoint> ConfiguredLoadingPoints => loadingPoints;
 
         private void Awake()
         {
@@ -167,6 +179,19 @@ namespace TaskPlanning
                 futureAvailabilities,
                 softReassignmentOptions: softReassignmentOptions);
             var plan = _futurePolicy.Solve(problem, _dispatchAlgorithm);
+            DispatchCycleCompleted?.Invoke(new TaskPlanningDispatchCycleTrace(
+                ++_dispatchCycleNumber,
+                Time.time,
+                algorithm,
+                futureHandling,
+                taskSnapshot,
+                candidateAmrs,
+                _activeAssignments.Values.Where(execution => execution.CanReassign).Select(execution => execution.Assignment.Amr).ToArray(),
+                softReassignmentOptions,
+                futureAvailabilities,
+                problem.Candidates,
+                plan.Assignments));
+
             foreach (var assignment in plan.Assignments)
             {
                 if (!TryStartAssignment(assignment))
@@ -187,6 +212,7 @@ namespace TaskPlanning
                     return false;
 
                 LogSoftReassignment(activeAssignment, assignment);
+                AssignmentReassigned?.Invoke(activeAssignment.Assignment, assignment);
                 CancelActiveAssignment(activeAssignment, true);
             }
 
@@ -256,33 +282,33 @@ namespace TaskPlanning
 
         private IEnumerator RunDelivery(DeliveryPlanningTask request, DispatchAssignment assignment, ActiveTaskExecution execution)
         {
-            execution.Phase = ActiveTaskPhase.MovingToPallet;
+            SetPhase(execution, ActiveTaskPhase.MovingToPallet);
             yield return MoveAmrTo(assignment.Amr, assignment.Pallet.CurrentNode);
-            execution.Phase = ActiveTaskPhase.Attaching;
+            SetPhase(execution, ActiveTaskPhase.Attaching);
             assignment.Pallet.MarkAttaching();
             yield return new WaitForSeconds(assignment.Pallet.AttachDurationSeconds);
             AssignmentActionTimeRecorded?.Invoke(assignment, TaskPlanningAssignmentActionType.Attach, assignment.Pallet.AttachDurationSeconds);
             assignment.Pallet.AttachTo(assignment.Amr);
             execution.HasAttachedPallet = true;
-            execution.Phase = ActiveTaskPhase.WaitingForLoadingAndWorkstationTurn;
+            SetPhase(execution, ActiveTaskPhase.WaitingForLoadingAndWorkstationTurn);
             TryDispatchPendingTasks();
 
             yield return WaitForLoadingAndWorkstationTurn(request, assignment);
-            execution.Phase = ActiveTaskPhase.MovingToLoading;
+            SetPhase(execution, ActiveTaskPhase.MovingToLoading);
             yield return MoveAmrTo(assignment.Amr, assignment.LoadingPoint.Node);
-            execution.Phase = ActiveTaskPhase.Loading;
+            SetPhase(execution, ActiveTaskPhase.Loading);
             assignment.Pallet.MarkLoading();
             yield return new WaitForSeconds(assignment.Pallet.LoadDurationSeconds);
             AssignmentActionTimeRecorded?.Invoke(assignment, TaskPlanningAssignmentActionType.Load, assignment.Pallet.LoadDurationSeconds);
             assignment.Pallet.MarkLoaded();
 
-            execution.Phase = ActiveTaskPhase.MovingToWorkstation;
+            SetPhase(execution, ActiveTaskPhase.MovingToWorkstation);
             coordinator.RequestAgentGoal(assignment.Amr.MapfAgent, request.Workstation.Node);
             assignment.LoadingPoint.ReleaseReservation(assignment.Pallet);
             TryDispatchPendingTasks();
             yield return WaitForAmrAt(assignment.Amr, request.Workstation.Node);
 
-            execution.Phase = ActiveTaskPhase.DetachingAtWorkstation;
+            SetPhase(execution, ActiveTaskPhase.DetachingAtWorkstation);
             assignment.Pallet.MarkDetaching();
             yield return new WaitForSeconds(assignment.Pallet.DetachDurationSeconds);
             AssignmentActionTimeRecorded?.Invoke(assignment, TaskPlanningAssignmentActionType.Detach, assignment.Pallet.DetachDurationSeconds);
@@ -314,18 +340,18 @@ namespace TaskPlanning
 
         private IEnumerator RunPalletRemoval(PalletRemovalPlanningTask request, DispatchAssignment assignment, ActiveTaskExecution execution)
         {
-            execution.Phase = ActiveTaskPhase.MovingToPallet;
+            SetPhase(execution, ActiveTaskPhase.MovingToPallet);
             yield return MoveAmrTo(assignment.Amr, assignment.Pallet.CurrentNode);
-            execution.Phase = ActiveTaskPhase.Attaching;
+            SetPhase(execution, ActiveTaskPhase.Attaching);
             assignment.Pallet.MarkAttaching();
             yield return new WaitForSeconds(assignment.Pallet.AttachDurationSeconds);
             AssignmentActionTimeRecorded?.Invoke(assignment, TaskPlanningAssignmentActionType.Attach, assignment.Pallet.AttachDurationSeconds);
             assignment.Pallet.AttachTo(assignment.Amr);
             execution.HasAttachedPallet = true;
 
-            execution.Phase = ActiveTaskPhase.MovingToParking;
+            SetPhase(execution, ActiveTaskPhase.MovingToParking);
             yield return MoveAmrTo(assignment.Amr, assignment.RemovalTargetNode);
-            execution.Phase = ActiveTaskPhase.DetachingAtParking;
+            SetPhase(execution, ActiveTaskPhase.DetachingAtParking);
             assignment.Pallet.MarkDetaching();
             yield return new WaitForSeconds(assignment.Pallet.DetachDurationSeconds);
             AssignmentActionTimeRecorded?.Invoke(assignment, TaskPlanningAssignmentActionType.Detach, assignment.Pallet.DetachDurationSeconds);
@@ -718,6 +744,16 @@ namespace TaskPlanning
             _activeAssignments[assignment.Amr] = execution;
             AssignmentStarted?.Invoke(assignment);
             return execution;
+        }
+
+        private void SetPhase(ActiveTaskExecution execution, ActiveTaskPhase phase)
+        {
+            if (execution == null || execution.Phase == phase)
+                return;
+
+            var previousPhase = execution.Phase;
+            execution.Phase = phase;
+            AssignmentPhaseChanged?.Invoke(execution.Assignment, previousPhase.ToString(), phase.ToString());
         }
 
         private void CompleteActiveAssignment(TaskPlanningAmr amr)

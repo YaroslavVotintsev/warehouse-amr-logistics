@@ -27,6 +27,7 @@ namespace TaskPlanning
 
         public event Action<TaskPlanningMesScheduledScenarioAsset, int> ScheduledScenarioStarted;
         public event Action<TaskPlanningMesScheduledScenarioAsset> ScheduledScenarioSubmissionCompleted;
+        public event Action<IReadOnlyList<DeliveryTaskRequest>> TasksSubmitted;
 
         private void Awake()
         {
@@ -55,6 +56,11 @@ namespace TaskPlanning
 
         public TaskScheduler Scheduler => scheduler;
         public TaskPlanningMesScheduledScenarioAsset ScheduledScenario => scheduledScenario;
+        public TaskPlanningMesAutomationMode AutomationMode => automationMode;
+        public bool StartScheduledScenarioOnPlay => startScheduledScenarioOnPlay;
+        public bool SubmitSameTimestampAsBatch => submitSameTimestampAsBatch;
+        public float ScheduledScenarioStartDelaySeconds => Mathf.Max(0f, scheduledScenarioStartDelaySeconds);
+        public IReadOnlyList<DeliveryTaskRequest> InspectorTasks => inspectorTasks;
         public bool IsScheduledScenarioRunning => _scheduledScenarioRunning;
         public int ScheduledScenarioTaskCount => scheduledScenario == null ? 0 : scheduledScenario.OrderedTasks().Count;
 
@@ -138,6 +144,7 @@ namespace TaskPlanning
             if (batch.Length == 0)
                 return;
 
+            TasksSubmitted?.Invoke(batch);
             scheduler.EnqueueTasks(batch);
         }
 
