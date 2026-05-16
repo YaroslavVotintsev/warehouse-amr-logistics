@@ -1,0 +1,558 @@
+﻿TaskPlanning Dispatch Trace
+Run: Future_Capacity_Trap_NearestDispatching_ImmediateOnly_002
+Scenario name: Future_Capacity_Trap
+
+Chronological Events
+[0s] SCENARIO_STARTED
+  Scenario: Future_Capacity_Trap
+  Total MES tasks: 6
+[0s] MES_BATCH_RECEIVED
+  Task: PrimeFutureA | pallet=Pallet_Primer_A | workstation=228
+  Task: PrimeFutureB | pallet=Pallet_Primer_B | workstation=234
+[0s] DISPATCH_CYCLE #1
+  Algorithm: NearestDispatching
+  Future policy: ImmediateOnly
+  Pending tasks: PrimeFutureA, PrimeFutureB
+  Free AMRs: AMR_Future_A, AMR_Future_B, AMR_Remote
+  Active interruptible AMRs: none
+  Soft reassignment candidates: none
+  Candidate costs:
+    AMR_Future_A -> PrimeFutureA | pallet=Pallet_Primer_A | loading=127 | workstation=228 | cost=18 | softReassignment=no
+    AMR_Future_B -> PrimeFutureB | pallet=Pallet_Primer_B | loading=133 | workstation=234 | cost=22 | softReassignment=no
+    AMR_Future_B -> PrimeFutureA | pallet=Pallet_Primer_A | loading=127 | workstation=228 | cost=24 | softReassignment=no
+    AMR_Future_A -> PrimeFutureB | pallet=Pallet_Primer_B | loading=133 | workstation=234 | cost=28 | softReassignment=no
+    AMR_Remote -> PrimeFutureA | pallet=Pallet_Primer_A | loading=127 | workstation=228 | cost=44 | softReassignment=no
+    AMR_Remote -> PrimeFutureB | pallet=Pallet_Primer_B | loading=133 | workstation=234 | cost=54 | softReassignment=no
+  Selected:
+    AMR_Future_A -> PrimeFutureA | cost=18 | softReassignment=no | replaces=-
+    AMR_Future_B -> PrimeFutureB | cost=22 | softReassignment=no | replaces=-
+[0s] ASSIGNMENT_STARTED
+  Assignment: A-001
+  Type: Delivery
+  Task: PrimeFutureA
+  AMR: AMR_Future_A
+  Pallet: Pallet_Primer_A
+  Loading point: 127
+  Workstation: 228
+  Removal target: -
+  Cost: 18
+  Soft reassignment: no
+  Replaced task: -
+[0s] ASSIGNMENT_STARTED
+  Assignment: A-002
+  Type: Delivery
+  Task: PrimeFutureB
+  AMR: AMR_Future_B
+  Pallet: Pallet_Primer_B
+  Loading point: 133
+  Workstation: 234
+  Removal target: -
+  Cost: 22
+  Soft reassignment: no
+  Replaced task: -
+[1.003s] MES_SUBMISSION_COMPLETED
+  Scenario: Future_Capacity_Trap
+[1.003s] MES_BATCH_RECEIVED
+  Task: CapacityTargetA | pallet=Pallet_Target_A | workstation=225
+  Task: CapacityTargetB | pallet=Pallet_Target_B | workstation=229
+  Task: CapacityTargetC | pallet=Pallet_Target_C | workstation=232
+  Task: CapacityTargetD | pallet=Pallet_Target_D | workstation=236
+[1.003s] DISPATCH_CYCLE #2
+  Algorithm: NearestDispatching
+  Future policy: ImmediateOnly
+  Pending tasks: CapacityTargetA, CapacityTargetB, CapacityTargetC, CapacityTargetD
+  Free AMRs: AMR_Remote
+  Active interruptible AMRs: AMR_Future_A, AMR_Future_B
+  Soft reassignment candidates: none
+  Future AMR availability:
+    AMR_Future_A after PrimeFutureA | finishNode=228 | eta=17 s | interruptible=True
+    AMR_Future_B after PrimeFutureB | finishNode=234 | eta=21 s | interruptible=True
+  Candidate costs:
+    AMR_Remote -> CapacityTargetA | pallet=Pallet_Target_A | loading=124 | workstation=225 | cost=34 | softReassignment=no
+    AMR_Remote -> CapacityTargetB | pallet=Pallet_Target_B | loading=128 | workstation=229 | cost=40 | softReassignment=no
+    AMR_Remote -> CapacityTargetC | pallet=Pallet_Target_C | loading=131 | workstation=232 | cost=41 | softReassignment=no
+    AMR_Remote -> CapacityTargetD | pallet=Pallet_Target_D | loading=135 | workstation=236 | cost=45 | softReassignment=no
+  Selected:
+    AMR_Remote -> CapacityTargetA | cost=34 | softReassignment=no | replaces=-
+[1.003s] ASSIGNMENT_STARTED
+  Assignment: A-003
+  Type: Delivery
+  Task: CapacityTargetA
+  AMR: AMR_Remote
+  Pallet: Pallet_Target_A
+  Loading point: 124
+  Workstation: 225
+  Removal target: -
+  Cost: 34
+  Soft reassignment: no
+  Replaced task: -
+[2.023s] ASSIGNMENT_PHASE
+  Task: PrimeFutureA
+  AMR: AMR_Future_A
+  MovingToPallet -> Attaching
+[2.023s] ASSIGNMENT_PHASE
+  Task: PrimeFutureB
+  AMR: AMR_Future_B
+  MovingToPallet -> Attaching
+[3.023s] ASSIGNMENT_ACTION
+  Task: PrimeFutureA
+  AMR: AMR_Future_A
+  Action: Attach
+  Duration: 1 s
+[3.023s] ASSIGNMENT_PHASE
+  Task: PrimeFutureA
+  AMR: AMR_Future_A
+  Attaching -> WaitingForLoadingAndWorkstationTurn
+[3.023s] ASSIGNMENT_QUEUE_WAIT
+  Task: PrimeFutureA
+  AMR: AMR_Future_A
+  Loading-point wait: 0 s
+  Workstation wait: 0 s
+[3.023s] ASSIGNMENT_ACTION
+  Task: PrimeFutureB
+  AMR: AMR_Future_B
+  Action: Attach
+  Duration: 1 s
+[3.023s] ASSIGNMENT_PHASE
+  Task: PrimeFutureB
+  AMR: AMR_Future_B
+  Attaching -> WaitingForLoadingAndWorkstationTurn
+[3.023s] ASSIGNMENT_QUEUE_WAIT
+  Task: PrimeFutureB
+  AMR: AMR_Future_B
+  Loading-point wait: 0 s
+  Workstation wait: 0 s
+[3.032s] ASSIGNMENT_PHASE
+  Task: PrimeFutureA
+  AMR: AMR_Future_A
+  WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+[3.032s] ASSIGNMENT_PHASE
+  Task: PrimeFutureB
+  AMR: AMR_Future_B
+  WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+[5.97s] ASSIGNMENT_PHASE
+  Task: PrimeFutureA
+  AMR: AMR_Future_A
+  MovingToLoading -> Loading
+[5.97s] ASSIGNMENT_PHASE
+  Task: PrimeFutureB
+  AMR: AMR_Future_B
+  MovingToLoading -> Loading
+[13.97s] ASSIGNMENT_ACTION
+  Task: PrimeFutureA
+  AMR: AMR_Future_A
+  Action: Load
+  Duration: 8 s
+[13.97s] ASSIGNMENT_PHASE
+  Task: PrimeFutureA
+  AMR: AMR_Future_A
+  Loading -> MovingToWorkstation
+[16.903s] ASSIGNMENT_PHASE
+  Task: PrimeFutureA
+  AMR: AMR_Future_A
+  MovingToWorkstation -> DetachingAtWorkstation
+[17.903s] ASSIGNMENT_ACTION
+  Task: PrimeFutureA
+  AMR: AMR_Future_A
+  Action: Detach
+  Duration: 1 s
+[17.903s] ASSIGNMENT_COMPLETED
+  Task: PrimeFutureA
+  AMR: AMR_Future_A
+  Pallet: Pallet_Primer_A
+[17.903s] DISPATCH_CYCLE #3
+  Algorithm: NearestDispatching
+  Future policy: ImmediateOnly
+  Pending tasks: CapacityTargetB, CapacityTargetC, CapacityTargetD
+  Free AMRs: AMR_Future_A
+  Active interruptible AMRs: AMR_Remote
+  Soft reassignment candidates: none
+  Future AMR availability:
+    AMR_Future_B after PrimeFutureB | finishNode=234 | eta=16 s | interruptible=False
+    AMR_Remote after CapacityTargetA | finishNode=225 | eta=17 s | interruptible=True
+  Candidate costs:
+    AMR_Future_A -> CapacityTargetB | pallet=Pallet_Target_B | loading=128 | workstation=229 | cost=-4.9 | softReassignment=no
+    AMR_Future_A -> CapacityTargetC | pallet=Pallet_Target_C | loading=131 | workstation=232 | cost=-3.9 | softReassignment=no
+    AMR_Future_A -> CapacityTargetD | pallet=Pallet_Target_D | loading=135 | workstation=236 | cost=0.1 | softReassignment=no
+  Selected:
+    AMR_Future_A -> CapacityTargetB | cost=-4.9 | softReassignment=no | replaces=-
+[17.903s] ASSIGNMENT_STARTED
+  Assignment: A-004
+  Type: Delivery
+  Task: CapacityTargetB
+  AMR: AMR_Future_A
+  Pallet: Pallet_Target_B
+  Loading point: 128
+  Workstation: 229
+  Removal target: -
+  Cost: -4.9
+  Soft reassignment: no
+  Replaced task: -
+[17.972s] ASSIGNMENT_ACTION
+  Task: PrimeFutureB
+  AMR: AMR_Future_B
+  Action: Load
+  Duration: 12 s
+[17.972s] ASSIGNMENT_PHASE
+  Task: PrimeFutureB
+  AMR: AMR_Future_B
+  Loading -> MovingToWorkstation
+[18.907s] MES_TASK_COMPLETED
+  Task: PrimeFutureA
+  AMR: AMR_Future_A
+  Pallet: Pallet_Primer_A
+[20.837s] ASSIGNMENT_PHASE
+  Task: CapacityTargetB
+  AMR: AMR_Future_A
+  MovingToPallet -> Attaching
+[20.903s] ASSIGNMENT_PHASE
+  Task: PrimeFutureB
+  AMR: AMR_Future_B
+  MovingToWorkstation -> DetachingAtWorkstation
+[21.838s] ASSIGNMENT_ACTION
+  Task: CapacityTargetB
+  AMR: AMR_Future_A
+  Action: Attach
+  Duration: 1 s
+[21.838s] ASSIGNMENT_PHASE
+  Task: CapacityTargetB
+  AMR: AMR_Future_A
+  Attaching -> WaitingForLoadingAndWorkstationTurn
+[21.838s] ASSIGNMENT_QUEUE_WAIT
+  Task: CapacityTargetB
+  AMR: AMR_Future_A
+  Loading-point wait: 0 s
+  Workstation wait: 0 s
+[21.843s] ASSIGNMENT_PHASE
+  Task: CapacityTargetB
+  AMR: AMR_Future_A
+  WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+[21.907s] ASSIGNMENT_ACTION
+  Task: PrimeFutureB
+  AMR: AMR_Future_B
+  Action: Detach
+  Duration: 1 s
+[21.907s] ASSIGNMENT_COMPLETED
+  Task: PrimeFutureB
+  AMR: AMR_Future_B
+  Pallet: Pallet_Primer_B
+[21.907s] DISPATCH_CYCLE #4
+  Algorithm: NearestDispatching
+  Future policy: ImmediateOnly
+  Pending tasks: CapacityTargetC, CapacityTargetD
+  Free AMRs: AMR_Future_B
+  Active interruptible AMRs: AMR_Remote
+  Soft reassignment candidates: none
+  Future AMR availability:
+    AMR_Future_A after CapacityTargetB | finishNode=229 | eta=8 s | interruptible=False
+    AMR_Remote after CapacityTargetA | finishNode=225 | eta=13 s | interruptible=True
+  Candidate costs:
+    AMR_Future_B -> CapacityTargetD | pallet=Pallet_Target_D | loading=135 | workstation=236 | cost=-9.904 | softReassignment=no
+    AMR_Future_B -> CapacityTargetC | pallet=Pallet_Target_C | loading=131 | workstation=232 | cost=-5.904 | softReassignment=no
+  Selected:
+    AMR_Future_B -> CapacityTargetD | cost=-9.904 | softReassignment=no | replaces=-
+[21.907s] ASSIGNMENT_STARTED
+  Assignment: A-005
+  Type: Delivery
+  Task: CapacityTargetD
+  AMR: AMR_Future_B
+  Pallet: Pallet_Target_D
+  Loading point: 135
+  Workstation: 236
+  Removal target: -
+  Cost: -9.904
+  Soft reassignment: no
+  Replaced task: -
+[22.909s] MES_TASK_COMPLETED
+  Task: PrimeFutureB
+  AMR: AMR_Future_B
+  Pallet: Pallet_Primer_B
+[23.845s] ASSIGNMENT_PHASE
+  Task: CapacityTargetD
+  AMR: AMR_Future_B
+  MovingToPallet -> Attaching
+[24.773s] ASSIGNMENT_PHASE
+  Task: CapacityTargetB
+  AMR: AMR_Future_A
+  MovingToLoading -> Loading
+[24.85s] ASSIGNMENT_ACTION
+  Task: CapacityTargetD
+  AMR: AMR_Future_B
+  Action: Attach
+  Duration: 1 s
+[24.85s] ASSIGNMENT_PHASE
+  Task: CapacityTargetD
+  AMR: AMR_Future_B
+  Attaching -> WaitingForLoadingAndWorkstationTurn
+[24.85s] ASSIGNMENT_QUEUE_WAIT
+  Task: CapacityTargetD
+  AMR: AMR_Future_B
+  Loading-point wait: 0 s
+  Workstation wait: 0 s
+[24.854s] ASSIGNMENT_PHASE
+  Task: CapacityTargetD
+  AMR: AMR_Future_B
+  WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+[25.774s] ASSIGNMENT_ACTION
+  Task: CapacityTargetB
+  AMR: AMR_Future_A
+  Action: Load
+  Duration: 1 s
+[25.774s] ASSIGNMENT_PHASE
+  Task: CapacityTargetB
+  AMR: AMR_Future_A
+  Loading -> MovingToWorkstation
+[25.944s] ASSIGNMENT_PHASE
+  Task: CapacityTargetA
+  AMR: AMR_Remote
+  MovingToPallet -> Attaching
+[26.944s] ASSIGNMENT_ACTION
+  Task: CapacityTargetA
+  AMR: AMR_Remote
+  Action: Attach
+  Duration: 1 s
+[26.944s] ASSIGNMENT_PHASE
+  Task: CapacityTargetA
+  AMR: AMR_Remote
+  Attaching -> WaitingForLoadingAndWorkstationTurn
+[26.944s] ASSIGNMENT_QUEUE_WAIT
+  Task: CapacityTargetA
+  AMR: AMR_Remote
+  Loading-point wait: 0 s
+  Workstation wait: 0 s
+[26.952s] ASSIGNMENT_PHASE
+  Task: CapacityTargetA
+  AMR: AMR_Remote
+  WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+[27.787s] ASSIGNMENT_PHASE
+  Task: CapacityTargetD
+  AMR: AMR_Future_B
+  MovingToLoading -> Loading
+[28.702s] ASSIGNMENT_PHASE
+  Task: CapacityTargetB
+  AMR: AMR_Future_A
+  MovingToWorkstation -> DetachingAtWorkstation
+[28.791s] ASSIGNMENT_ACTION
+  Task: CapacityTargetD
+  AMR: AMR_Future_B
+  Action: Load
+  Duration: 1 s
+[28.791s] ASSIGNMENT_PHASE
+  Task: CapacityTargetD
+  AMR: AMR_Future_B
+  Loading -> MovingToWorkstation
+[29.703s] ASSIGNMENT_ACTION
+  Task: CapacityTargetB
+  AMR: AMR_Future_A
+  Action: Detach
+  Duration: 1 s
+[29.703s] ASSIGNMENT_COMPLETED
+  Task: CapacityTargetB
+  AMR: AMR_Future_A
+  Pallet: Pallet_Target_B
+[29.703s] DISPATCH_CYCLE #5
+  Algorithm: NearestDispatching
+  Future policy: ImmediateOnly
+  Pending tasks: CapacityTargetC
+  Free AMRs: AMR_Future_A
+  Active interruptible AMRs: none
+  Soft reassignment candidates: none
+  Future AMR availability:
+    AMR_Future_B after CapacityTargetD | finishNode=236 | eta=3 s | interruptible=False
+    AMR_Remote after CapacityTargetA | finishNode=225 | eta=5 s | interruptible=False
+  Candidate costs:
+    AMR_Future_A -> CapacityTargetC | pallet=Pallet_Target_C | loading=131 | workstation=232 | cost=-16.701 | softReassignment=no
+  Selected:
+    AMR_Future_A -> CapacityTargetC | cost=-16.701 | softReassignment=no | replaces=-
+[29.703s] ASSIGNMENT_STARTED
+  Assignment: A-006
+  Type: Delivery
+  Task: CapacityTargetC
+  AMR: AMR_Future_A
+  Pallet: Pallet_Target_C
+  Loading point: 131
+  Workstation: 232
+  Removal target: -
+  Cost: -16.701
+  Soft reassignment: no
+  Replaced task: -
+[29.887s] ASSIGNMENT_PHASE
+  Task: CapacityTargetA
+  AMR: AMR_Remote
+  MovingToLoading -> Loading
+[30.704s] MES_TASK_COMPLETED
+  Task: CapacityTargetB
+  AMR: AMR_Future_A
+  Pallet: Pallet_Target_B
+[30.888s] ASSIGNMENT_ACTION
+  Task: CapacityTargetA
+  AMR: AMR_Remote
+  Action: Load
+  Duration: 1 s
+[30.888s] ASSIGNMENT_PHASE
+  Task: CapacityTargetA
+  AMR: AMR_Remote
+  Loading -> MovingToWorkstation
+[31.725s] ASSIGNMENT_PHASE
+  Task: CapacityTargetD
+  AMR: AMR_Future_B
+  MovingToWorkstation -> DetachingAtWorkstation
+[32.636s] ASSIGNMENT_PHASE
+  Task: CapacityTargetC
+  AMR: AMR_Future_A
+  MovingToPallet -> Attaching
+[32.729s] ASSIGNMENT_ACTION
+  Task: CapacityTargetD
+  AMR: AMR_Future_B
+  Action: Detach
+  Duration: 1 s
+[32.729s] ASSIGNMENT_COMPLETED
+  Task: CapacityTargetD
+  AMR: AMR_Future_B
+  Pallet: Pallet_Target_D
+[33.638s] ASSIGNMENT_ACTION
+  Task: CapacityTargetC
+  AMR: AMR_Future_A
+  Action: Attach
+  Duration: 1 s
+[33.638s] ASSIGNMENT_PHASE
+  Task: CapacityTargetC
+  AMR: AMR_Future_A
+  Attaching -> WaitingForLoadingAndWorkstationTurn
+[33.638s] ASSIGNMENT_QUEUE_WAIT
+  Task: CapacityTargetC
+  AMR: AMR_Future_A
+  Loading-point wait: 0 s
+  Workstation wait: 0 s
+[33.643s] ASSIGNMENT_PHASE
+  Task: CapacityTargetC
+  AMR: AMR_Future_A
+  WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+[33.733s] MES_TASK_COMPLETED
+  Task: CapacityTargetD
+  AMR: AMR_Future_B
+  Pallet: Pallet_Target_D
+[33.82s] ASSIGNMENT_PHASE
+  Task: CapacityTargetA
+  AMR: AMR_Remote
+  MovingToWorkstation -> DetachingAtWorkstation
+[34.821s] ASSIGNMENT_ACTION
+  Task: CapacityTargetA
+  AMR: AMR_Remote
+  Action: Detach
+  Duration: 1 s
+[34.821s] ASSIGNMENT_COMPLETED
+  Task: CapacityTargetA
+  AMR: AMR_Remote
+  Pallet: Pallet_Target_A
+[35.822s] MES_TASK_COMPLETED
+  Task: CapacityTargetA
+  AMR: AMR_Remote
+  Pallet: Pallet_Target_A
+[36.579s] ASSIGNMENT_PHASE
+  Task: CapacityTargetC
+  AMR: AMR_Future_A
+  MovingToLoading -> Loading
+[37.579s] ASSIGNMENT_ACTION
+  Task: CapacityTargetC
+  AMR: AMR_Future_A
+  Action: Load
+  Duration: 1 s
+[37.579s] ASSIGNMENT_PHASE
+  Task: CapacityTargetC
+  AMR: AMR_Future_A
+  Loading -> MovingToWorkstation
+[40.512s] ASSIGNMENT_PHASE
+  Task: CapacityTargetC
+  AMR: AMR_Future_A
+  MovingToWorkstation -> DetachingAtWorkstation
+[41.516s] ASSIGNMENT_ACTION
+  Task: CapacityTargetC
+  AMR: AMR_Future_A
+  Action: Detach
+  Duration: 1 s
+[41.516s] ASSIGNMENT_COMPLETED
+  Task: CapacityTargetC
+  AMR: AMR_Future_A
+  Pallet: Pallet_Target_C
+[42.517s] MES_TASK_COMPLETED
+  Task: CapacityTargetC
+  AMR: AMR_Future_A
+  Pallet: Pallet_Target_C
+
+Assignment Trace Summary
+# | type | task | pallet | amr | replaced task | replaced by | soft reassigned | enqueued | assigned | completed | total time | cost | loading wait | workstation wait | action time | travel distance | outcome
+1 | Delivery | PrimeFutureA | Pallet_Primer_A | AMR_Future_A | - | - | no | 0 | 0 | 17.903 | 17.903 s | 18 | 0 s | 0 s | 10 s | 7.995 units | completed
+2 | Delivery | PrimeFutureB | Pallet_Primer_B | AMR_Future_B | - | - | no | 0 | 0 | 21.907 | 21.907 s | 22 | 0 s | 0 s | 14 s | 7.996 units | completed
+3 | Delivery | CapacityTargetA | Pallet_Target_A | AMR_Remote | - | - | no | 1.003 | 1.003 | 34.821 | 33.819 s | 34 | 0 s | 0 s | 3 s | 30.993 units | completed
+4 | Delivery | CapacityTargetB | Pallet_Target_B | AMR_Future_A | - | - | no | 1.003 | 17.903 | 29.703 | 11.8 s | -4.9 | 0 s | 0 s | 3 s | 8.996 units | completed
+5 | Delivery | CapacityTargetD | Pallet_Target_D | AMR_Future_B | - | - | no | 1.003 | 21.907 | 32.729 | 10.822 s | -9.904 | 0 s | 0 s | 3 s | 7.995 units | completed
+6 | Delivery | CapacityTargetC | Pallet_Target_C | AMR_Future_A | - | - | no | 1.003 | 29.703 | 41.516 | 11.812 s | -16.701 | 0 s | 0 s | 3 s | 8.997 units | completed
+
+Assignment Phase Details
+A-001 / PrimeFutureA / AMR_Future_A
+  2.023s: MovingToPallet -> Attaching
+  Action Attach: 1 s
+  3.023s: Attaching -> WaitingForLoadingAndWorkstationTurn
+  Queue wait: loading=0 s, workstation=0 s
+  3.032s: WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+  5.97s: MovingToLoading -> Loading
+  Action Load: 8 s
+  13.97s: Loading -> MovingToWorkstation
+  16.903s: MovingToWorkstation -> DetachingAtWorkstation
+  Action Detach: 1 s
+A-002 / PrimeFutureB / AMR_Future_B
+  2.023s: MovingToPallet -> Attaching
+  Action Attach: 1 s
+  3.023s: Attaching -> WaitingForLoadingAndWorkstationTurn
+  Queue wait: loading=0 s, workstation=0 s
+  3.032s: WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+  5.97s: MovingToLoading -> Loading
+  Action Load: 12 s
+  17.972s: Loading -> MovingToWorkstation
+  20.903s: MovingToWorkstation -> DetachingAtWorkstation
+  Action Detach: 1 s
+A-003 / CapacityTargetA / AMR_Remote
+  25.944s: MovingToPallet -> Attaching
+  Action Attach: 1 s
+  26.944s: Attaching -> WaitingForLoadingAndWorkstationTurn
+  Queue wait: loading=0 s, workstation=0 s
+  26.952s: WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+  29.887s: MovingToLoading -> Loading
+  Action Load: 1 s
+  30.888s: Loading -> MovingToWorkstation
+  33.82s: MovingToWorkstation -> DetachingAtWorkstation
+  Action Detach: 1 s
+A-004 / CapacityTargetB / AMR_Future_A
+  20.837s: MovingToPallet -> Attaching
+  Action Attach: 1 s
+  21.838s: Attaching -> WaitingForLoadingAndWorkstationTurn
+  Queue wait: loading=0 s, workstation=0 s
+  21.843s: WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+  24.773s: MovingToLoading -> Loading
+  Action Load: 1 s
+  25.774s: Loading -> MovingToWorkstation
+  28.702s: MovingToWorkstation -> DetachingAtWorkstation
+  Action Detach: 1 s
+A-005 / CapacityTargetD / AMR_Future_B
+  23.845s: MovingToPallet -> Attaching
+  Action Attach: 1 s
+  24.85s: Attaching -> WaitingForLoadingAndWorkstationTurn
+  Queue wait: loading=0 s, workstation=0 s
+  24.854s: WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+  27.787s: MovingToLoading -> Loading
+  Action Load: 1 s
+  28.791s: Loading -> MovingToWorkstation
+  31.725s: MovingToWorkstation -> DetachingAtWorkstation
+  Action Detach: 1 s
+A-006 / CapacityTargetC / AMR_Future_A
+  32.636s: MovingToPallet -> Attaching
+  Action Attach: 1 s
+  33.638s: Attaching -> WaitingForLoadingAndWorkstationTurn
+  Queue wait: loading=0 s, workstation=0 s
+  33.643s: WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+  36.579s: MovingToLoading -> Loading
+  Action Load: 1 s
+  37.579s: Loading -> MovingToWorkstation
+  40.512s: MovingToWorkstation -> DetachingAtWorkstation
+  Action Detach: 1 s

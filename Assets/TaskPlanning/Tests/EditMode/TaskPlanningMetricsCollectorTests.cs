@@ -236,6 +236,70 @@ namespace TaskPlanning.Tests
             }
         }
 
+        [Test]
+        public void ConfigReportUsesInitialSceneSnapshotAndLogsRoadmapGraph()
+        {
+            var collector = TaskPlanningTestHelpers.CreateComponent<TaskPlanningMetricsCollector>("Metrics_Snapshot_Collector");
+            var scheduler = TaskPlanningTestHelpers.CreateComponent<TaskScheduler>("Metrics_Snapshot_Scheduler");
+            var node1 = TaskPlanningTestHelpers.CreateNode("1", new Vector2(0f, 0f));
+            var node2 = TaskPlanningTestHelpers.CreateNode("2", new Vector2(5f, 0f));
+            var node3 = TaskPlanningTestHelpers.CreateNode("3", new Vector2(10f, 0f));
+            var edge = TaskPlanningTestHelpers.CreateEdge("1-2", node1, node2);
+            var amr = TaskPlanningTestHelpers.CreateComponent<TaskPlanningAmr>("AMR_A");
+            var pallet = TaskPlanningTestHelpers.CreatePallet("Pallet_A", node1);
+            var loadingPoint = TaskPlanningTestHelpers.CreateLoadingPoint("Loading_A", node2, pallet);
+            var workstation = TaskPlanningTestHelpers.CreateWorkstation("Workstation_A", node3, pallet);
+            var scenario = CreateScenario("MetricsSnapshotScenario");
+
+            try
+            {
+                TaskPlanningTestHelpers.SetParkingNode(pallet, node3);
+                scheduler.ConfigureScene(null, null, new[] { amr }, new[] { loadingPoint });
+                collector.Configure(null, scheduler);
+                collector.BeginScenario(scenario, 1, 0f);
+
+                amr.TryReserve();
+                amr.transform.position = new Vector3(20f, 0f, 0f);
+                pallet.DetachAt(node2, PalletStatus.AwaitingRemoval);
+                pallet.MarkLoaded();
+                loadingPoint.TryReserve(pallet);
+                loadingPoint.Enqueue(pallet);
+                workstation.TryReserve(pallet);
+                workstation.Enqueue(pallet);
+
+                collector.FinalizeAndWriteReport(5f);
+
+                Assert.That(collector.LastConfigReportText, Does.Contain("AMR_A | startPosition=(0, 0, 0)"));
+                Assert.That(collector.LastConfigReportText, Does.Contain("Pallet_A | currentNode=1 | parkingNode=3"));
+                Assert.That(collector.LastConfigReportText, Does.Not.Contain("currentNode=2"));
+                Assert.That(collector.LastConfigReportText, Does.Not.Contain("busy="));
+                Assert.That(collector.LastConfigReportText, Does.Not.Contain("status="));
+                Assert.That(collector.LastConfigReportText, Does.Not.Contain("loaded="));
+                Assert.That(collector.LastConfigReportText, Does.Not.Contain("reservedFor="));
+                Assert.That(collector.LastConfigReportText, Does.Not.Contain("queueLength="));
+                Assert.That(collector.LastConfigReportText, Does.Contain("Roadmap Graph"));
+                Assert.That(collector.LastConfigReportText, Does.Contain("id=1 | position=(0, 0, 0)"));
+                Assert.That(collector.LastConfigReportText, Does.Contain("id=2 | position=(5, 0, 0)"));
+                Assert.That(collector.LastConfigReportText, Does.Contain("from=1 | to=2"));
+            }
+            finally
+            {
+                DeleteReports(collector);
+                TaskPlanningTestHelpers.Destroy(
+                    scenario,
+                    workstation.gameObject,
+                    loadingPoint.gameObject,
+                    pallet.gameObject,
+                    amr.gameObject,
+                    edge.gameObject,
+                    node3.gameObject,
+                    node2.gameObject,
+                    node1.gameObject,
+                    scheduler.gameObject,
+                    collector.gameObject);
+            }
+        }
+
         private static TaskPlanningMesScheduledScenarioAsset CreateScenario(string name)
         {
             var scenario = TaskPlanningMesScheduledScenarioAsset.Create(new[]

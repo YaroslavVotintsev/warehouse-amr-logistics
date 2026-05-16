@@ -34,6 +34,7 @@ namespace TaskPlanning
         private TaskPlanningMesScheduledScenarioAsset _scenario;
         private string _scenarioName = "UnnamedScenario";
         private string _runName;
+        private ConfigSnapshot _configSnapshot;
         private int _totalMesTasks;
         private int _completedMesTasks;
         private int _softReassignmentCount;
@@ -104,6 +105,7 @@ namespace TaskPlanning
                 : scenario.name.Trim();
             _totalMesTasks = Mathf.Max(0, totalTasks);
             InitializeAmrMetrics();
+            _configSnapshot = CaptureConfigSnapshot();
             foreach (var metrics in _amrMetrics.Values)
             {
                 metrics.LastTravelSampleTime = startTime;
@@ -458,7 +460,7 @@ namespace TaskPlanning
             builder.AppendLine();
             AppendSchedulerConfiguration(builder);
             builder.AppendLine();
-            AppendSceneConfiguration(builder);
+            AppendSceneConfiguration(builder, _configSnapshot ?? CaptureConfigSnapshot());
             return builder.ToString();
         }
 
@@ -670,6 +672,7 @@ namespace TaskPlanning
             LastTraceReportPath = null;
             LastConfigReportText = null;
             LastTraceReportText = null;
+            _configSnapshot = null;
         }
 
         private void InitializeAmrMetrics()
@@ -841,48 +844,120 @@ namespace TaskPlanning
             AppendCostWeights(builder, "    ");
         }
 
-        private void AppendSceneConfiguration(StringBuilder builder)
+        private ConfigSnapshot CaptureConfigSnapshot()
         {
-            builder.AppendLine("Scene Objects");
             var amrs = scheduler != null
-                ? scheduler.ConfiguredAmrs.Where(amr => amr != null).OrderBy(amr => amr.AmrId).ToArray()
-                : FindObjectsByType<TaskPlanningAmr>(FindObjectsInactive.Exclude).OrderBy(amr => amr.AmrId).ToArray();
-            builder.AppendLine("  AMRs:");
-            AppendListOrNone(builder, amrs, amr => $"    {amr.AmrId} | startPosition={FormatVector(amr.transform.position)} | busy={YesNo(amr.IsBusy)}");
+                ? scheduler.ConfiguredAmrs.Where(amr => amr != null)
+                : FindObjectsByType<TaskPlanningAmr>(FindObjectsInactive.Exclude).Where(amr => amr != null);
 
             var pallets = FindObjectsByType<PalletMarker>(FindObjectsInactive.Exclude)
-                .OrderBy(pallet => pallet.PalletId)
-                .ToArray();
+                .Where(pallet => pallet != null);
+
+            var loadingPoints = scheduler != null
+                ? scheduler.ConfiguredLoadingPoints.Where(point => point != null)
+                : FindObjectsByType<PalletLoadingPoint>(FindObjectsInactive.Exclude).Where(point => point != null);
+
+            var workstations = FindObjectsByType<WorkstationDeliveryPoint>(FindObjectsInactive.Exclude)
+                .Where(workstation => workstation != null);
+
+            var nodes = FindObjectsByType<MapfNode>(FindObjectsInactive.Exclude)
+                .Where(node => node != null);
+
+            var edges = FindObjectsByType<MapfEdge>(FindObjectsInactive.Exclude)
+                .Where(edge => edge != null);
+
+            return new ConfigSnapshot
+            {
+                Amrs = amrs
+                    .Select(amr => new AmrConfigSnapshot(amr.AmrId, amr.transform.position))
+                    .OrderBy(item => item.Id, StringComparer.Ordinal)
+                    .ToArray(),
+                Pallets = pallets
+                    .Select(pallet => new PalletConfigSnapshot(
+                        pallet.PalletId,
+                        NodeId(pallet.CurrentNode),
+                        NodeId(pallet.ParkingNode),
+                        pallet.AttachDurationSeconds,
+                        pallet.DetachDurationSeconds,
+                        pallet.LoadDurationSeconds,
+                        pallet.UnloadDurationSeconds))
+                    .OrderBy(item => item.Id, StringComparer.Ordinal)
+                    .ToArray(),
+                LoadingPoints = loadingPoints
+                    .Select(point => new LoadingPointConfigSnapshot(
+                        point.LoadingPointId,
+                        NodeId(point.Node),
+                        point.AcceptedPallets.Select(PalletId).ToArray()))
+                    .OrderBy(item => item.Id, StringComparer.Ordinal)
+                    .ToArray(),
+                Workstations = workstations
+                    .Select(workstation => new WorkstationConfigSnapshot(
+                        workstation.WorkstationId,
+                        NodeId(workstation.Node),
+                        workstation.AcceptedPallets.Select(PalletId).ToArray()))
+                    .OrderBy(item => item.Id, StringComparer.Ordinal)
+                    .ToArray(),
+                RoadmapNodes = nodes
+                    .Select(node => new RoadmapNodeConfigSnapshot(node.StableId, node.transform.position))
+                    .OrderBy(item => item.Id, StringComparer.Ordinal)
+                    .ToArray(),
+                RoadmapEdges = edges
+                    .Select(edge => CreateRoadmapEdgeSnapshot(edge.A, edge.B))
+                    .OrderBy(edge => edge.FromId, StringComparer.Ordinal)
+                    .ThenBy(edge => edge.ToId, StringComparer.Ordinal)
+                    .ToArray()
+            };
+        }
+
+        private static RoadmapEdgeConfigSnapshot CreateRoadmapEdgeSnapshot(MapfNode fromNode, MapfNode toNode)
+        {
+            var from = NodeId(fromNode);
+            var to = NodeId(toNode);
+            if (string.CompareOrdinal(from, to) > 0)
+                (from, to) = (to, from);
+
+            return new RoadmapEdgeConfigSnapshot(from, to);
+        }
+
+        private void AppendSceneConfiguration(StringBuilder builder, ConfigSnapshot snapshot)
+        {
+            builder.AppendLine("Scene Objects");
+            builder.AppendLine("  AMRs:");
+            AppendListOrNone(builder, snapshot.Amrs, amr => $"    {amr.Id} | startPosition={FormatVector(amr.StartPosition)}");
+
             builder.AppendLine("  Pallets / Kits:");
             AppendListOrNone(
                 builder,
-                pallets,
+                snapshot.Pallets,
                 pallet =>
-                    $"    {pallet.PalletId} | currentNode={NodeId(pallet.CurrentNode)} | parkingNode={NodeId(pallet.ParkingNode)} | " +
-                    $"status={pallet.Status} | loaded={YesNo(pallet.IsLoaded)} | attach={FormatSeconds(pallet.AttachDurationSeconds)} | " +
-                    $"detach={FormatSeconds(pallet.DetachDurationSeconds)} | load={FormatSeconds(pallet.LoadDurationSeconds)} | unload={FormatSeconds(pallet.UnloadDurationSeconds)}");
+                    $"    {pallet.Id} | currentNode={pallet.CurrentNodeId} | parkingNode={pallet.ParkingNodeId} | " +
+                    $"attach={FormatSeconds(pallet.AttachDurationSeconds)} | detach={FormatSeconds(pallet.DetachDurationSeconds)} | " +
+                    $"load={FormatSeconds(pallet.LoadDurationSeconds)} | unload={FormatSeconds(pallet.UnloadDurationSeconds)}");
 
-            var loadingPoints = scheduler != null
-                ? scheduler.ConfiguredLoadingPoints.Where(point => point != null).OrderBy(point => point.LoadingPointId).ToArray()
-                : FindObjectsByType<PalletLoadingPoint>(FindObjectsInactive.Exclude).OrderBy(point => point.LoadingPointId).ToArray();
             builder.AppendLine("  Loading Points:");
             AppendListOrNone(
                 builder,
-                loadingPoints,
-                point =>
-                    $"    {point.LoadingPointId} | node={NodeId(point.Node)} | acceptedPallets={Join(point.AcceptedPallets.Select(PalletId))} | " +
-                    $"reservedFor={PalletId(point.ReservedFor)} | queueLength={point.QueueLength}");
+                snapshot.LoadingPoints,
+                point => $"    {point.Id} | node={point.NodeId} | acceptedPallets={Join(point.AcceptedPalletIds)}");
 
-            var workstations = FindObjectsByType<WorkstationDeliveryPoint>(FindObjectsInactive.Exclude)
-                .OrderBy(workstation => workstation.WorkstationId)
-                .ToArray();
             builder.AppendLine("  Workstations:");
             AppendListOrNone(
                 builder,
-                workstations,
-                workstation =>
-                    $"    {workstation.WorkstationId} | node={NodeId(workstation.Node)} | acceptedPallets={Join(workstation.AcceptedPallets.Select(PalletId))} | " +
-                    $"reservedFor={PalletId(workstation.ReservedFor)} | queueLength={workstation.QueueLength}");
+                snapshot.Workstations,
+                workstation => $"    {workstation.Id} | node={workstation.NodeId} | acceptedPallets={Join(workstation.AcceptedPalletIds)}");
+
+            builder.AppendLine();
+            builder.AppendLine("Roadmap Graph");
+            builder.AppendLine("  Nodes:");
+            AppendListOrNone(
+                builder,
+                snapshot.RoadmapNodes,
+                node => $"    id={node.Id} | position={FormatVector(node.Position)}");
+            builder.AppendLine("  Edges:");
+            AppendListOrNone(
+                builder,
+                snapshot.RoadmapEdges,
+                edge => $"    from={edge.FromId} | to={edge.ToId}");
         }
 
         private void AppendCostWeights(StringBuilder builder, string indent)
@@ -1115,6 +1190,109 @@ namespace TaskPlanning
                 ConfigPath = configPath;
                 TracePath = tracePath;
             }
+        }
+
+        private sealed class ConfigSnapshot
+        {
+            public IReadOnlyList<AmrConfigSnapshot> Amrs { get; set; } = Array.Empty<AmrConfigSnapshot>();
+            public IReadOnlyList<PalletConfigSnapshot> Pallets { get; set; } = Array.Empty<PalletConfigSnapshot>();
+            public IReadOnlyList<LoadingPointConfigSnapshot> LoadingPoints { get; set; } = Array.Empty<LoadingPointConfigSnapshot>();
+            public IReadOnlyList<WorkstationConfigSnapshot> Workstations { get; set; } = Array.Empty<WorkstationConfigSnapshot>();
+            public IReadOnlyList<RoadmapNodeConfigSnapshot> RoadmapNodes { get; set; } = Array.Empty<RoadmapNodeConfigSnapshot>();
+            public IReadOnlyList<RoadmapEdgeConfigSnapshot> RoadmapEdges { get; set; } = Array.Empty<RoadmapEdgeConfigSnapshot>();
+        }
+
+        private readonly struct AmrConfigSnapshot
+        {
+            public AmrConfigSnapshot(string id, Vector3 startPosition)
+            {
+                Id = id;
+                StartPosition = startPosition;
+            }
+
+            public string Id { get; }
+            public Vector3 StartPosition { get; }
+        }
+
+        private readonly struct PalletConfigSnapshot
+        {
+            public PalletConfigSnapshot(
+                string id,
+                string currentNodeId,
+                string parkingNodeId,
+                float attachDurationSeconds,
+                float detachDurationSeconds,
+                float loadDurationSeconds,
+                float unloadDurationSeconds)
+            {
+                Id = id;
+                CurrentNodeId = currentNodeId;
+                ParkingNodeId = parkingNodeId;
+                AttachDurationSeconds = attachDurationSeconds;
+                DetachDurationSeconds = detachDurationSeconds;
+                LoadDurationSeconds = loadDurationSeconds;
+                UnloadDurationSeconds = unloadDurationSeconds;
+            }
+
+            public string Id { get; }
+            public string CurrentNodeId { get; }
+            public string ParkingNodeId { get; }
+            public float AttachDurationSeconds { get; }
+            public float DetachDurationSeconds { get; }
+            public float LoadDurationSeconds { get; }
+            public float UnloadDurationSeconds { get; }
+        }
+
+        private readonly struct LoadingPointConfigSnapshot
+        {
+            public LoadingPointConfigSnapshot(string id, string nodeId, IReadOnlyList<string> acceptedPalletIds)
+            {
+                Id = id;
+                NodeId = nodeId;
+                AcceptedPalletIds = acceptedPalletIds ?? Array.Empty<string>();
+            }
+
+            public string Id { get; }
+            public string NodeId { get; }
+            public IReadOnlyList<string> AcceptedPalletIds { get; }
+        }
+
+        private readonly struct WorkstationConfigSnapshot
+        {
+            public WorkstationConfigSnapshot(string id, string nodeId, IReadOnlyList<string> acceptedPalletIds)
+            {
+                Id = id;
+                NodeId = nodeId;
+                AcceptedPalletIds = acceptedPalletIds ?? Array.Empty<string>();
+            }
+
+            public string Id { get; }
+            public string NodeId { get; }
+            public IReadOnlyList<string> AcceptedPalletIds { get; }
+        }
+
+        private readonly struct RoadmapNodeConfigSnapshot
+        {
+            public RoadmapNodeConfigSnapshot(string id, Vector3 position)
+            {
+                Id = id;
+                Position = position;
+            }
+
+            public string Id { get; }
+            public Vector3 Position { get; }
+        }
+
+        private readonly struct RoadmapEdgeConfigSnapshot
+        {
+            public RoadmapEdgeConfigSnapshot(string fromId, string toId)
+            {
+                FromId = fromId;
+                ToId = toId;
+            }
+
+            public string FromId { get; }
+            public string ToId { get; }
         }
 
         private sealed class AssignmentTraceRecord

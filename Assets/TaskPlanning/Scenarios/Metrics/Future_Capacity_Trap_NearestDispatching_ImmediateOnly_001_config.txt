@@ -1,0 +1,81 @@
+﻿TaskPlanning Scenario Configuration
+Run: Future_Capacity_Trap_NearestDispatching_ImmediateOnly_001
+Start timestamp: 2026-05-16 03:56:54
+Scenario name: Future_Capacity_Trap
+
+MES
+  Automation mode: ScheduledScenario
+  Scheduled scenario: Future_Capacity_Trap
+  Start scheduled scenario on play: yes
+  Submit same timestamp as batch: yes
+  Scheduled scenario start delay: 0 s
+  Scheduled tasks:
+    0 s | PrimeFutureA | pallet=Pallet_Primer_A | workstation=228
+    0 s | PrimeFutureB | pallet=Pallet_Primer_B | workstation=234
+    1 s | CapacityTargetA | pallet=Pallet_Target_A | workstation=225
+    1 s | CapacityTargetB | pallet=Pallet_Target_B | workstation=229
+    1 s | CapacityTargetC | pallet=Pallet_Target_C | workstation=232
+    1 s | CapacityTargetD | pallet=Pallet_Target_D | workstation=236
+
+Scheduler
+  Dispatcher algorithm: NearestDispatching
+  Future handling policy: ImmediateOnly
+  Soft AMR reservations: no
+  Reassignment improvement threshold: 50%
+  Wait-for-future improvement threshold: 20%
+  AMR speed: 1
+  Pending retry interval: 0.5 s
+  Arrival distance: 0.08 units
+  Rolling Horizon:
+    Horizon seconds: 30 s
+    Max waves: 4
+    Wait improvement percent: 10%
+  Cost weights:
+    Delivery:
+      priorAssignmentEta: 1
+      amrToPalletEta: 1
+      attachTime: 1
+      loadingQueueEta: 1
+      palletToLoadingEta: 1
+      loadTime: 1
+      loadingToWorkstationEta: 1
+      detachTime: 1
+      blockedDeliveryBias: 100
+      agingWeight: 1
+      maxAgingBonus: 300
+    Removal:
+      priorAssignmentEta: 1
+      amrToPalletEta: 1
+      attachTime: 1
+      palletToParkingEta: 1
+      detachTime: 1
+      blocksPendingDeliveryMultiplier: 0.5
+      agingWeight: 1
+      maxAgingBonus: 300
+
+Scene Objects
+  AMRs:
+    AMR_Future_A | startPosition=(32, -1, -0.1) | busy=no
+    AMR_Future_B | startPosition=(36, -1, -0.1) | busy=no
+    AMR_Remote | startPosition=(25, -1, -0.1) | busy=no
+  Pallets / Kits:
+    Pallet_Primer_A | currentNode=228 | parkingNode=228 | status=Available | loaded=no | attach=1 s | detach=1 s | load=8 s | unload=1 s
+    Pallet_Primer_B | currentNode=234 | parkingNode=234 | status=Available | loaded=no | attach=1 s | detach=1 s | load=12 s | unload=1 s
+    Pallet_Target_A | currentNode=225 | parkingNode=225 | status=Available | loaded=no | attach=1 s | detach=1 s | load=1 s | unload=1 s
+    Pallet_Target_B | currentNode=229 | parkingNode=229 | status=Available | loaded=no | attach=1 s | detach=1 s | load=1 s | unload=1 s
+    Pallet_Target_C | currentNode=232 | parkingNode=232 | status=Available | loaded=no | attach=1 s | detach=1 s | load=1 s | unload=1 s
+    Pallet_Target_D | currentNode=236 | parkingNode=236 | status=Available | loaded=no | attach=1 s | detach=1 s | load=1 s | unload=1 s
+  Loading Points:
+    124 | node=124 | acceptedPallets=Pallet_Target_A | reservedFor=- | queueLength=0
+    127 | node=127 | acceptedPallets=Pallet_Primer_A | reservedFor=- | queueLength=0
+    128 | node=128 | acceptedPallets=Pallet_Target_B | reservedFor=- | queueLength=0
+    131 | node=131 | acceptedPallets=Pallet_Target_C | reservedFor=- | queueLength=0
+    133 | node=133 | acceptedPallets=Pallet_Primer_B | reservedFor=- | queueLength=0
+    135 | node=135 | acceptedPallets=Pallet_Target_D | reservedFor=- | queueLength=0
+  Workstations:
+    225 | node=225 | acceptedPallets=Pallet_Target_A | reservedFor=- | queueLength=0
+    228 | node=228 | acceptedPallets=Pallet_Primer_A | reservedFor=- | queueLength=0
+    229 | node=229 | acceptedPallets=Pallet_Target_B | reservedFor=- | queueLength=0
+    232 | node=232 | acceptedPallets=Pallet_Target_C | reservedFor=- | queueLength=0
+    234 | node=234 | acceptedPallets=Pallet_Primer_B | reservedFor=- | queueLength=0
+    236 | node=236 | acceptedPallets=Pallet_Target_D | reservedFor=- | queueLength=0
