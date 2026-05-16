@@ -11,7 +11,8 @@ namespace TaskPlanning
             {
                 FifoAssignmentTrap(),
                 FutureWaitTrap(),
-                FutureCapacityTrap()
+                FutureCapacityTrap(),
+                RollingHorizonCapacitySaturation()
             };
         }
 
@@ -22,6 +23,7 @@ namespace TaskPlanning
                 TaskPlanningScenarioPreset.FifoAssignmentTrap => FifoAssignmentTrap(),
                 TaskPlanningScenarioPreset.FutureWaitTrap => FutureWaitTrap(),
                 TaskPlanningScenarioPreset.FutureCapacityTrap => FutureCapacityTrap(),
+                TaskPlanningScenarioPreset.RollingHorizonCapacitySaturation => RollingHorizonCapacitySaturation(),
                 _ => FifoAssignmentTrap()
             };
         }
@@ -145,6 +147,55 @@ namespace TaskPlanning
                     Task(1f, "Pallet_Target_B", "229", "CapacityTargetB"),
                     Task(1f, "Pallet_Target_C", "232", "CapacityTargetC"),
                     Task(1f, "Pallet_Target_D", "236", "CapacityTargetD")
+                });
+        }
+
+        public static TaskPlanningScenario RollingHorizonCapacitySaturation()
+        {
+            var graph = LongCorridorWithBays(length: 70);
+
+            return new TaskPlanningScenario(
+                "Rolling Horizon Capacity Saturation",
+                graph.Nodes,
+                graph.Edges,
+                new[]
+                {
+                    Amr("AMR_Future", 0, "258"),
+                    Amr("AMR_Remote_A", 1, "205"),
+                    Amr("AMR_Remote_B", 2, "208"),
+                    Amr("AMR_Remote_C", 3, "211")
+                },
+                new[]
+                {
+                    Pallet("Pallet_Primer", "158", "259", attach: 1f, detach: 1f, load: 4f, unload: 1f),
+                    Pallet("Pallet_Target_A", "160", "261", attach: 1f, detach: 1f, load: 4f, unload: 1f),
+                    Pallet("Pallet_Target_B", "162", "263", attach: 1f, detach: 1f, load: 4f, unload: 1f),
+                    Pallet("Pallet_Target_C", "164", "265", attach: 1f, detach: 1f, load: 4f, unload: 1f),
+                    Pallet("Pallet_Target_D", "166", "267", attach: 1f, detach: 1f, load: 4f, unload: 1f)
+                },
+                new[]
+                {
+                    LoadingPoint("159", "159", "Pallet_Primer"),
+                    LoadingPoint("161", "161", "Pallet_Target_A"),
+                    LoadingPoint("163", "163", "Pallet_Target_B"),
+                    LoadingPoint("165", "165", "Pallet_Target_C"),
+                    LoadingPoint("167", "167", "Pallet_Target_D")
+                },
+                new[]
+                {
+                    Workstation("259", "259", "Pallet_Primer"),
+                    Workstation("261", "261", "Pallet_Target_A"),
+                    Workstation("263", "263", "Pallet_Target_B"),
+                    Workstation("265", "265", "Pallet_Target_C"),
+                    Workstation("267", "267", "Pallet_Target_D")
+                },
+                new[]
+                {
+                    Task(0f, "Pallet_Primer", "259", "PrimeFutureCapacityAmr"),
+                    Task(1f, "Pallet_Target_A", "261", "CapacityOverflowA"),
+                    Task(1f, "Pallet_Target_B", "263", "CapacityOverflowB"),
+                    Task(1f, "Pallet_Target_C", "265", "CapacityOverflowC"),
+                    Task(1f, "Pallet_Target_D", "267", "CapacityOverflowD")
                 });
         }
 

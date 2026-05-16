@@ -1,28 +1,27 @@
 ﻿TaskPlanning Scenario Configuration
-Run: Future_Capacity_Trap_NearestDispatching_ImmediateOnly_002
-Start timestamp: 2026-05-16 04:33:58
-Scenario name: Future_Capacity_Trap
+Run: Rolling_Horizon_Capacity_Saturation_NearestDispatching_LookAhead_001
+Start timestamp: 2026-05-16 05:07:50
+Scenario name: Rolling_Horizon_Capacity_Saturation
 
 MES
   Automation mode: ScheduledScenario
-  Scheduled scenario: Future_Capacity_Trap
+  Scheduled scenario: Rolling_Horizon_Capacity_Saturation
   Start scheduled scenario on play: yes
   Submit same timestamp as batch: yes
   Scheduled scenario start delay: 0 s
   Scheduled tasks:
-    0 s | PrimeFutureA | pallet=Pallet_Primer_A | workstation=228
-    0 s | PrimeFutureB | pallet=Pallet_Primer_B | workstation=234
-    1 s | CapacityTargetA | pallet=Pallet_Target_A | workstation=225
-    1 s | CapacityTargetB | pallet=Pallet_Target_B | workstation=229
-    1 s | CapacityTargetC | pallet=Pallet_Target_C | workstation=232
-    1 s | CapacityTargetD | pallet=Pallet_Target_D | workstation=236
+    0 s | PrimeFutureCapacityAmr | pallet=Pallet_Primer | workstation=259
+    1 s | CapacityOverflowA | pallet=Pallet_Target_A | workstation=261
+    1 s | CapacityOverflowB | pallet=Pallet_Target_B | workstation=263
+    1 s | CapacityOverflowC | pallet=Pallet_Target_C | workstation=265
+    1 s | CapacityOverflowD | pallet=Pallet_Target_D | workstation=267
 
 Scheduler
   Dispatcher algorithm: NearestDispatching
-  Future handling policy: ImmediateOnly
+  Future handling policy: LookAhead
   Soft AMR reservations: no
-  Reassignment improvement threshold: 50%
-  Wait-for-future improvement threshold: 20%
+  Reassignment improvement threshold: 10%
+  Wait-for-future improvement threshold: 10%
   AMR speed: 1
   Pending retry interval: 0.5 s
   Arrival distance: 0.08 units
@@ -41,8 +40,8 @@ Scheduler
       loadingToWorkstationEta: 1
       detachTime: 1
       blockedDeliveryBias: 100
-      agingWeight: 1
-      maxAgingBonus: 300
+      agingWeight: 0
+      maxAgingBonus: 0
     Removal:
       priorAssignmentEta: 1
       amrToPalletEta: 1
@@ -50,35 +49,33 @@ Scheduler
       palletToParkingEta: 1
       detachTime: 1
       blocksPendingDeliveryMultiplier: 0.5
-      agingWeight: 1
-      maxAgingBonus: 300
+      agingWeight: 0
+      maxAgingBonus: 0
 
 Scene Objects
   AMRs:
-    AMR_Future_A | startPosition=(26, -1, -0.1)
-    AMR_Future_B | startPosition=(32, -1, -0.1)
-    AMR_Remote | startPosition=(0, -1, -0.1)
+    AMR_Future | startPosition=(58, -1, -0.1)
+    AMR_Remote_A | startPosition=(5, -1, -0.1)
+    AMR_Remote_B | startPosition=(8, -1, -0.1)
+    AMR_Remote_C | startPosition=(11, -1, -0.1)
   Pallets / Kits:
-    Pallet_Primer_A | currentNode=126 | parkingNode=228 | attach=1 s | detach=1 s | load=8 s | unload=1 s
-    Pallet_Primer_B | currentNode=132 | parkingNode=234 | attach=1 s | detach=1 s | load=12 s | unload=1 s
-    Pallet_Target_A | currentNode=123 | parkingNode=225 | attach=1 s | detach=1 s | load=1 s | unload=1 s
-    Pallet_Target_B | currentNode=129 | parkingNode=229 | attach=1 s | detach=1 s | load=1 s | unload=1 s
-    Pallet_Target_C | currentNode=130 | parkingNode=232 | attach=1 s | detach=1 s | load=1 s | unload=1 s
-    Pallet_Target_D | currentNode=134 | parkingNode=236 | attach=1 s | detach=1 s | load=1 s | unload=1 s
+    Pallet_Primer | currentNode=158 | parkingNode=259 | attach=1 s | detach=1 s | load=4 s | unload=1 s
+    Pallet_Target_A | currentNode=160 | parkingNode=261 | attach=1 s | detach=1 s | load=4 s | unload=1 s
+    Pallet_Target_B | currentNode=162 | parkingNode=263 | attach=1 s | detach=1 s | load=4 s | unload=1 s
+    Pallet_Target_C | currentNode=164 | parkingNode=265 | attach=1 s | detach=1 s | load=4 s | unload=1 s
+    Pallet_Target_D | currentNode=166 | parkingNode=267 | attach=1 s | detach=1 s | load=4 s | unload=1 s
   Loading Points:
-    124 | node=124 | acceptedPallets=Pallet_Target_A
-    127 | node=127 | acceptedPallets=Pallet_Primer_A
-    128 | node=128 | acceptedPallets=Pallet_Target_B
-    131 | node=131 | acceptedPallets=Pallet_Target_C
-    133 | node=133 | acceptedPallets=Pallet_Primer_B
-    135 | node=135 | acceptedPallets=Pallet_Target_D
+    159 | node=159 | acceptedPallets=Pallet_Primer
+    161 | node=161 | acceptedPallets=Pallet_Target_A
+    163 | node=163 | acceptedPallets=Pallet_Target_B
+    165 | node=165 | acceptedPallets=Pallet_Target_C
+    167 | node=167 | acceptedPallets=Pallet_Target_D
   Workstations:
-    225 | node=225 | acceptedPallets=Pallet_Target_A
-    228 | node=228 | acceptedPallets=Pallet_Primer_A
-    229 | node=229 | acceptedPallets=Pallet_Target_B
-    232 | node=232 | acceptedPallets=Pallet_Target_C
-    234 | node=234 | acceptedPallets=Pallet_Primer_B
-    236 | node=236 | acceptedPallets=Pallet_Target_D
+    259 | node=259 | acceptedPallets=Pallet_Primer
+    261 | node=261 | acceptedPallets=Pallet_Target_A
+    263 | node=263 | acceptedPallets=Pallet_Target_B
+    265 | node=265 | acceptedPallets=Pallet_Target_C
+    267 | node=267 | acceptedPallets=Pallet_Target_D
 
 Roadmap Graph
   Nodes:
@@ -132,9 +129,37 @@ Roadmap Graph
     id=140 | position=(40, 1, 0)
     id=141 | position=(41, 1, 0)
     id=142 | position=(42, 1, 0)
+    id=143 | position=(43, 1, 0)
+    id=144 | position=(44, 1, 0)
+    id=145 | position=(45, 1, 0)
+    id=146 | position=(46, 1, 0)
+    id=147 | position=(47, 1, 0)
+    id=148 | position=(48, 1, 0)
+    id=149 | position=(49, 1, 0)
     id=15 | position=(15, 0, 0)
+    id=150 | position=(50, 1, 0)
+    id=151 | position=(51, 1, 0)
+    id=152 | position=(52, 1, 0)
+    id=153 | position=(53, 1, 0)
+    id=154 | position=(54, 1, 0)
+    id=155 | position=(55, 1, 0)
+    id=156 | position=(56, 1, 0)
+    id=157 | position=(57, 1, 0)
+    id=158 | position=(58, 1, 0)
+    id=159 | position=(59, 1, 0)
     id=16 | position=(16, 0, 0)
+    id=160 | position=(60, 1, 0)
+    id=161 | position=(61, 1, 0)
+    id=162 | position=(62, 1, 0)
+    id=163 | position=(63, 1, 0)
+    id=164 | position=(64, 1, 0)
+    id=165 | position=(65, 1, 0)
+    id=166 | position=(66, 1, 0)
+    id=167 | position=(67, 1, 0)
+    id=168 | position=(68, 1, 0)
+    id=169 | position=(69, 1, 0)
     id=17 | position=(17, 0, 0)
+    id=170 | position=(70, 1, 0)
     id=18 | position=(18, 0, 0)
     id=19 | position=(19, 0, 0)
     id=2 | position=(2, 0, 0)
@@ -186,9 +211,37 @@ Roadmap Graph
     id=240 | position=(40, -1, 0)
     id=241 | position=(41, -1, 0)
     id=242 | position=(42, -1, 0)
+    id=243 | position=(43, -1, 0)
+    id=244 | position=(44, -1, 0)
+    id=245 | position=(45, -1, 0)
+    id=246 | position=(46, -1, 0)
+    id=247 | position=(47, -1, 0)
+    id=248 | position=(48, -1, 0)
+    id=249 | position=(49, -1, 0)
     id=25 | position=(25, 0, 0)
+    id=250 | position=(50, -1, 0)
+    id=251 | position=(51, -1, 0)
+    id=252 | position=(52, -1, 0)
+    id=253 | position=(53, -1, 0)
+    id=254 | position=(54, -1, 0)
+    id=255 | position=(55, -1, 0)
+    id=256 | position=(56, -1, 0)
+    id=257 | position=(57, -1, 0)
+    id=258 | position=(58, -1, 0)
+    id=259 | position=(59, -1, 0)
     id=26 | position=(26, 0, 0)
+    id=260 | position=(60, -1, 0)
+    id=261 | position=(61, -1, 0)
+    id=262 | position=(62, -1, 0)
+    id=263 | position=(63, -1, 0)
+    id=264 | position=(64, -1, 0)
+    id=265 | position=(65, -1, 0)
+    id=266 | position=(66, -1, 0)
+    id=267 | position=(67, -1, 0)
+    id=268 | position=(68, -1, 0)
+    id=269 | position=(69, -1, 0)
     id=27 | position=(27, 0, 0)
+    id=270 | position=(70, -1, 0)
     id=28 | position=(28, 0, 0)
     id=29 | position=(29, 0, 0)
     id=3 | position=(3, 0, 0)
@@ -206,9 +259,37 @@ Roadmap Graph
     id=40 | position=(40, 0, 0)
     id=41 | position=(41, 0, 0)
     id=42 | position=(42, 0, 0)
+    id=43 | position=(43, 0, 0)
+    id=44 | position=(44, 0, 0)
+    id=45 | position=(45, 0, 0)
+    id=46 | position=(46, 0, 0)
+    id=47 | position=(47, 0, 0)
+    id=48 | position=(48, 0, 0)
+    id=49 | position=(49, 0, 0)
     id=5 | position=(5, 0, 0)
+    id=50 | position=(50, 0, 0)
+    id=51 | position=(51, 0, 0)
+    id=52 | position=(52, 0, 0)
+    id=53 | position=(53, 0, 0)
+    id=54 | position=(54, 0, 0)
+    id=55 | position=(55, 0, 0)
+    id=56 | position=(56, 0, 0)
+    id=57 | position=(57, 0, 0)
+    id=58 | position=(58, 0, 0)
+    id=59 | position=(59, 0, 0)
     id=6 | position=(6, 0, 0)
+    id=60 | position=(60, 0, 0)
+    id=61 | position=(61, 0, 0)
+    id=62 | position=(62, 0, 0)
+    id=63 | position=(63, 0, 0)
+    id=64 | position=(64, 0, 0)
+    id=65 | position=(65, 0, 0)
+    id=66 | position=(66, 0, 0)
+    id=67 | position=(67, 0, 0)
+    id=68 | position=(68, 0, 0)
+    id=69 | position=(69, 0, 0)
     id=7 | position=(7, 0, 0)
+    id=70 | position=(70, 0, 0)
     id=8 | position=(8, 0, 0)
     id=9 | position=(9, 0, 0)
   Edges:
@@ -270,12 +351,40 @@ Roadmap Graph
     from=140 | to=40
     from=141 | to=41
     from=142 | to=42
+    from=143 | to=43
+    from=144 | to=44
+    from=145 | to=45
+    from=146 | to=46
+    from=147 | to=47
+    from=148 | to=48
+    from=149 | to=49
     from=15 | to=16
     from=15 | to=215
+    from=150 | to=50
+    from=151 | to=51
+    from=152 | to=52
+    from=153 | to=53
+    from=154 | to=54
+    from=155 | to=55
+    from=156 | to=56
+    from=157 | to=57
+    from=158 | to=58
+    from=159 | to=59
     from=16 | to=17
     from=16 | to=216
+    from=160 | to=60
+    from=161 | to=61
+    from=162 | to=62
+    from=163 | to=63
+    from=164 | to=64
+    from=165 | to=65
+    from=166 | to=66
+    from=167 | to=67
+    from=168 | to=68
+    from=169 | to=69
     from=17 | to=18
     from=17 | to=217
+    from=170 | to=70
     from=18 | to=19
     from=18 | to=218
     from=19 | to=20
@@ -317,9 +426,37 @@ Roadmap Graph
     from=240 | to=40
     from=241 | to=41
     from=242 | to=42
+    from=243 | to=43
+    from=244 | to=44
+    from=245 | to=45
+    from=246 | to=46
+    from=247 | to=47
+    from=248 | to=48
+    from=249 | to=49
     from=25 | to=26
+    from=250 | to=50
+    from=251 | to=51
+    from=252 | to=52
+    from=253 | to=53
+    from=254 | to=54
+    from=255 | to=55
+    from=256 | to=56
+    from=257 | to=57
+    from=258 | to=58
+    from=259 | to=59
     from=26 | to=27
+    from=260 | to=60
+    from=261 | to=61
+    from=262 | to=62
+    from=263 | to=63
+    from=264 | to=64
+    from=265 | to=65
+    from=266 | to=66
+    from=267 | to=67
+    from=268 | to=68
+    from=269 | to=69
     from=27 | to=28
+    from=270 | to=70
     from=28 | to=29
     from=29 | to=30
     from=3 | to=4
@@ -336,7 +473,35 @@ Roadmap Graph
     from=4 | to=5
     from=40 | to=41
     from=41 | to=42
+    from=42 | to=43
+    from=43 | to=44
+    from=44 | to=45
+    from=45 | to=46
+    from=46 | to=47
+    from=47 | to=48
+    from=48 | to=49
+    from=49 | to=50
     from=5 | to=6
+    from=50 | to=51
+    from=51 | to=52
+    from=52 | to=53
+    from=53 | to=54
+    from=54 | to=55
+    from=55 | to=56
+    from=56 | to=57
+    from=57 | to=58
+    from=58 | to=59
+    from=59 | to=60
     from=6 | to=7
+    from=60 | to=61
+    from=61 | to=62
+    from=62 | to=63
+    from=63 | to=64
+    from=64 | to=65
+    from=65 | to=66
+    from=66 | to=67
+    from=67 | to=68
+    from=68 | to=69
+    from=69 | to=70
     from=7 | to=8
     from=8 | to=9

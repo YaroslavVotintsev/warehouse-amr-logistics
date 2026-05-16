@@ -4,6 +4,7 @@ namespace TaskPlanning
     {
         FifoAssignmentTrap,
         FutureWaitTrap,
-        FutureCapacityTrap
+        FutureCapacityTrap,
+        RollingHorizonCapacitySaturation
     }
 }

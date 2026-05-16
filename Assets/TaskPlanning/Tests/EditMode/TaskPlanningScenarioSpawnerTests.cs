@@ -12,6 +12,7 @@ namespace TaskPlanning.Tests
         [TestCase(TaskPlanningScenarioPreset.FifoAssignmentTrap)]
         [TestCase(TaskPlanningScenarioPreset.FutureWaitTrap)]
         [TestCase(TaskPlanningScenarioPreset.FutureCapacityTrap)]
+        [TestCase(TaskPlanningScenarioPreset.RollingHorizonCapacitySaturation)]
         public void SpawnerCreatesCompleteScenarioUnderSpawner(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerTest");
@@ -65,6 +66,7 @@ namespace TaskPlanning.Tests
         [TestCase(TaskPlanningScenarioPreset.FifoAssignmentTrap)]
         [TestCase(TaskPlanningScenarioPreset.FutureWaitTrap)]
         [TestCase(TaskPlanningScenarioPreset.FutureCapacityTrap)]
+        [TestCase(TaskPlanningScenarioPreset.RollingHorizonCapacitySaturation)]
         public void SpawnerWiresScheduledMesScenario(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerMesTest");
@@ -94,6 +96,7 @@ namespace TaskPlanning.Tests
         [TestCase(TaskPlanningScenarioPreset.FifoAssignmentTrap)]
         [TestCase(TaskPlanningScenarioPreset.FutureWaitTrap)]
         [TestCase(TaskPlanningScenarioPreset.FutureCapacityTrap)]
+        [TestCase(TaskPlanningScenarioPreset.RollingHorizonCapacitySaturation)]
         public void SpawnedPalletsResolveExactlyOneLoadingPoint(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerCompatibilityTest");
@@ -124,6 +127,7 @@ namespace TaskPlanning.Tests
         [TestCase(TaskPlanningScenarioPreset.FifoAssignmentTrap)]
         [TestCase(TaskPlanningScenarioPreset.FutureWaitTrap)]
         [TestCase(TaskPlanningScenarioPreset.FutureCapacityTrap)]
+        [TestCase(TaskPlanningScenarioPreset.RollingHorizonCapacitySaturation)]
         public void SpawnerConfiguresSchedulerWithSpawnedObjects(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerSchedulerTest");
@@ -156,6 +160,7 @@ namespace TaskPlanning.Tests
         [TestCase(TaskPlanningScenarioPreset.FifoAssignmentTrap)]
         [TestCase(TaskPlanningScenarioPreset.FutureWaitTrap)]
         [TestCase(TaskPlanningScenarioPreset.FutureCapacityTrap)]
+        [TestCase(TaskPlanningScenarioPreset.RollingHorizonCapacitySaturation)]
         public void SpawnerNamesNodesAndPointsByTheirNumericIds(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerNamesTest");
@@ -197,6 +202,7 @@ namespace TaskPlanning.Tests
         [TestCase(TaskPlanningScenarioPreset.FifoAssignmentTrap)]
         [TestCase(TaskPlanningScenarioPreset.FutureWaitTrap)]
         [TestCase(TaskPlanningScenarioPreset.FutureCapacityTrap)]
+        [TestCase(TaskPlanningScenarioPreset.RollingHorizonCapacitySaturation)]
         public void ScenarioPalletsDoNotSpawnOnLoadingOrWorkstationNodes(TaskPlanningScenarioPreset preset)
         {
             var scenario = TaskPlanningScenarioLibrary.Get(preset);
@@ -216,11 +222,103 @@ namespace TaskPlanning.Tests
             }
         }
 
+        [Test]
+        public void RollingHorizonCapacitySaturationMakesDifferentDecisionThanLookAhead()
+        {
+            var root = new GameObject("TaskPlanningScenarioSpawnerRollingHorizonTest");
+            var spawner = root.AddComponent<TaskPlanningScenarioSpawner>();
+            TaskPlanningTestHelpers.SetField(spawner, "preset", TaskPlanningScenarioPreset.RollingHorizonCapacitySaturation);
+            TaskPlanningTestHelpers.SetField(spawner, "saveMesScheduledScenarioAssetInProject", false);
+
+            try
+            {
+                spawner.Spawn();
+
+                var scenario = TaskPlanningScenarioLibrary.RollingHorizonCapacitySaturation();
+                var graph = root.GetComponentInChildren<MapfSceneGraph>();
+                var distances = new RoadmapDistanceService(graph);
+                var loadingPoints = root.GetComponentsInChildren<PalletLoadingPoint>();
+                var pallets = root.GetComponentsInChildren<PalletMarker>().ToDictionary(pallet => pallet.PalletId);
+                var workstations = root.GetComponentsInChildren<WorkstationDeliveryPoint>().ToDictionary(workstation => workstation.WorkstationId);
+                var amrs = root.GetComponentsInChildren<TaskPlanningAmr>().ToDictionary(amr => amr.AmrId);
+                var targetTasks = scenario.ScheduledTasks
+                    .Where(task => task.timestampSeconds > 0f)
+                    .OrderBy(task => task.taskId)
+                    .Select(task => new DeliveryPlanningTask(task.taskId, pallets[task.palletId], workstations[task.workstationId], 1f))
+                    .Cast<ITaskPlanningTask>()
+                    .ToArray();
+                var primerTask = new DeliveryPlanningTask("PrimeFutureCapacityAmr", pallets["Pallet_Primer"], workstations["259"], 0f);
+                var futureAvailability = new[]
+                {
+                    new AmrFutureAvailability(
+                        amrs["AMR_Future"],
+                        primerTask,
+                        workstations["259"].Node,
+                        priorAssignmentEta: 12.0,
+                        isInterruptible: false)
+                };
+                var immediateAmrs = new[]
+                {
+                    amrs["AMR_Remote_A"],
+                    amrs["AMR_Remote_B"],
+                    amrs["AMR_Remote_C"]
+                };
+                var evaluator = new TaskPlanningCostEvaluator(
+                    distances,
+                    CreateNoAgingWeights(),
+                    1f,
+                    targetTasks,
+                    1f);
+                var problem = new DispatchProblem(
+                    targetTasks,
+                    immediateAmrs,
+                    loadingPoints,
+                    distances,
+                    evaluator,
+                    1f,
+                    futureAvailability);
+
+                var lookAheadPlan = new LookAheadFuturePolicy(10f).Solve(problem, new NearestDispatching());
+                var rollingPlan = new RollingHorizonFuturePolicy(new RollingHorizonOptions
+                {
+                    horizonSeconds = 30f,
+                    maxWaves = 4,
+                    waitImprovementPercent = 10f
+                }).Solve(problem, new NearestDispatching());
+
+                Assert.That(lookAheadPlan.Assignments, Is.Empty);
+                Assert.That(rollingPlan.Assignments, Has.Count.EqualTo(3));
+                Assert.That(
+                    rollingPlan.Assignments.Select(assignment => assignment.Amr),
+                    Is.EquivalentTo(immediateAmrs));
+                Assert.That(
+                    rollingPlan.Assignments.Select(assignment => assignment.Task.TaskId),
+                    Does.Not.Contain("CapacityOverflowA"));
+            }
+            finally
+            {
+                var mes = FindMes(root);
+                var generatedScenario = mes != null ? mes.ScheduledScenario : null;
+                TaskPlanningTestHelpers.Destroy(root);
+                TaskPlanningTestHelpers.Destroy(generatedScenario);
+            }
+        }
+
         private static GameObject RequireChild(GameObject root, string childName)
         {
             var child = root.transform.Find(childName);
             Assert.That(child, Is.Not.Null, $"Expected spawned scenario root to contain child '{childName}'.");
             return child.gameObject;
+        }
+
+        private static TaskPlanningCostWeights CreateNoAgingWeights()
+        {
+            var weights = new TaskPlanningCostWeights();
+            weights.delivery.agingWeight = 0f;
+            weights.delivery.maxAgingBonus = 0f;
+            weights.removal.agingWeight = 0f;
+            weights.removal.maxAgingBonus = 0f;
+            return weights;
         }
 
         private static TaskPlanningMes FindMes(GameObject root)

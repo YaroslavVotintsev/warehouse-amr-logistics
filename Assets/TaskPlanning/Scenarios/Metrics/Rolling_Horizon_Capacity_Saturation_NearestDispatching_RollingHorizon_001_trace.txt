@@ -1,0 +1,457 @@
+﻿TaskPlanning Dispatch Trace
+Run: Rolling_Horizon_Capacity_Saturation_NearestDispatching_RollingHorizon_001
+Scenario name: Rolling_Horizon_Capacity_Saturation
+
+Chronological Events
+[0s] SCENARIO_STARTED
+  Scenario: Rolling_Horizon_Capacity_Saturation
+  Total MES tasks: 5
+[0s] MES_BATCH_RECEIVED
+  Task: PrimeFutureCapacityAmr | pallet=Pallet_Primer | workstation=259
+[0s] DISPATCH_CYCLE #1
+  Algorithm: NearestDispatching
+  Future policy: RollingHorizon
+  Pending tasks: PrimeFutureCapacityAmr
+  Free AMRs: AMR_Future, AMR_Remote_A, AMR_Remote_B, AMR_Remote_C
+  Active interruptible AMRs: none
+  Soft reassignment candidates: none
+  Candidate costs:
+    AMR_Future -> PrimeFutureCapacityAmr | pallet=Pallet_Primer | loading=159 | workstation=259 | cost=13 | softReassignment=no
+    AMR_Remote_C -> PrimeFutureCapacityAmr | pallet=Pallet_Primer | loading=159 | workstation=259 | cost=60 | softReassignment=no
+    AMR_Remote_B -> PrimeFutureCapacityAmr | pallet=Pallet_Primer | loading=159 | workstation=259 | cost=63 | softReassignment=no
+    AMR_Remote_A -> PrimeFutureCapacityAmr | pallet=Pallet_Primer | loading=159 | workstation=259 | cost=66 | softReassignment=no
+  Selected:
+    AMR_Future -> PrimeFutureCapacityAmr | cost=13 | softReassignment=no | replaces=-
+[0s] ASSIGNMENT_STARTED
+  Assignment: A-001
+  Type: Delivery
+  Task: PrimeFutureCapacityAmr
+  AMR: AMR_Future
+  Pallet: Pallet_Primer
+  Loading point: 159
+  Workstation: 259
+  Removal target: -
+  Cost: 13
+  Soft reassignment: no
+  Replaced task: -
+[1.003s] MES_SUBMISSION_COMPLETED
+  Scenario: Rolling_Horizon_Capacity_Saturation
+[1.003s] MES_BATCH_RECEIVED
+  Task: CapacityOverflowA | pallet=Pallet_Target_A | workstation=261
+  Task: CapacityOverflowB | pallet=Pallet_Target_B | workstation=263
+  Task: CapacityOverflowC | pallet=Pallet_Target_C | workstation=265
+  Task: CapacityOverflowD | pallet=Pallet_Target_D | workstation=267
+[1.003s] DISPATCH_CYCLE #2
+  Algorithm: NearestDispatching
+  Future policy: RollingHorizon
+  Pending tasks: CapacityOverflowA, CapacityOverflowB, CapacityOverflowC, CapacityOverflowD
+  Free AMRs: AMR_Remote_A, AMR_Remote_B, AMR_Remote_C
+  Active interruptible AMRs: AMR_Future
+  Soft reassignment candidates: none
+  Future AMR availability:
+    AMR_Future after PrimeFutureCapacityAmr | finishNode=259 | eta=12 s | interruptible=True
+  Candidate costs:
+    AMR_Remote_C -> CapacityOverflowA | pallet=Pallet_Target_A | loading=161 | workstation=261 | cost=62 | softReassignment=no
+    AMR_Remote_C -> CapacityOverflowB | pallet=Pallet_Target_B | loading=163 | workstation=263 | cost=64 | softReassignment=no
+    AMR_Remote_B -> CapacityOverflowA | pallet=Pallet_Target_A | loading=161 | workstation=261 | cost=65 | softReassignment=no
+    AMR_Remote_C -> CapacityOverflowC | pallet=Pallet_Target_C | loading=165 | workstation=265 | cost=66 | softReassignment=no
+    AMR_Remote_B -> CapacityOverflowB | pallet=Pallet_Target_B | loading=163 | workstation=263 | cost=67 | softReassignment=no
+    AMR_Remote_A -> CapacityOverflowA | pallet=Pallet_Target_A | loading=161 | workstation=261 | cost=68 | softReassignment=no
+    AMR_Remote_C -> CapacityOverflowD | pallet=Pallet_Target_D | loading=167 | workstation=267 | cost=68 | softReassignment=no
+    AMR_Remote_B -> CapacityOverflowC | pallet=Pallet_Target_C | loading=165 | workstation=265 | cost=69 | softReassignment=no
+    AMR_Remote_A -> CapacityOverflowB | pallet=Pallet_Target_B | loading=163 | workstation=263 | cost=70 | softReassignment=no
+    AMR_Remote_B -> CapacityOverflowD | pallet=Pallet_Target_D | loading=167 | workstation=267 | cost=71 | softReassignment=no
+    AMR_Remote_A -> CapacityOverflowC | pallet=Pallet_Target_C | loading=165 | workstation=265 | cost=72 | softReassignment=no
+    AMR_Remote_A -> CapacityOverflowD | pallet=Pallet_Target_D | loading=167 | workstation=267 | cost=74 | softReassignment=no
+  Selected:
+    AMR_Remote_C -> CapacityOverflowB | cost=64 | softReassignment=no | replaces=-
+    AMR_Remote_B -> CapacityOverflowC | cost=69 | softReassignment=no | replaces=-
+    AMR_Remote_A -> CapacityOverflowD | cost=74 | softReassignment=no | replaces=-
+[1.003s] ASSIGNMENT_STARTED
+  Assignment: A-002
+  Type: Delivery
+  Task: CapacityOverflowB
+  AMR: AMR_Remote_C
+  Pallet: Pallet_Target_B
+  Loading point: 163
+  Workstation: 263
+  Removal target: -
+  Cost: 64
+  Soft reassignment: no
+  Replaced task: -
+[1.003s] ASSIGNMENT_STARTED
+  Assignment: A-003
+  Type: Delivery
+  Task: CapacityOverflowC
+  AMR: AMR_Remote_B
+  Pallet: Pallet_Target_C
+  Loading point: 165
+  Workstation: 265
+  Removal target: -
+  Cost: 69
+  Soft reassignment: no
+  Replaced task: -
+[1.003s] ASSIGNMENT_STARTED
+  Assignment: A-004
+  Type: Delivery
+  Task: CapacityOverflowD
+  AMR: AMR_Remote_A
+  Pallet: Pallet_Target_D
+  Loading point: 167
+  Workstation: 267
+  Removal target: -
+  Cost: 74
+  Soft reassignment: no
+  Replaced task: -
+[2.006s] ASSIGNMENT_PHASE
+  Task: PrimeFutureCapacityAmr
+  AMR: AMR_Future
+  MovingToPallet -> Attaching
+[3.01s] ASSIGNMENT_ACTION
+  Task: PrimeFutureCapacityAmr
+  AMR: AMR_Future
+  Action: Attach
+  Duration: 1 s
+[3.01s] ASSIGNMENT_PHASE
+  Task: PrimeFutureCapacityAmr
+  AMR: AMR_Future
+  Attaching -> WaitingForLoadingAndWorkstationTurn
+[3.01s] ASSIGNMENT_QUEUE_WAIT
+  Task: PrimeFutureCapacityAmr
+  AMR: AMR_Future
+  Loading-point wait: 0 s
+  Workstation wait: 0 s
+[3.016s] ASSIGNMENT_PHASE
+  Task: PrimeFutureCapacityAmr
+  AMR: AMR_Future
+  WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+[5.949s] ASSIGNMENT_PHASE
+  Task: PrimeFutureCapacityAmr
+  AMR: AMR_Future
+  MovingToLoading -> Loading
+[9.953s] ASSIGNMENT_ACTION
+  Task: PrimeFutureCapacityAmr
+  AMR: AMR_Future
+  Action: Load
+  Duration: 4 s
+[9.953s] ASSIGNMENT_PHASE
+  Task: PrimeFutureCapacityAmr
+  AMR: AMR_Future
+  Loading -> MovingToWorkstation
+[11.883s] ASSIGNMENT_PHASE
+  Task: PrimeFutureCapacityAmr
+  AMR: AMR_Future
+  MovingToWorkstation -> DetachingAtWorkstation
+[12.887s] ASSIGNMENT_ACTION
+  Task: PrimeFutureCapacityAmr
+  AMR: AMR_Future
+  Action: Detach
+  Duration: 1 s
+[12.887s] ASSIGNMENT_COMPLETED
+  Task: PrimeFutureCapacityAmr
+  AMR: AMR_Future
+  Pallet: Pallet_Primer
+[12.887s] DISPATCH_CYCLE #3
+  Algorithm: NearestDispatching
+  Future policy: RollingHorizon
+  Pending tasks: CapacityOverflowA
+  Free AMRs: AMR_Future
+  Active interruptible AMRs: AMR_Remote_C, AMR_Remote_B, AMR_Remote_A
+  Soft reassignment candidates: none
+  Future AMR availability:
+    AMR_Remote_C after CapacityOverflowB | finishNode=263 | eta=52 s | interruptible=True
+    AMR_Remote_B after CapacityOverflowC | finishNode=265 | eta=57 s | interruptible=True
+    AMR_Remote_A after CapacityOverflowD | finishNode=267 | eta=62 s | interruptible=True
+  Candidate costs:
+    AMR_Future -> CapacityOverflowA | pallet=Pallet_Target_A | loading=161 | workstation=261 | cost=14 | softReassignment=no
+  Selected:
+    AMR_Future -> CapacityOverflowA | cost=14 | softReassignment=no | replaces=-
+[12.887s] ASSIGNMENT_STARTED
+  Assignment: A-005
+  Type: Delivery
+  Task: CapacityOverflowA
+  AMR: AMR_Future
+  Pallet: Pallet_Target_A
+  Loading point: 161
+  Workstation: 261
+  Removal target: -
+  Cost: 14
+  Soft reassignment: no
+  Replaced task: -
+[13.887s] MES_TASK_COMPLETED
+  Task: PrimeFutureCapacityAmr
+  AMR: AMR_Future
+  Pallet: Pallet_Primer
+[15.82s] ASSIGNMENT_PHASE
+  Task: CapacityOverflowA
+  AMR: AMR_Future
+  MovingToPallet -> Attaching
+[16.824s] ASSIGNMENT_ACTION
+  Task: CapacityOverflowA
+  AMR: AMR_Future
+  Action: Attach
+  Duration: 1 s
+[16.824s] ASSIGNMENT_PHASE
+  Task: CapacityOverflowA
+  AMR: AMR_Future
+  Attaching -> WaitingForLoadingAndWorkstationTurn
+[16.824s] ASSIGNMENT_QUEUE_WAIT
+  Task: CapacityOverflowA
+  AMR: AMR_Future
+  Loading-point wait: 0 s
+  Workstation wait: 0 s
+[16.828s] ASSIGNMENT_PHASE
+  Task: CapacityOverflowA
+  AMR: AMR_Future
+  WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+[19.757s] ASSIGNMENT_PHASE
+  Task: CapacityOverflowA
+  AMR: AMR_Future
+  MovingToLoading -> Loading
+[23.758s] ASSIGNMENT_ACTION
+  Task: CapacityOverflowA
+  AMR: AMR_Future
+  Action: Load
+  Duration: 4 s
+[23.758s] ASSIGNMENT_PHASE
+  Task: CapacityOverflowA
+  AMR: AMR_Future
+  Loading -> MovingToWorkstation
+[25.687s] ASSIGNMENT_PHASE
+  Task: CapacityOverflowA
+  AMR: AMR_Future
+  MovingToWorkstation -> DetachingAtWorkstation
+[26.687s] ASSIGNMENT_ACTION
+  Task: CapacityOverflowA
+  AMR: AMR_Future
+  Action: Detach
+  Duration: 1 s
+[26.687s] ASSIGNMENT_COMPLETED
+  Task: CapacityOverflowA
+  AMR: AMR_Future
+  Pallet: Pallet_Target_A
+[27.691s] MES_TASK_COMPLETED
+  Task: CapacityOverflowA
+  AMR: AMR_Future
+  Pallet: Pallet_Target_A
+[53.955s] ASSIGNMENT_PHASE
+  Task: CapacityOverflowB
+  AMR: AMR_Remote_C
+  MovingToPallet -> Attaching
+[54.959s] ASSIGNMENT_ACTION
+  Task: CapacityOverflowB
+  AMR: AMR_Remote_C
+  Action: Attach
+  Duration: 1 s
+[54.959s] ASSIGNMENT_PHASE
+  Task: CapacityOverflowB
+  AMR: AMR_Remote_C
+  Attaching -> WaitingForLoadingAndWorkstationTurn
+[54.959s] ASSIGNMENT_QUEUE_WAIT
+  Task: CapacityOverflowB
+  AMR: AMR_Remote_C
+  Loading-point wait: 0 s
+  Workstation wait: 0 s
+[54.962s] ASSIGNMENT_PHASE
+  Task: CapacityOverflowB
+  AMR: AMR_Remote_C
+  WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+[58.526s] ASSIGNMENT_PHASE
+  Task: CapacityOverflowB
+  AMR: AMR_Remote_C
+  MovingToLoading -> Loading
+[58.954s] ASSIGNMENT_PHASE
+  Task: CapacityOverflowC
+  AMR: AMR_Remote_B
+  MovingToPallet -> Attaching
+[59.954s] ASSIGNMENT_ACTION
+  Task: CapacityOverflowC
+  AMR: AMR_Remote_B
+  Action: Attach
+  Duration: 1 s
+[59.954s] ASSIGNMENT_PHASE
+  Task: CapacityOverflowC
+  AMR: AMR_Remote_B
+  Attaching -> WaitingForLoadingAndWorkstationTurn
+[59.954s] ASSIGNMENT_QUEUE_WAIT
+  Task: CapacityOverflowC
+  AMR: AMR_Remote_B
+  Loading-point wait: 0 s
+  Workstation wait: 0 s
+[59.958s] ASSIGNMENT_PHASE
+  Task: CapacityOverflowC
+  AMR: AMR_Remote_B
+  WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+[62.529s] ASSIGNMENT_ACTION
+  Task: CapacityOverflowB
+  AMR: AMR_Remote_C
+  Action: Load
+  Duration: 4 s
+[62.529s] ASSIGNMENT_PHASE
+  Task: CapacityOverflowB
+  AMR: AMR_Remote_C
+  Loading -> MovingToWorkstation
+[63.525s] ASSIGNMENT_PHASE
+  Task: CapacityOverflowC
+  AMR: AMR_Remote_B
+  MovingToLoading -> Loading
+[63.979s] ASSIGNMENT_PHASE
+  Task: CapacityOverflowD
+  AMR: AMR_Remote_A
+  MovingToPallet -> Attaching
+[64.458s] ASSIGNMENT_PHASE
+  Task: CapacityOverflowB
+  AMR: AMR_Remote_C
+  MovingToWorkstation -> DetachingAtWorkstation
+[64.98s] ASSIGNMENT_ACTION
+  Task: CapacityOverflowD
+  AMR: AMR_Remote_A
+  Action: Attach
+  Duration: 1 s
+[64.98s] ASSIGNMENT_PHASE
+  Task: CapacityOverflowD
+  AMR: AMR_Remote_A
+  Attaching -> WaitingForLoadingAndWorkstationTurn
+[64.98s] ASSIGNMENT_QUEUE_WAIT
+  Task: CapacityOverflowD
+  AMR: AMR_Remote_A
+  Loading-point wait: 0 s
+  Workstation wait: 0 s
+[64.983s] ASSIGNMENT_PHASE
+  Task: CapacityOverflowD
+  AMR: AMR_Remote_A
+  WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+[65.458s] ASSIGNMENT_ACTION
+  Task: CapacityOverflowB
+  AMR: AMR_Remote_C
+  Action: Detach
+  Duration: 1 s
+[65.458s] ASSIGNMENT_COMPLETED
+  Task: CapacityOverflowB
+  AMR: AMR_Remote_C
+  Pallet: Pallet_Target_B
+[66.458s] MES_TASK_COMPLETED
+  Task: CapacityOverflowB
+  AMR: AMR_Remote_C
+  Pallet: Pallet_Target_B
+[67.525s] ASSIGNMENT_ACTION
+  Task: CapacityOverflowC
+  AMR: AMR_Remote_B
+  Action: Load
+  Duration: 4 s
+[67.525s] ASSIGNMENT_PHASE
+  Task: CapacityOverflowC
+  AMR: AMR_Remote_B
+  Loading -> MovingToWorkstation
+[67.913s] ASSIGNMENT_PHASE
+  Task: CapacityOverflowD
+  AMR: AMR_Remote_A
+  MovingToLoading -> Loading
+[69.454s] ASSIGNMENT_PHASE
+  Task: CapacityOverflowC
+  AMR: AMR_Remote_B
+  MovingToWorkstation -> DetachingAtWorkstation
+[70.458s] ASSIGNMENT_ACTION
+  Task: CapacityOverflowC
+  AMR: AMR_Remote_B
+  Action: Detach
+  Duration: 1 s
+[70.458s] ASSIGNMENT_COMPLETED
+  Task: CapacityOverflowC
+  AMR: AMR_Remote_B
+  Pallet: Pallet_Target_C
+[71.458s] MES_TASK_COMPLETED
+  Task: CapacityOverflowC
+  AMR: AMR_Remote_B
+  Pallet: Pallet_Target_C
+[71.913s] ASSIGNMENT_ACTION
+  Task: CapacityOverflowD
+  AMR: AMR_Remote_A
+  Action: Load
+  Duration: 4 s
+[71.913s] ASSIGNMENT_PHASE
+  Task: CapacityOverflowD
+  AMR: AMR_Remote_A
+  Loading -> MovingToWorkstation
+[73.842s] ASSIGNMENT_PHASE
+  Task: CapacityOverflowD
+  AMR: AMR_Remote_A
+  MovingToWorkstation -> DetachingAtWorkstation
+[74.842s] ASSIGNMENT_ACTION
+  Task: CapacityOverflowD
+  AMR: AMR_Remote_A
+  Action: Detach
+  Duration: 1 s
+[74.842s] ASSIGNMENT_COMPLETED
+  Task: CapacityOverflowD
+  AMR: AMR_Remote_A
+  Pallet: Pallet_Target_D
+[75.842s] MES_TASK_COMPLETED
+  Task: CapacityOverflowD
+  AMR: AMR_Remote_A
+  Pallet: Pallet_Target_D
+
+Assignment Trace Summary
+# | type | task | pallet | amr | replaced task | replaced by | soft reassigned | enqueued | assigned | completed | total time | cost | loading wait | workstation wait | action time | travel distance | outcome
+1 | Delivery | PrimeFutureCapacityAmr | Pallet_Primer | AMR_Future | - | - | no | 0 | 0 | 12.887 | 12.887 s | 13 | 0 s | 0 s | 6 s | 6.999 units | completed
+2 | Delivery | CapacityOverflowB | Pallet_Target_B | AMR_Remote_C | - | - | no | 1.003 | 1.003 | 65.458 | 64.456 s | 64 | 0 s | 0 s | 6 s | 57.995 units | completed
+3 | Delivery | CapacityOverflowC | Pallet_Target_C | AMR_Remote_B | - | - | no | 1.003 | 1.003 | 70.458 | 69.456 s | 69 | 0 s | 0 s | 6 s | 62.999 units | completed
+4 | Delivery | CapacityOverflowD | Pallet_Target_D | AMR_Remote_A | - | - | no | 1.003 | 1.003 | 74.842 | 73.839 s | 74 | 0 s | 0 s | 6 s | 67.999 units | completed
+5 | Delivery | CapacityOverflowA | Pallet_Target_A | AMR_Future | - | - | no | 1.003 | 12.887 | 26.687 | 13.8 s | 14 | 0 s | 0 s | 6 s | 7.996 units | completed
+
+Assignment Phase Details
+A-001 / PrimeFutureCapacityAmr / AMR_Future
+  2.006s: MovingToPallet -> Attaching
+  Action Attach: 1 s
+  3.01s: Attaching -> WaitingForLoadingAndWorkstationTurn
+  Queue wait: loading=0 s, workstation=0 s
+  3.016s: WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+  5.949s: MovingToLoading -> Loading
+  Action Load: 4 s
+  9.953s: Loading -> MovingToWorkstation
+  11.883s: MovingToWorkstation -> DetachingAtWorkstation
+  Action Detach: 1 s
+A-002 / CapacityOverflowB / AMR_Remote_C
+  53.955s: MovingToPallet -> Attaching
+  Action Attach: 1 s
+  54.959s: Attaching -> WaitingForLoadingAndWorkstationTurn
+  Queue wait: loading=0 s, workstation=0 s
+  54.962s: WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+  58.526s: MovingToLoading -> Loading
+  Action Load: 4 s
+  62.529s: Loading -> MovingToWorkstation
+  64.458s: MovingToWorkstation -> DetachingAtWorkstation
+  Action Detach: 1 s
+A-003 / CapacityOverflowC / AMR_Remote_B
+  58.954s: MovingToPallet -> Attaching
+  Action Attach: 1 s
+  59.954s: Attaching -> WaitingForLoadingAndWorkstationTurn
+  Queue wait: loading=0 s, workstation=0 s
+  59.958s: WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+  63.525s: MovingToLoading -> Loading
+  Action Load: 4 s
+  67.525s: Loading -> MovingToWorkstation
+  69.454s: MovingToWorkstation -> DetachingAtWorkstation
+  Action Detach: 1 s
+A-004 / CapacityOverflowD / AMR_Remote_A
+  63.979s: MovingToPallet -> Attaching
+  Action Attach: 1 s
+  64.98s: Attaching -> WaitingForLoadingAndWorkstationTurn
+  Queue wait: loading=0 s, workstation=0 s
+  64.983s: WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+  67.913s: MovingToLoading -> Loading
+  Action Load: 4 s
+  71.913s: Loading -> MovingToWorkstation
+  73.842s: MovingToWorkstation -> DetachingAtWorkstation
+  Action Detach: 1 s
+A-005 / CapacityOverflowA / AMR_Future
+  15.82s: MovingToPallet -> Attaching
+  Action Attach: 1 s
+  16.824s: Attaching -> WaitingForLoadingAndWorkstationTurn
+  Queue wait: loading=0 s, workstation=0 s
+  16.828s: WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+  19.757s: MovingToLoading -> Loading
+  Action Load: 4 s
+  23.758s: Loading -> MovingToWorkstation
+  25.687s: MovingToWorkstation -> DetachingAtWorkstation
+  Action Detach: 1 s
