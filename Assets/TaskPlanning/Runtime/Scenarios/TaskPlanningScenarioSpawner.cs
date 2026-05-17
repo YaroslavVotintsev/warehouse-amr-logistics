@@ -15,7 +15,7 @@ namespace TaskPlanning
     public sealed class TaskPlanningScenarioSpawner : MonoBehaviour
     {
         public const string MesScheduledScenarioAssetFolder = "Assets/TaskPlanning/Scenarios";
-        public const string MetricOutputFolder = "Assets/TaskPlanning/Scenarios/Metrics";
+        public const string ScenarioRunsFolder = "Assets/TaskPlanning/Scenarios/Runs";
         private const string MapfRootName = "MAPF";
         private const string SchedulerRootName = "Scheduler";
         private const string MesRootName = "MES";
@@ -328,7 +328,7 @@ namespace TaskPlanning
         private static void EnsureScenarioFolders()
         {
             EnsureFolder("Assets/TaskPlanning", "Scenarios");
-            EnsureFolder(MesScheduledScenarioAssetFolder, "Metrics");
+            EnsureFolder(MesScheduledScenarioAssetFolder, "Runs");
         }
 
         private static void EnsureFolder(string parent, string child)

@@ -16,7 +16,8 @@ namespace TaskPlanning
                 RegretAssignmentTrap(),
                 HungarianAssignmentTrap(),
                 RegretDecoyTrap(),
-                GlobalAssignmentTrap()
+                GlobalAssignmentTrap(),
+                SoftReassignmentRescue()
             };
         }
 
@@ -32,6 +33,7 @@ namespace TaskPlanning
                 TaskPlanningScenarioPreset.HungarianAssignmentTrap => HungarianAssignmentTrap(),
                 TaskPlanningScenarioPreset.RegretDecoyTrap => RegretDecoyTrap(),
                 TaskPlanningScenarioPreset.GlobalAssignmentTrap => GlobalAssignmentTrap(),
+                TaskPlanningScenarioPreset.SoftReassignmentRescue => SoftReassignmentRescue(),
                 _ => FifoAssignmentTrap()
             };
         }
@@ -337,6 +339,41 @@ namespace TaskPlanning
                     Task(0f, "Pallet_R_Decoy", "1321", "GlobalTrap_R_Decoy"),
                     Task(0f, "Pallet_R_Local_A", "1103", "GlobalTrap_R_LocalA"),
                     Task(0f, "Pallet_R_Local_B", "1202", "GlobalTrap_R_LocalB")
+                });
+        }
+
+        public static TaskPlanningScenario SoftReassignmentRescue()
+        {
+            var graph = LongCorridorWithBays(length: 52);
+
+            return new TaskPlanningScenario(
+                "Soft Reassignment Rescue",
+                graph.Nodes,
+                graph.Edges,
+                new[]
+                {
+                    Amr("AMR_Switchable", 0, "200"),
+                    Amr("AMR_Backup", 1, "252")
+                },
+                new[]
+                {
+                    Pallet("Pallet_Long", "122", "126", attach: 1f, detach: 1f, load: 1f, unload: 1f),
+                    Pallet("Pallet_Short", "104", "107", attach: 1f, detach: 1f, load: 1f, unload: 1f)
+                },
+                new[]
+                {
+                    LoadingPoint("123", "123", "Pallet_Long"),
+                    LoadingPoint("105", "105", "Pallet_Short")
+                },
+                new[]
+                {
+                    Workstation("126", "126", "Pallet_Long"),
+                    Workstation("107", "107", "Pallet_Short")
+                },
+                new[]
+                {
+                    Task(0f, "Pallet_Long", "126", "SoftRescue_Long"),
+                    Task(2f, "Pallet_Short", "107", "SoftRescue_Short")
                 });
         }
 

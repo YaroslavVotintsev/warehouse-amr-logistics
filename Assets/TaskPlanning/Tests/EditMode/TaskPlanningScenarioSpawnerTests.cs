@@ -17,6 +17,7 @@ namespace TaskPlanning.Tests
         [TestCase(TaskPlanningScenarioPreset.HungarianAssignmentTrap)]
         [TestCase(TaskPlanningScenarioPreset.RegretDecoyTrap)]
         [TestCase(TaskPlanningScenarioPreset.GlobalAssignmentTrap)]
+        [TestCase(TaskPlanningScenarioPreset.SoftReassignmentRescue)]
         public void SpawnerCreatesCompleteScenarioUnderSpawner(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerTest");
@@ -75,6 +76,7 @@ namespace TaskPlanning.Tests
         [TestCase(TaskPlanningScenarioPreset.HungarianAssignmentTrap)]
         [TestCase(TaskPlanningScenarioPreset.RegretDecoyTrap)]
         [TestCase(TaskPlanningScenarioPreset.GlobalAssignmentTrap)]
+        [TestCase(TaskPlanningScenarioPreset.SoftReassignmentRescue)]
         public void SpawnerWiresScheduledMesScenario(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerMesTest");
@@ -109,6 +111,7 @@ namespace TaskPlanning.Tests
         [TestCase(TaskPlanningScenarioPreset.HungarianAssignmentTrap)]
         [TestCase(TaskPlanningScenarioPreset.RegretDecoyTrap)]
         [TestCase(TaskPlanningScenarioPreset.GlobalAssignmentTrap)]
+        [TestCase(TaskPlanningScenarioPreset.SoftReassignmentRescue)]
         public void SpawnedPalletsResolveExactlyOneLoadingPoint(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerCompatibilityTest");
@@ -144,6 +147,7 @@ namespace TaskPlanning.Tests
         [TestCase(TaskPlanningScenarioPreset.HungarianAssignmentTrap)]
         [TestCase(TaskPlanningScenarioPreset.RegretDecoyTrap)]
         [TestCase(TaskPlanningScenarioPreset.GlobalAssignmentTrap)]
+        [TestCase(TaskPlanningScenarioPreset.SoftReassignmentRescue)]
         public void SpawnerConfiguresSchedulerWithSpawnedObjects(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerSchedulerTest");
@@ -181,6 +185,7 @@ namespace TaskPlanning.Tests
         [TestCase(TaskPlanningScenarioPreset.HungarianAssignmentTrap)]
         [TestCase(TaskPlanningScenarioPreset.RegretDecoyTrap)]
         [TestCase(TaskPlanningScenarioPreset.GlobalAssignmentTrap)]
+        [TestCase(TaskPlanningScenarioPreset.SoftReassignmentRescue)]
         public void SpawnerNamesNodesAndPointsByTheirNumericIds(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerNamesTest");
@@ -227,6 +232,7 @@ namespace TaskPlanning.Tests
         [TestCase(TaskPlanningScenarioPreset.HungarianAssignmentTrap)]
         [TestCase(TaskPlanningScenarioPreset.RegretDecoyTrap)]
         [TestCase(TaskPlanningScenarioPreset.GlobalAssignmentTrap)]
+        [TestCase(TaskPlanningScenarioPreset.SoftReassignmentRescue)]
         public void ScenarioPalletsDoNotSpawnOnLoadingOrWorkstationNodes(TaskPlanningScenarioPreset preset)
         {
             var scenario = TaskPlanningScenarioLibrary.Get(preset);
@@ -243,6 +249,52 @@ namespace TaskPlanning.Tests
                     workstationNodeIds.Contains(pallet.CurrentNodeId),
                     Is.False,
                     $"{scenario.Name}: pallet '{pallet.PalletId}' should not spawn on workstation node '{pallet.CurrentNodeId}'.");
+            }
+        }
+
+        [Test]
+        public void SoftReassignmentRescueMakesLateTaskCheaperForMovingAmrThanBackup()
+        {
+            var root = new GameObject("TaskPlanningScenarioSpawnerSoftRescueTest");
+            var spawner = root.AddComponent<TaskPlanningScenarioSpawner>();
+            TaskPlanningTestHelpers.SetField(spawner, "preset", TaskPlanningScenarioPreset.SoftReassignmentRescue);
+            TaskPlanningTestHelpers.SetField(spawner, "saveMesScheduledScenarioAssetInProject", false);
+
+            try
+            {
+                spawner.Spawn();
+
+                var graph = root.GetComponentInChildren<MapfSceneGraph>();
+                var distances = new RoadmapDistanceService(graph);
+                var nodes = root.GetComponentsInChildren<MapfNode>().ToDictionary(node => node.StableId);
+                var loadingPoints = root.GetComponentsInChildren<PalletLoadingPoint>().ToDictionary(point => point.LoadingPointId);
+                var pallets = root.GetComponentsInChildren<PalletMarker>().ToDictionary(pallet => pallet.PalletId);
+                var workstations = root.GetComponentsInChildren<WorkstationDeliveryPoint>().ToDictionary(workstation => workstation.WorkstationId);
+                var amrs = root.GetComponentsInChildren<TaskPlanningAmr>().ToDictionary(amr => amr.AmrId);
+                var longTask = new DeliveryPlanningTask("SoftRescue_Long", pallets["Pallet_Long"], workstations["126"], 0f);
+                var shortTask = new DeliveryPlanningTask("SoftRescue_Short", pallets["Pallet_Short"], workstations["107"], 2f);
+                var tasks = new ITaskPlanningTask[] { shortTask };
+                var evaluator = new TaskPlanningCostEvaluator(distances, CreateNoAgingWeights(), 1f, tasks, 2f);
+                var movingAmrNode = nodes["2"];
+
+                var keepLongCost = evaluator.EvaluateFrom(movingAmrNode, longTask, loadingPoints["123"], 0);
+                var switchToShortCost = evaluator
+                    .EvaluateFrom(movingAmrNode, shortTask, loadingPoints["105"], 0)
+                    .WithReassignmentPenalty(2.0);
+                var backupShortCost = evaluator.Evaluate(amrs["AMR_Backup"], shortTask, loadingPoints["105"]);
+
+                Assert.That(keepLongCost.IsFeasible, Is.True);
+                Assert.That(switchToShortCost.IsFeasible, Is.True);
+                Assert.That(backupShortCost.IsFeasible, Is.True);
+                Assert.That(switchToShortCost.TotalCost, Is.LessThan(keepLongCost.TotalCost));
+                Assert.That(switchToShortCost.TotalCost, Is.LessThan(backupShortCost.TotalCost));
+            }
+            finally
+            {
+                var mes = FindMes(root);
+                var generatedScenario = mes != null ? mes.ScheduledScenario : null;
+                TaskPlanningTestHelpers.Destroy(root);
+                TaskPlanningTestHelpers.Destroy(generatedScenario);
             }
         }
 

@@ -75,6 +75,67 @@ namespace TaskPlanning.Tests
             }
         }
 
+        [Test]
+        public void SoftReassignmentCandidateUsesPenalizedReplacementCost()
+        {
+            var fixture = SoftReassignmentFixture.Create("SoftCandidatePenalty");
+
+            try
+            {
+                var baseCost = new CostEvaluation(isFeasible: true, totalCost: 40);
+                var effectiveCost = baseCost.WithReassignmentPenalty(15);
+                var option = new SoftReassignmentOption(
+                    fixture.ActiveAssignment,
+                    fixture.ReplacementTask,
+                    new CostEvaluation(isFeasible: true, totalCost: 100),
+                    baseCost,
+                    effectiveCost,
+                    reassignmentTravelTimeSeconds: 5,
+                    reassignmentPenalty: 15,
+                    improvementPercent: 45);
+                var problem = fixture.CreateProblem(
+                    new ITaskPlanningTask[] { fixture.ReplacementTask },
+                    new[] { option });
+
+                var candidates = DispatchCandidateBuilder.BuildImmediateCandidates(problem);
+
+                Assert.That(candidates.Count, Is.EqualTo(1));
+                Assert.That(candidates[0].Score, Is.EqualTo(55.0).Within(0.0001));
+                Assert.That(candidates[0].Cost.ReassignmentPenalty, Is.EqualTo(15.0).Within(0.0001));
+                Assert.That(candidates[0].SoftReassignment.ReassignmentTravelTimeSeconds, Is.EqualTo(5.0).Within(0.0001));
+            }
+            finally
+            {
+                fixture.Destroy();
+            }
+        }
+
+        [Test]
+        public void ReassignmentTravelPenaltyCanBlockSmallImprovement()
+        {
+            var scheduler = TaskPlanningTestHelpers.CreateComponent<TaskScheduler>("ReassignmentPenalty_Scheduler");
+
+            try
+            {
+                TaskPlanningTestHelpers.SetField(scheduler, "reassignmentCostImprovementPercent", 10f);
+                TaskPlanningTestHelpers.SetField(scheduler, "reassignmentTravelPenaltyWeight", 2f);
+
+                var effectiveCost = (double)TaskPlanningTestHelpers.InvokePrivate(
+                    scheduler,
+                    "PenalizedReassignmentCost",
+                    85.0,
+                    5.0);
+
+                Assert.That(effectiveCost, Is.EqualTo(95.0).Within(0.0001));
+                Assert.That(EnoughImprovement(scheduler, currentCost: 100.0, replacementCost: effectiveCost), Is.False);
+                Assert.That(EnoughImprovement(scheduler, currentCost: 100.0, replacementCost: 80.0), Is.True);
+            }
+            finally
+            {
+                TaskPlanningTestHelpers.Destroy(scheduler.gameObject);
+            }
+        }
+
         private static bool EnoughImprovement(TaskScheduler scheduler, double currentCost, double replacementCost)
         {
             return (bool)TaskPlanningTestHelpers.InvokePrivate(

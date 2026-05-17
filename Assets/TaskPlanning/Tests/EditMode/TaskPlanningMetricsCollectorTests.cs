@@ -88,6 +88,7 @@ namespace TaskPlanning.Tests
 
                 Assert.That(report, Does.Contain("Busy/assigned time: 20 s"));
                 Assert.That(report, Does.Contain("Action time: 5 s"));
+                Assert.That(report, Does.Contain("Productive time: 5 s"));
                 Assert.That(report, Does.Contain("Loading-point queue wait time: 2 s"));
                 Assert.That(report, Does.Contain("Workstation blocking wait time: 3 s"));
                 Assert.That(report, Does.Contain("Utilization: 25%"));
@@ -145,7 +146,7 @@ namespace TaskPlanning.Tests
         }
 
         [Test]
-        public void ReportWriterCreatesThreeTxtFilesInExpectedTaskPlanningMetricsFolder()
+        public void ReportWriterCreatesThreeTxtFilesInExpectedTaskPlanningRunsFolder()
         {
             var collector = TaskPlanningTestHelpers.CreateComponent<TaskPlanningMetricsCollector>("Metrics_File_Collector");
             var scenario = CreateScenario("MetricsFileScenario");
@@ -158,13 +159,13 @@ namespace TaskPlanning.Tests
                 Assert.That(collector.LastReportPath, Is.Not.Null);
                 Assert.That(
                     Path.GetFullPath(collector.LastReportPath),
-                    Does.StartWith(Path.GetFullPath(TaskPlanningMetricsCollector.DefaultMetricsFolder)));
+                    Does.StartWith(Path.GetFullPath(TaskPlanningMetricsCollector.DefaultRunsFolder)));
                 Assert.That(
                     Path.GetFullPath(collector.LastConfigReportPath),
-                    Does.StartWith(Path.GetFullPath(TaskPlanningMetricsCollector.DefaultMetricsFolder)));
+                    Does.StartWith(Path.GetFullPath(TaskPlanningMetricsCollector.DefaultRunsFolder)));
                 Assert.That(
                     Path.GetFullPath(collector.LastTraceReportPath),
-                    Does.StartWith(Path.GetFullPath(TaskPlanningMetricsCollector.DefaultMetricsFolder)));
+                    Does.StartWith(Path.GetFullPath(TaskPlanningMetricsCollector.DefaultRunsFolder)));
                 Assert.That(Path.GetExtension(collector.LastReportPath), Is.EqualTo(".txt"));
                 Assert.That(Path.GetExtension(collector.LastConfigReportPath), Is.EqualTo(".txt"));
                 Assert.That(Path.GetExtension(collector.LastTraceReportPath), Is.EqualTo(".txt"));
@@ -185,6 +186,32 @@ namespace TaskPlanning.Tests
             {
                 DeleteReports(collector);
                 TaskPlanningTestHelpers.Destroy(scenario, collector.gameObject);
+            }
+        }
+
+        [Test]
+        public void ReportWriterUsesPascalCaseScenarioTokenAndSoftReservationSuffix()
+        {
+            var collector = TaskPlanningTestHelpers.CreateComponent<TaskPlanningMetricsCollector>("Metrics_File_SR_Collector");
+            var scheduler = TaskPlanningTestHelpers.CreateComponent<TaskScheduler>("Metrics_File_SR_Scheduler");
+            var scenario = CreateScenario("Soft_Reassignment_Rescue");
+
+            try
+            {
+                TaskPlanningTestHelpers.SetField(scheduler, "enableSoftAmrReservations", true);
+                collector.Configure(null, scheduler);
+                collector.BeginScenario(scenario, 1, 0f);
+                collector.FinalizeAndWriteReport(1f);
+
+                Assert.That(
+                    Path.GetFileName(collector.LastReportPath),
+                    Does.Match(@"^SoftReassignmentRescue_FifoDispatching_ImmediateOnly_SR_\d{3}_metrics\.txt$"));
+                Assert.That(collector.LastReportText, Does.Contain("Run: SoftReassignmentRescue_FifoDispatching_ImmediateOnly_SR_"));
+            }
+            finally
+            {
+                DeleteReports(collector);
+                TaskPlanningTestHelpers.Destroy(scenario, scheduler.gameObject, collector.gameObject);
             }
         }
 

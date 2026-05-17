@@ -6,19 +6,22 @@ using System.Linq;
 using System.Text;
 using Mapf.Authoring;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace TaskPlanning
 {
     [DisallowMultipleComponent]
     public sealed class TaskPlanningMetricsCollector : MonoBehaviour
     {
-        public const string DefaultMetricsFolder = "Assets/TaskPlanning/Scenarios/Metrics";
+        public const string DefaultRunsFolder = "Assets/TaskPlanning/Scenarios/Runs";
+        private const string LegacyMetricsFolder = "Assets/TaskPlanning/Scenarios/Metrics";
 
         [SerializeField] private TaskPlanningMes mes;
         [SerializeField] private TaskScheduler scheduler;
         [SerializeField] private bool autoDiscover = true;
         [SerializeField] private bool writeReportOnScheduledScenarioCompletion = true;
-        [SerializeField] private string metricsFolder = DefaultMetricsFolder;
+        [FormerlySerializedAs("metricsFolder")]
+        [SerializeField] private string runsFolder = DefaultRunsFolder;
 
         private readonly Dictionary<TaskPlanningAmr, AmrMetrics> _amrMetrics = new();
         private readonly Dictionary<ITaskPlanningTask, AssignmentTraceRecord> _activeAssignmentTraceRecords = new();
@@ -182,7 +185,9 @@ namespace TaskPlanning
                 {
                     details.Add(
                         $"  {AmrId(option.ActiveAmr)} replace {TaskLabel(option.ActiveTask)} -> {TaskLabel(option.ReplacementTask)} | " +
-                        $"oldCost={Format(option.ActiveCost.TotalCost)} | newCost={Format(option.ReplacementCost.TotalCost)} | " +
+                        $"oldCost={Format(option.ActiveCost.TotalCost)} | baseNewCost={Format(option.ReplacementBaseCost.TotalCost)} | " +
+                        $"travelSinceLastExecution={Format(option.ReassignmentTravelTimeSeconds)} s | " +
+                        $"penalty={Format(option.ReassignmentPenalty)} | effectiveNewCost={Format(option.ReplacementCost.TotalCost)} | " +
                         $"improvement={Format(option.ImprovementPercent)}%");
                 }
             }
@@ -210,7 +215,8 @@ namespace TaskPlanning
                     details.Add(
                         $"  {AmrId(candidate.Amr)} -> {TaskLabel(candidate.Task)} | pallet={PalletId(candidate.Pallet)} | " +
                         $"loading={LoadingPointId(candidate.LoadingPoint)} | workstation={WorkstationId(candidate.Workstation)} | " +
-                        $"cost={Format(candidate.Score)} | softReassignment={YesNo(candidate.ReplacesActiveAssignment)}");
+                        $"cost={Format(candidate.Score)} | reassignmentPenalty={Format(candidate.Cost.ReassignmentPenalty)} | " +
+                        $"softReassignment={YesNo(candidate.ReplacesActiveAssignment)}");
                 }
             }
 
@@ -378,6 +384,8 @@ namespace TaskPlanning
                 $"AMR: {AmrId(replacementAssignment.Amr)}",
                 $"From task: {TaskLabel(previousAssignment.Task)}",
                 $"To task: {TaskLabel(replacementAssignment.Task)}",
+                $"Travel since last execution: {Format(replacementAssignment.SoftReassignment.ReassignmentTravelTimeSeconds)} s",
+                $"Penalty: {Format(replacementAssignment.SoftReassignment.ReassignmentPenalty)}",
                 $"Improvement: {Format(replacementAssignment.SoftReassignment.ImprovementPercent)}%",
                 $"Old task returned to pending: yes"
             });
@@ -729,13 +737,20 @@ namespace TaskPlanning
 
         private ReportPaths ReserveReportPaths()
         {
-            var folder = string.IsNullOrWhiteSpace(metricsFolder) ? DefaultMetricsFolder : metricsFolder.Trim();
+            var folder = ResolveRunsFolder();
             Directory.CreateDirectory(folder);
 
-            var scenarioFileName = SanitizeFileName(string.IsNullOrWhiteSpace(_scenarioName) ? "Scenario" : _scenarioName);
+            var scenarioFileName = PascalCaseFileToken(string.IsNullOrWhiteSpace(_scenarioName) ? "Scenario" : _scenarioName);
             var dispatcherFileName = SanitizeFileName(SchedulerAlgorithmLabel());
             var futurePolicyFileName = SanitizeFileName(SchedulerFutureHandlingLabel());
-            var fileNamePrefix = $"{scenarioFileName}_{dispatcherFileName}_{futurePolicyFileName}";
+            var softReservationToken = SchedulerSoftReservationToken();
+            var fileNamePrefix = string.Join("_", new[]
+            {
+                scenarioFileName,
+                dispatcherFileName,
+                futurePolicyFileName,
+                softReservationToken
+            }.Where(token => !string.IsNullOrWhiteSpace(token)));
             var serialNumber = NextSerialNumber(folder, fileNamePrefix);
             var runName = $"{fileNamePrefix}_{serialNumber:000}";
             return new ReportPaths(
@@ -771,6 +786,20 @@ namespace TaskPlanning
             throw new IOException($"Could not create a unique metrics report path for '{fileNamePrefix}'.");
         }
 
+        private string ResolveRunsFolder()
+        {
+            if (string.IsNullOrWhiteSpace(runsFolder))
+                return DefaultRunsFolder;
+
+            var trimmed = runsFolder.Trim();
+            return string.Equals(
+                trimmed.Replace('\\', '/'),
+                LegacyMetricsFolder,
+                StringComparison.OrdinalIgnoreCase)
+                ? DefaultRunsFolder
+                : trimmed;
+        }
+
         private string SchedulerAlgorithmLabel()
         {
             return scheduler == null ? "Unknown" : scheduler.Algorithm.ToString();
@@ -781,10 +810,22 @@ namespace TaskPlanning
             return scheduler == null ? "Unknown" : scheduler.FutureHandling.ToString();
         }
 
+        private string SchedulerSoftReservationToken()
+        {
+            return scheduler != null && scheduler.EnableSoftAmrReservations ? "SR" : string.Empty;
+        }
+
         private string RunNameLabel()
         {
             return string.IsNullOrWhiteSpace(_runName)
-                ? $"{SanitizeFileName(_scenarioName)}_{SchedulerAlgorithmLabel()}_{SchedulerFutureHandlingLabel()}_pending"
+                ? string.Join("_", new[]
+                {
+                    PascalCaseFileToken(_scenarioName),
+                    SchedulerAlgorithmLabel(),
+                    SchedulerFutureHandlingLabel(),
+                    SchedulerSoftReservationToken(),
+                    "pending"
+                }.Where(token => !string.IsNullOrWhiteSpace(token)))
                 : _runName;
         }
 
@@ -831,6 +872,7 @@ namespace TaskPlanning
             builder.AppendLine($"  Future handling policy: {scheduler.FutureHandling}");
             builder.AppendLine($"  Soft AMR reservations: {YesNo(scheduler.EnableSoftAmrReservations)}");
             builder.AppendLine($"  Reassignment improvement threshold: {Format(scheduler.ReassignmentCostImprovementPercent)}%");
+            builder.AppendLine($"  Reassignment travel penalty weight: {Format(scheduler.ReassignmentTravelPenaltyWeight)}");
             builder.AppendLine($"  Wait-for-future improvement threshold: {Format(scheduler.WaitForFutureImprovementPercent)}%");
             builder.AppendLine($"  AMR speed: {Format(scheduler.CostAmrSpeed)}");
             builder.AppendLine($"  Pending retry interval: {FormatSeconds(scheduler.PendingRetryIntervalSeconds)}");
@@ -1005,6 +1047,7 @@ namespace TaskPlanning
             builder.AppendLine($"  Busy/assigned time: {FormatSeconds(metrics.BusyTime)}");
             builder.AppendLine($"  Idle/unassigned time: {FormatSeconds(idleTime)}");
             builder.AppendLine($"  Action time: {FormatSeconds(metrics.ActionTime)}");
+            builder.AppendLine($"  Productive time: {FormatSeconds(productiveTime)}");
             builder.AppendLine($"  Loading-point queue wait time: {FormatSeconds(metrics.LoadingPointQueueWait)}");
             builder.AppendLine($"  Workstation blocking wait time: {FormatSeconds(metrics.WorkstationBlockingWait)}");
             builder.AppendLine($"  Utilization: {FormatPercent(utilization)}");
@@ -1083,6 +1126,25 @@ namespace TaskPlanning
             var invalid = Path.GetInvalidFileNameChars();
             var sanitized = new string((value ?? string.Empty).Select(character => invalid.Contains(character) ? '_' : character).ToArray());
             return string.IsNullOrWhiteSpace(sanitized) ? "Scenario" : sanitized;
+        }
+
+        private static string PascalCaseFileToken(string value)
+        {
+            var builder = new StringBuilder();
+            var capitalizeNext = true;
+            foreach (var character in value ?? string.Empty)
+            {
+                if (!char.IsLetterOrDigit(character))
+                {
+                    capitalizeNext = true;
+                    continue;
+                }
+
+                builder.Append(capitalizeNext ? char.ToUpperInvariant(character) : character);
+                capitalizeNext = false;
+            }
+
+            return builder.Length == 0 ? "Scenario" : SanitizeFileName(builder.ToString());
         }
 
         private static string TaskLabel(ITaskPlanningTask task)

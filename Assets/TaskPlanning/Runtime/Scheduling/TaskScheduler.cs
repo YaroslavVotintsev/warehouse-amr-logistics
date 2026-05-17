@@ -23,6 +23,7 @@ namespace TaskPlanning
         [SerializeField] private bool enableSoftAmrReservations;
         [FormerlySerializedAs("reassignmentCostImprovementThreshold")]
         [SerializeField, Min(0f)] private float reassignmentCostImprovementPercent = 10f;
+        [SerializeField, Min(0f)] private float reassignmentTravelPenaltyWeight = 1f;
         [SerializeField, Min(0f)] private float waitForFutureImprovementPercent = 10f;
         [SerializeField] private bool autoDiscoverSceneObjects = true;
         [SerializeField] private List<TaskPlanningAmr> amrs = new();
@@ -53,6 +54,7 @@ namespace TaskPlanning
         public TaskPlanningCostWeights CostWeights => costWeights;
         public bool EnableSoftAmrReservations => enableSoftAmrReservations;
         public float ReassignmentCostImprovementPercent => Mathf.Max(0f, reassignmentCostImprovementPercent);
+        public float ReassignmentTravelPenaltyWeight => Mathf.Max(0f, reassignmentTravelPenaltyWeight);
         public float WaitForFutureImprovementPercent => Mathf.Max(0f, waitForFutureImprovementPercent);
         public float CostAmrSpeed => Mathf.Max(0.0001f, costAmrSpeed);
         public float PendingRetryIntervalSeconds => Mathf.Max(0.05f, pendingRetryIntervalSeconds);
@@ -101,6 +103,8 @@ namespace TaskPlanning
 
         private void Update()
         {
+            UpdateSoftReservationTravelTimes();
+
             if (_pendingTasks.Count == 0 || Time.time < _nextPendingRetryTime)
                 return;
 
@@ -153,6 +157,7 @@ namespace TaskPlanning
             }
 
             RefreshDistances();
+            UpdateSoftReservationTravelTimes();
             CompleteAlreadyParkedRemovalTasks();
             if (_pendingTasks.Count == 0)
                 return;
@@ -206,11 +211,14 @@ namespace TaskPlanning
             if (!assignment.IsValid)
                 return false;
 
+            var inheritedSoftReservationTravelTimeSeconds = 0.0;
             if (_activeAssignments.TryGetValue(assignment.Amr, out var activeAssignment))
             {
                 if (!CanStartSoftReassignment(activeAssignment, assignment))
                     return false;
 
+                UpdateSoftReservationTravelTime(activeAssignment);
+                inheritedSoftReservationTravelTimeSeconds = activeAssignment.SoftReservationTravelTimeSeconds;
                 LogSoftReassignment(activeAssignment, assignment);
                 AssignmentReassigned?.Invoke(activeAssignment.Assignment, assignment);
                 CancelActiveAssignment(activeAssignment, true);
@@ -222,16 +230,19 @@ namespace TaskPlanning
             switch (assignment.Task)
             {
                 case DeliveryPlanningTask delivery:
-                    return TryStartDelivery(delivery, assignment);
+                    return TryStartDelivery(delivery, assignment, inheritedSoftReservationTravelTimeSeconds);
                 case PalletRemovalPlanningTask removal:
-                    return TryStartRemoval(removal, assignment);
+                    return TryStartRemoval(removal, assignment, inheritedSoftReservationTravelTimeSeconds);
                 default:
                     assignment.Amr.Release();
                     return false;
             }
         }
 
-        private bool TryStartDelivery(DeliveryPlanningTask task, DispatchAssignment assignment)
+        private bool TryStartDelivery(
+            DeliveryPlanningTask task,
+            DispatchAssignment assignment,
+            double inheritedSoftReservationTravelTimeSeconds)
         {
             if (!assignment.Pallet.TryReserve())
             {
@@ -258,12 +269,15 @@ namespace TaskPlanning
                 $"Task dispatched: task={task.TaskId} amr={assignment.Amr.AmrId} pallet={assignment.Pallet.PalletId} " +
                 $"loading={assignment.LoadingPoint.LoadingPointId} score={assignment.Score:0.###}",
                 this);
-            var execution = RegisterActiveAssignment(assignment);
+            var execution = RegisterActiveAssignment(assignment, inheritedSoftReservationTravelTimeSeconds);
             execution.Coroutine = StartCoroutine(RunDelivery(task, assignment, execution));
             return true;
         }
 
-        private bool TryStartRemoval(PalletRemovalPlanningTask task, DispatchAssignment assignment)
+        private bool TryStartRemoval(
+            PalletRemovalPlanningTask task,
+            DispatchAssignment assignment,
+            double inheritedSoftReservationTravelTimeSeconds)
         {
             if (!assignment.Pallet.TryReserveForRemoval())
             {
@@ -275,7 +289,7 @@ namespace TaskPlanning
                 $"Pallet removal dispatched: task={task.TaskId} amr={assignment.Amr.AmrId} pallet={assignment.Pallet.PalletId} " +
                 $"parking={NodeId(assignment.RemovalTargetNode)} score={assignment.Score:0.###}",
                 this);
-            var execution = RegisterActiveAssignment(assignment);
+            var execution = RegisterActiveAssignment(assignment, inheritedSoftReservationTravelTimeSeconds);
             execution.Coroutine = StartCoroutine(RunPalletRemoval(task, assignment, execution));
             return true;
         }
@@ -645,7 +659,12 @@ namespace TaskPlanning
                         if (!replacementCost.IsFeasible)
                             continue;
 
-                        var improvementPercent = ReassignmentImprovementPercent(activeCost.TotalCost, replacementCost.TotalCost);
+                        var penalizedReplacementTotalCost = PenalizedReassignmentCost(
+                            replacementCost.TotalCost,
+                            activeAssignment.SoftReservationTravelTimeSeconds);
+                        var reassignmentPenalty = Math.Max(0.0, penalizedReplacementTotalCost - replacementCost.TotalCost);
+                        var effectiveReplacementCost = replacementCost.WithReassignmentPenalty(reassignmentPenalty);
+                        var improvementPercent = ReassignmentImprovementPercent(activeCost.TotalCost, effectiveReplacementCost.TotalCost);
                         if (improvementPercent < Math.Max(0.0, reassignmentCostImprovementPercent))
                             continue;
 
@@ -654,6 +673,9 @@ namespace TaskPlanning
                             task,
                             activeCost,
                             replacementCost,
+                            effectiveReplacementCost,
+                            activeAssignment.SoftReservationTravelTimeSeconds,
+                            reassignmentPenalty,
                             improvementPercent));
                     }
                 }
@@ -682,7 +704,8 @@ namespace TaskPlanning
             Debug.Log(
                 $"Task reassigned before pallet attach: amr={activeAssignment.Assignment.Amr.AmrId} " +
                 $"from={activeAssignment.Assignment.Task.TaskId} to={replacement.Task.TaskId} " +
-                $"improvement={improvement:0.###} ({option.ImprovementPercent:0.##}%)",
+                $"improvement={improvement:0.###} ({option.ImprovementPercent:0.##}%) " +
+                $"travelPenalty={option.ReassignmentPenalty:0.###}",
                 this);
         }
 
@@ -738,9 +761,22 @@ namespace TaskPlanning
             return improvement / baseline * 100.0;
         }
 
-        private ActiveTaskExecution RegisterActiveAssignment(DispatchAssignment assignment)
+        private double PenalizedReassignmentCost(double replacementCost, double softReservationTravelTimeSeconds)
         {
-            var execution = new ActiveTaskExecution(assignment);
+            if (double.IsNaN(replacementCost) || double.IsInfinity(replacementCost))
+                return replacementCost;
+
+            return replacementCost +
+                Math.Max(0.0, softReservationTravelTimeSeconds) *
+                Math.Max(0.0, reassignmentTravelPenaltyWeight);
+        }
+
+        private ActiveTaskExecution RegisterActiveAssignment(
+            DispatchAssignment assignment,
+            double inheritedSoftReservationTravelTimeSeconds = 0)
+        {
+            var execution = new ActiveTaskExecution(assignment, inheritedSoftReservationTravelTimeSeconds);
+            execution.ResetSoftReservationTravelSample(Time.time);
             _activeAssignments[assignment.Amr] = execution;
             AssignmentStarted?.Invoke(assignment);
             return execution;
@@ -751,9 +787,47 @@ namespace TaskPlanning
             if (execution == null || execution.Phase == phase)
                 return;
 
+            UpdateSoftReservationTravelTime(execution);
             var previousPhase = execution.Phase;
             execution.Phase = phase;
             AssignmentPhaseChanged?.Invoke(execution.Assignment, previousPhase.ToString(), phase.ToString());
+        }
+
+        private void UpdateSoftReservationTravelTimes()
+        {
+            foreach (var execution in _activeAssignments.Values)
+                UpdateSoftReservationTravelTime(execution);
+        }
+
+        private static bool IsSoftReservationTravelPhase(ActiveTaskPhase phase)
+        {
+            return phase == ActiveTaskPhase.MovingToPallet;
+        }
+
+        private void UpdateSoftReservationTravelTime(ActiveTaskExecution execution)
+        {
+            if (execution == null || execution.Assignment.Amr == null)
+                return;
+
+            var now = Time.time;
+            var position = execution.Assignment.Amr.transform.position;
+            if (!execution.HasSoftReservationTravelSample)
+            {
+                execution.LastSoftReservationTravelSamplePosition = position;
+                execution.LastSoftReservationTravelSampleTime = now;
+                execution.HasSoftReservationTravelSample = true;
+                return;
+            }
+
+            if (execution.CanReassign && IsSoftReservationTravelPhase(execution.Phase))
+            {
+                var distance = Vector3.Distance(execution.LastSoftReservationTravelSamplePosition, position);
+                if (distance > 0.0001f)
+                    execution.SoftReservationTravelTimeSeconds += Math.Max(0.0, now - execution.LastSoftReservationTravelSampleTime);
+            }
+
+            execution.LastSoftReservationTravelSamplePosition = position;
+            execution.LastSoftReservationTravelSampleTime = now;
         }
 
         private void CompleteActiveAssignment(TaskPlanningAmr amr)
@@ -931,18 +1005,32 @@ namespace TaskPlanning
 
         private sealed class ActiveTaskExecution
         {
-            public ActiveTaskExecution(DispatchAssignment assignment)
+            public ActiveTaskExecution(DispatchAssignment assignment, double inheritedSoftReservationTravelTimeSeconds)
             {
                 Assignment = assignment;
                 Phase = ActiveTaskPhase.MovingToPallet;
+                SoftReservationTravelTimeSeconds = Math.Max(0.0, inheritedSoftReservationTravelTimeSeconds);
             }
 
             public DispatchAssignment Assignment { get; }
             public Coroutine Coroutine { get; set; }
             public bool HasAttachedPallet { get; set; }
             public ActiveTaskPhase Phase { get; set; }
+            public double SoftReservationTravelTimeSeconds { get; set; }
+            public Vector3 LastSoftReservationTravelSamplePosition { get; set; }
+            public float LastSoftReservationTravelSampleTime { get; set; }
+            public bool HasSoftReservationTravelSample { get; set; }
 
             public bool CanReassign => !HasAttachedPallet && Assignment.Amr.AttachedPallet == null;
+
+            public void ResetSoftReservationTravelSample(float time)
+            {
+                LastSoftReservationTravelSamplePosition = Assignment.Amr != null
+                    ? Assignment.Amr.transform.position
+                    : Vector3.zero;
+                LastSoftReservationTravelSampleTime = time;
+                HasSoftReservationTravelSample = true;
+            }
         }
 
         private enum ActiveTaskPhase

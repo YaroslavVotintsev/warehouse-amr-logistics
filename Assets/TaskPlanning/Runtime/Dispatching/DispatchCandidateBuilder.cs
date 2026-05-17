@@ -113,6 +113,8 @@ namespace TaskPlanning
             var cost = availability.IsImmediate
                 ? problem.CostEvaluator.Evaluate(availability.Amr, task, loadingPoint)
                 : problem.CostEvaluator.EvaluateFrom(availability.StartNode, task, loadingPoint, availability.PriorAssignmentEta);
+            if (softReassignment.IsValid)
+                cost = softReassignment.ReplacementCost;
             if (!cost.IsFeasible)
                 return default;
 
@@ -136,6 +138,8 @@ namespace TaskPlanning
             var cost = availability.IsImmediate
                 ? problem.CostEvaluator.Evaluate(availability.Amr, task)
                 : problem.CostEvaluator.EvaluateFrom(availability.StartNode, task, availability.PriorAssignmentEta);
+            if (softReassignment.IsValid)
+                cost = softReassignment.ReplacementCost;
             if (!cost.IsFeasible)
                 return default;
 

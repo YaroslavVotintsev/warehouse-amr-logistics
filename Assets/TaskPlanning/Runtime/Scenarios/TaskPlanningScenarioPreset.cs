@@ -9,6 +9,7 @@ namespace TaskPlanning
         RegretAssignmentTrap,
         HungarianAssignmentTrap,
         RegretDecoyTrap,
-        GlobalAssignmentTrap
+        GlobalAssignmentTrap,
+        SoftReassignmentRescue
     }
 }
