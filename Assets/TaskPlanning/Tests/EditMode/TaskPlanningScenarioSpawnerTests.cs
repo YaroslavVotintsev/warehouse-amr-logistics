@@ -18,6 +18,7 @@ namespace TaskPlanning.Tests
         [TestCase(TaskPlanningScenarioPreset.RegretDecoyTrap)]
         [TestCase(TaskPlanningScenarioPreset.GlobalAssignmentTrap)]
         [TestCase(TaskPlanningScenarioPreset.SoftReassignmentRescue)]
+        [TestCase(TaskPlanningScenarioPreset.GridThroughputBenchmark)]
         public void SpawnerCreatesCompleteScenarioUnderSpawner(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerTest");
@@ -77,6 +78,7 @@ namespace TaskPlanning.Tests
         [TestCase(TaskPlanningScenarioPreset.RegretDecoyTrap)]
         [TestCase(TaskPlanningScenarioPreset.GlobalAssignmentTrap)]
         [TestCase(TaskPlanningScenarioPreset.SoftReassignmentRescue)]
+        [TestCase(TaskPlanningScenarioPreset.GridThroughputBenchmark)]
         public void SpawnerWiresScheduledMesScenario(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerMesTest");
@@ -112,6 +114,7 @@ namespace TaskPlanning.Tests
         [TestCase(TaskPlanningScenarioPreset.RegretDecoyTrap)]
         [TestCase(TaskPlanningScenarioPreset.GlobalAssignmentTrap)]
         [TestCase(TaskPlanningScenarioPreset.SoftReassignmentRescue)]
+        [TestCase(TaskPlanningScenarioPreset.GridThroughputBenchmark)]
         public void SpawnedPalletsResolveExactlyOneLoadingPoint(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerCompatibilityTest");
@@ -148,6 +151,7 @@ namespace TaskPlanning.Tests
         [TestCase(TaskPlanningScenarioPreset.RegretDecoyTrap)]
         [TestCase(TaskPlanningScenarioPreset.GlobalAssignmentTrap)]
         [TestCase(TaskPlanningScenarioPreset.SoftReassignmentRescue)]
+        [TestCase(TaskPlanningScenarioPreset.GridThroughputBenchmark)]
         public void SpawnerConfiguresSchedulerWithSpawnedObjects(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerSchedulerTest");
@@ -186,6 +190,7 @@ namespace TaskPlanning.Tests
         [TestCase(TaskPlanningScenarioPreset.RegretDecoyTrap)]
         [TestCase(TaskPlanningScenarioPreset.GlobalAssignmentTrap)]
         [TestCase(TaskPlanningScenarioPreset.SoftReassignmentRescue)]
+        [TestCase(TaskPlanningScenarioPreset.GridThroughputBenchmark)]
         public void SpawnerNamesNodesAndPointsByTheirNumericIds(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerNamesTest");
@@ -233,6 +238,7 @@ namespace TaskPlanning.Tests
         [TestCase(TaskPlanningScenarioPreset.RegretDecoyTrap)]
         [TestCase(TaskPlanningScenarioPreset.GlobalAssignmentTrap)]
         [TestCase(TaskPlanningScenarioPreset.SoftReassignmentRescue)]
+        [TestCase(TaskPlanningScenarioPreset.GridThroughputBenchmark)]
         public void ScenarioPalletsDoNotSpawnOnLoadingOrWorkstationNodes(TaskPlanningScenarioPreset preset)
         {
             var scenario = TaskPlanningScenarioLibrary.Get(preset);
@@ -250,6 +256,39 @@ namespace TaskPlanning.Tests
                     Is.False,
                     $"{scenario.Name}: pallet '{pallet.PalletId}' should not spawn on workstation node '{pallet.CurrentNodeId}'.");
             }
+        }
+
+        [Test]
+        public void GridThroughputBenchmarkHasLargeSideBayGridAndTimedWorkload()
+        {
+            var scenario = TaskPlanningScenarioLibrary.GridThroughputBenchmark();
+            var objectNodeIds = scenario.Amrs.Select(amr => amr.StartNodeId)
+                .Concat(scenario.Pallets.Select(pallet => pallet.CurrentNodeId))
+                .Concat(scenario.LoadingPoints.Select(point => point.NodeId))
+                .Concat(scenario.Workstations.Select(point => point.NodeId));
+            var edgeKeys = scenario.Edges
+                .Select(edge => $"{edge.ANodeId}|{edge.BNodeId}")
+                .ToHashSet();
+
+            Assert.That(scenario.Name, Is.EqualTo("Grid Throughput Benchmark"));
+            Assert.That(scenario.Amrs.Count, Is.EqualTo(8));
+            Assert.That(scenario.Pallets.Count, Is.EqualTo(16));
+            Assert.That(scenario.LoadingPoints.Count, Is.EqualTo(4));
+            Assert.That(scenario.Workstations.Count, Is.EqualTo(12));
+            Assert.That(scenario.ScheduledTasks.Count, Is.EqualTo(56));
+            Assert.That(
+                scenario.ScheduledTasks.Select(task => task.timestampSeconds).Distinct().Count(),
+                Is.GreaterThanOrEqualTo(10));
+
+            foreach (var nodeId in objectNodeIds)
+            {
+                Assert.That(int.Parse(nodeId), Is.GreaterThanOrEqualTo(9000));
+            }
+
+            Assert.That(edgeKeys.Contains("0|1") || edgeKeys.Contains("1|0"), Is.True);
+            Assert.That(edgeKeys.Contains("0|100") || edgeKeys.Contains("100|0"), Is.True);
+            Assert.That(edgeKeys.Contains("800|9000") || edgeKeys.Contains("9000|800"), Is.True);
+            Assert.That(edgeKeys.Contains("0|9100") || edgeKeys.Contains("9100|0"), Is.True);
         }
 
         [Test]

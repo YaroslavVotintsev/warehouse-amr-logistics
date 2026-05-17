@@ -17,7 +17,8 @@ namespace TaskPlanning
                 HungarianAssignmentTrap(),
                 RegretDecoyTrap(),
                 GlobalAssignmentTrap(),
-                SoftReassignmentRescue()
+                SoftReassignmentRescue(),
+                GridThroughputBenchmark()
             };
         }
 
@@ -34,6 +35,7 @@ namespace TaskPlanning
                 TaskPlanningScenarioPreset.RegretDecoyTrap => RegretDecoyTrap(),
                 TaskPlanningScenarioPreset.GlobalAssignmentTrap => GlobalAssignmentTrap(),
                 TaskPlanningScenarioPreset.SoftReassignmentRescue => SoftReassignmentRescue(),
+                TaskPlanningScenarioPreset.GridThroughputBenchmark => GridThroughputBenchmark(),
                 _ => FifoAssignmentTrap()
             };
         }
@@ -377,6 +379,146 @@ namespace TaskPlanning
                 });
         }
 
+        public static TaskPlanningScenario GridThroughputBenchmark()
+        {
+            var graph = GridWithSideBays(columns: 13, rows: 9);
+            var allPalletIds = new[]
+            {
+                "Pallet_A1",
+                "Pallet_A2",
+                "Pallet_A3",
+                "Pallet_A4",
+                "Pallet_B1",
+                "Pallet_B2",
+                "Pallet_B3",
+                "Pallet_B4",
+                "Pallet_C1",
+                "Pallet_C2",
+                "Pallet_C3",
+                "Pallet_C4",
+                "Pallet_D1",
+                "Pallet_D2",
+                "Pallet_D3",
+                "Pallet_D4"
+            };
+
+            return new TaskPlanningScenario(
+                "Grid Throughput Benchmark",
+                graph.Nodes,
+                graph.Edges,
+                new[]
+                {
+                    Amr("AMR_W1", 0, "9200"),
+                    Amr("AMR_W2", 1, "9202"),
+                    Amr("AMR_W3", 2, "9204"),
+                    Amr("AMR_W4", 3, "9206"),
+                    Amr("AMR_E1", 4, "9301"),
+                    Amr("AMR_E2", 5, "9303"),
+                    Amr("AMR_E3", 6, "9305"),
+                    Amr("AMR_E4", 7, "9307")
+                },
+                new[]
+                {
+                    Pallet("Pallet_A1", "9000", "9000", attach: 1f, detach: 1f, load: 2f, unload: 2f),
+                    Pallet("Pallet_A2", "9002", "9002", attach: 1f, detach: 1f, load: 2f, unload: 2f),
+                    Pallet("Pallet_A3", "9003", "9003", attach: 1f, detach: 1f, load: 3f, unload: 2f),
+                    Pallet("Pallet_A4", "9004", "9004", attach: 1f, detach: 1f, load: 2f, unload: 3f),
+                    Pallet("Pallet_B1", "9008", "9008", attach: 1f, detach: 1f, load: 3f, unload: 2f),
+                    Pallet("Pallet_B2", "9009", "9009", attach: 1f, detach: 1f, load: 2f, unload: 2f),
+                    Pallet("Pallet_B3", "9010", "9010", attach: 1f, detach: 1f, load: 3f, unload: 3f),
+                    Pallet("Pallet_B4", "9012", "9012", attach: 1f, detach: 1f, load: 2f, unload: 2f),
+                    Pallet("Pallet_C1", "9100", "9100", attach: 1f, detach: 1f, load: 2f, unload: 2f),
+                    Pallet("Pallet_C2", "9102", "9102", attach: 1f, detach: 1f, load: 3f, unload: 2f),
+                    Pallet("Pallet_C3", "9103", "9103", attach: 1f, detach: 1f, load: 2f, unload: 3f),
+                    Pallet("Pallet_C4", "9104", "9104", attach: 1f, detach: 1f, load: 3f, unload: 2f),
+                    Pallet("Pallet_D1", "9108", "9108", attach: 1f, detach: 1f, load: 3f, unload: 3f),
+                    Pallet("Pallet_D2", "9109", "9109", attach: 1f, detach: 1f, load: 2f, unload: 2f),
+                    Pallet("Pallet_D3", "9110", "9110", attach: 1f, detach: 1f, load: 3f, unload: 2f),
+                    Pallet("Pallet_D4", "9112", "9112", attach: 1f, detach: 1f, load: 2f, unload: 3f)
+                },
+                new[]
+                {
+                    LoadingPoint("9001", "9001", "Pallet_A1", "Pallet_A2", "Pallet_A3", "Pallet_A4"),
+                    LoadingPoint("9011", "9011", "Pallet_B1", "Pallet_B2", "Pallet_B3", "Pallet_B4"),
+                    LoadingPoint("9101", "9101", "Pallet_C1", "Pallet_C2", "Pallet_C3", "Pallet_C4"),
+                    LoadingPoint("9111", "9111", "Pallet_D1", "Pallet_D2", "Pallet_D3", "Pallet_D4")
+                },
+                new[]
+                {
+                    Workstation("9201", "9201", allPalletIds),
+                    Workstation("9203", "9203", allPalletIds),
+                    Workstation("9205", "9205", allPalletIds),
+                    Workstation("9207", "9207", allPalletIds),
+                    Workstation("9208", "9208", allPalletIds),
+                    Workstation("9300", "9300", allPalletIds),
+                    Workstation("9302", "9302", allPalletIds),
+                    Workstation("9304", "9304", allPalletIds),
+                    Workstation("9306", "9306", allPalletIds),
+                    Workstation("9308", "9308", allPalletIds),
+                    Workstation("9006", "9006", allPalletIds),
+                    Workstation("9106", "9106", allPalletIds)
+                },
+                new[]
+                {
+                    Task(0f, "Pallet_A1", "9300", "GridWave00_A1_E0"),
+                    Task(0f, "Pallet_B1", "9201", "GridWave00_B1_W1"),
+                    Task(0f, "Pallet_C1", "9302", "GridWave00_C1_E2"),
+                    Task(0f, "Pallet_D1", "9203", "GridWave00_D1_W3"),
+                    Task(0f, "Pallet_A2", "9006", "GridWave00_A2_N6"),
+                    Task(0f, "Pallet_D2", "9106", "GridWave00_D2_S6"),
+                    Task(15f, "Pallet_B2", "9205", "GridWave15_B2_W5"),
+                    Task(15f, "Pallet_C2", "9304", "GridWave15_C2_E4"),
+                    Task(15f, "Pallet_A3", "9306", "GridWave15_A3_E6"),
+                    Task(15f, "Pallet_D3", "9207", "GridWave15_D3_W7"),
+                    Task(28f, "Pallet_A4", "9308", "GridWave28_A4_E8"),
+                    Task(28f, "Pallet_B3", "9208", "GridWave28_B3_W8"),
+                    Task(28f, "Pallet_C3", "9006", "GridWave28_C3_N6"),
+                    Task(28f, "Pallet_D4", "9106", "GridWave28_D4_S6"),
+                    Task(28f, "Pallet_B4", "9201", "GridWave28_B4_W1"),
+                    Task(45f, "Pallet_A1", "9304", "GridWave45_A1_E4"),
+                    Task(45f, "Pallet_C4", "9306", "GridWave45_C4_E6"),
+                    Task(45f, "Pallet_B1", "9205", "GridWave45_B1_W5"),
+                    Task(45f, "Pallet_D1", "9208", "GridWave45_D1_W8"),
+                    Task(45f, "Pallet_C1", "9308", "GridWave45_C1_E8"),
+                    Task(45f, "Pallet_A2", "9203", "GridWave45_A2_W3"),
+                    Task(65f, "Pallet_B2", "9300", "GridWave65_B2_E0"),
+                    Task(65f, "Pallet_D2", "9201", "GridWave65_D2_W1"),
+                    Task(65f, "Pallet_A3", "9302", "GridWave65_A3_E2"),
+                    Task(65f, "Pallet_C2", "9207", "GridWave65_C2_W7"),
+                    Task(82f, "Pallet_C3", "9304", "GridWave82_C3_E4"),
+                    Task(82f, "Pallet_A4", "9205", "GridWave82_A4_W5"),
+                    Task(82f, "Pallet_B3", "9306", "GridWave82_B3_E6"),
+                    Task(82f, "Pallet_D3", "9203", "GridWave82_D3_W3"),
+                    Task(82f, "Pallet_C4", "9308", "GridWave82_C4_E8"),
+                    Task(82f, "Pallet_B4", "9006", "GridWave82_B4_N6"),
+                    Task(105f, "Pallet_A1", "9106", "GridWave105_A1_S6"),
+                    Task(105f, "Pallet_B1", "9208", "GridWave105_B1_W8"),
+                    Task(105f, "Pallet_D4", "9302", "GridWave105_D4_E2"),
+                    Task(105f, "Pallet_C1", "9201", "GridWave105_C1_W1"),
+                    Task(105f, "Pallet_A2", "9300", "GridWave105_A2_E0"),
+                    Task(128f, "Pallet_D1", "9006", "GridWave128_D1_N6"),
+                    Task(128f, "Pallet_C2", "9304", "GridWave128_C2_E4"),
+                    Task(128f, "Pallet_B2", "9203", "GridWave128_B2_W3"),
+                    Task(128f, "Pallet_A3", "9308", "GridWave128_A3_E8"),
+                    Task(128f, "Pallet_D2", "9205", "GridWave128_D2_W5"),
+                    Task(128f, "Pallet_C3", "9106", "GridWave128_C3_S6"),
+                    Task(150f, "Pallet_B3", "9300", "GridWave150_B3_E0"),
+                    Task(150f, "Pallet_A4", "9207", "GridWave150_A4_W7"),
+                    Task(150f, "Pallet_C4", "9306", "GridWave150_C4_E6"),
+                    Task(150f, "Pallet_D3", "9208", "GridWave150_D3_W8"),
+                    Task(172f, "Pallet_A1", "9302", "GridWave172_A1_E2"),
+                    Task(172f, "Pallet_B4", "9201", "GridWave172_B4_W1"),
+                    Task(172f, "Pallet_C1", "9304", "GridWave172_C1_E4"),
+                    Task(172f, "Pallet_D4", "9205", "GridWave172_D4_W5"),
+                    Task(172f, "Pallet_B1", "9106", "GridWave172_B1_S6"),
+                    Task(200f, "Pallet_A2", "9308", "GridWave200_A2_E8"),
+                    Task(200f, "Pallet_C2", "9203", "GridWave200_C2_W3"),
+                    Task(200f, "Pallet_D1", "9006", "GridWave200_D1_N6"),
+                    Task(200f, "Pallet_A3", "9300", "GridWave200_A3_E0"),
+                    Task(200f, "Pallet_B2", "9207", "GridWave200_B2_W7")
+                });
+        }
+
         public static TaskPlanningScenario RollingHorizonCapacitySaturation()
         {
             var graph = LongCorridorWithBays(length: 70);
@@ -514,6 +656,76 @@ namespace TaskPlanning
             }
 
             return new CorridorGraph(nodes, edges);
+        }
+
+        private static CorridorGraph GridWithSideBays(int columns, int rows)
+        {
+            var nodes = new List<TaskPlanningScenarioNode>();
+            var edges = new List<TaskPlanningScenarioEdge>();
+            const float spacing = 2f;
+            const float bayOffset = 1.5f;
+
+            for (var row = 0; row < rows; row++)
+            {
+                for (var column = 0; column < columns; column++)
+                {
+                    var id = GridNodeId(row, column);
+                    nodes.Add(Node(id, column * spacing, row * spacing));
+
+                    if (column > 0)
+                        edges.Add(Edge(GridNodeId(row, column - 1), id));
+
+                    if (row > 0)
+                        edges.Add(Edge(GridNodeId(row - 1, column), id));
+                }
+            }
+
+            for (var column = 0; column < columns; column++)
+            {
+                var northId = NorthBayId(column);
+                var southId = SouthBayId(column);
+                nodes.Add(Node(northId, column * spacing, (rows - 1) * spacing + bayOffset));
+                nodes.Add(Node(southId, column * spacing, -bayOffset));
+                edges.Add(Edge(GridNodeId(rows - 1, column), northId));
+                edges.Add(Edge(GridNodeId(0, column), southId));
+            }
+
+            for (var row = 0; row < rows; row++)
+            {
+                var westId = WestBayId(row);
+                var eastId = EastBayId(row);
+                nodes.Add(Node(westId, -bayOffset, row * spacing));
+                nodes.Add(Node(eastId, (columns - 1) * spacing + bayOffset, row * spacing));
+                edges.Add(Edge(GridNodeId(row, 0), westId));
+                edges.Add(Edge(GridNodeId(row, columns - 1), eastId));
+            }
+
+            return new CorridorGraph(nodes, edges);
+        }
+
+        private static string GridNodeId(int row, int column)
+        {
+            return (row * 100 + column).ToString();
+        }
+
+        private static string NorthBayId(int column)
+        {
+            return (9000 + column).ToString();
+        }
+
+        private static string SouthBayId(int column)
+        {
+            return (9100 + column).ToString();
+        }
+
+        private static string WestBayId(int row)
+        {
+            return (9200 + row).ToString();
+        }
+
+        private static string EastBayId(int row)
+        {
+            return (9300 + row).ToString();
         }
 
         private static TaskPlanningScenarioNode Node(string id, float x, float y)

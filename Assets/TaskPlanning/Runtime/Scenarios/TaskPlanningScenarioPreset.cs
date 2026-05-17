@@ -10,6 +10,7 @@ namespace TaskPlanning
         HungarianAssignmentTrap,
         RegretDecoyTrap,
         GlobalAssignmentTrap,
-        SoftReassignmentRescue
+        SoftReassignmentRescue,
+        GridThroughputBenchmark
     }
 }
