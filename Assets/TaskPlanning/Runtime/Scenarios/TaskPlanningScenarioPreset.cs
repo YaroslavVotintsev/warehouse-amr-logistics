@@ -6,6 +6,9 @@ namespace TaskPlanning
         FutureWaitTrap,
         FutureCapacityTrap,
         RollingHorizonCapacitySaturation,
-        RegretAssignmentTrap
+        RegretAssignmentTrap,
+        HungarianAssignmentTrap,
+        RegretDecoyTrap,
+        GlobalAssignmentTrap
     }
 }

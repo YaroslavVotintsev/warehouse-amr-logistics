@@ -803,6 +803,8 @@ namespace TaskPlanning
                     return new FifoDispatching();
                 case TaskPlanningAlgorithmType.RegretDispatching:
                     return new RegretDispatching();
+                case TaskPlanningAlgorithmType.HungarianDispatching:
+                    return new HungarianDispatching();
                 case TaskPlanningAlgorithmType.NearestDispatching:
                 default:
                     return new NearestDispatching();

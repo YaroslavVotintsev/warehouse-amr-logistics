@@ -13,7 +13,10 @@ namespace TaskPlanning
                 FutureWaitTrap(),
                 FutureCapacityTrap(),
                 RollingHorizonCapacitySaturation(),
-                RegretAssignmentTrap()
+                RegretAssignmentTrap(),
+                HungarianAssignmentTrap(),
+                RegretDecoyTrap(),
+                GlobalAssignmentTrap()
             };
         }
 
@@ -26,6 +29,9 @@ namespace TaskPlanning
                 TaskPlanningScenarioPreset.FutureCapacityTrap => FutureCapacityTrap(),
                 TaskPlanningScenarioPreset.RollingHorizonCapacitySaturation => RollingHorizonCapacitySaturation(),
                 TaskPlanningScenarioPreset.RegretAssignmentTrap => RegretAssignmentTrap(),
+                TaskPlanningScenarioPreset.HungarianAssignmentTrap => HungarianAssignmentTrap(),
+                TaskPlanningScenarioPreset.RegretDecoyTrap => RegretDecoyTrap(),
+                TaskPlanningScenarioPreset.GlobalAssignmentTrap => GlobalAssignmentTrap(),
                 _ => FifoAssignmentTrap()
             };
         }
@@ -187,6 +193,153 @@ namespace TaskPlanning
                 });
         }
 
+        public static TaskPlanningScenario HungarianAssignmentTrap()
+        {
+            var graph = LongCorridorWithBays(length: 42);
+
+            return new TaskPlanningScenario(
+                "Hungarian Assignment Trap",
+                graph.Nodes,
+                graph.Edges,
+                new[]
+                {
+                    Amr("AMR_Key", 0, "211"),
+                    Amr("AMR_Backup", 1, "230"),
+                    Amr("AMR_Right", 2, "240")
+                },
+                new[]
+                {
+                    Pallet("Pallet_Scarce", "100", "102", attach: 1f, detach: 1f, load: 1f, unload: 1f),
+                    Pallet("Pallet_Flexible", "120", "122", attach: 1f, detach: 1f, load: 1f, unload: 1f),
+                    Pallet("Pallet_Right", "140", "138", attach: 1f, detach: 1f, load: 1f, unload: 1f)
+                },
+                new[]
+                {
+                    LoadingPoint("101", "101", "Pallet_Scarce"),
+                    LoadingPoint("121", "121", "Pallet_Flexible"),
+                    LoadingPoint("139", "139", "Pallet_Right")
+                },
+                new[]
+                {
+                    Workstation("102", "102", "Pallet_Scarce"),
+                    Workstation("122", "122", "Pallet_Flexible"),
+                    Workstation("138", "138", "Pallet_Right")
+                },
+                new[]
+                {
+                    Task(0f, "Pallet_Scarce", "102", "HungarianTrap_Scarce"),
+                    Task(0f, "Pallet_Flexible", "122", "HungarianTrap_Flexible"),
+                    Task(0f, "Pallet_Right", "138", "HungarianTrap_Right")
+                });
+        }
+
+        public static TaskPlanningScenario RegretDecoyTrap()
+        {
+            var graph = TBranchWithBays(verticalLength: 30, horizontalLength: 4);
+
+            return new TaskPlanningScenario(
+                "Regret Decoy Trap",
+                graph.Nodes,
+                graph.Edges,
+                new[]
+                {
+                    Amr("AMR_Key", 0, "200"),
+                    Amr("AMR_Shared", 1, "104"),
+                    Amr("AMR_Far", 2, "339")
+                },
+                new[]
+                {
+                    Pallet("Pallet_Decoy", "319", "321", attach: 1f, detach: 1f, load: 1f, unload: 1f),
+                    Pallet("Pallet_Local_A", "102", "103", attach: 1f, detach: 1f, load: 1f, unload: 1f),
+                    Pallet("Pallet_Local_B", "203", "202", attach: 1f, detach: 1f, load: 1f, unload: 1f)
+                },
+                new[]
+                {
+                    LoadingPoint("320", "320", "Pallet_Decoy"),
+                    LoadingPoint("101", "101", "Pallet_Local_A"),
+                    LoadingPoint("204", "204", "Pallet_Local_B")
+                },
+                new[]
+                {
+                    Workstation("321", "321", "Pallet_Decoy"),
+                    Workstation("103", "103", "Pallet_Local_A"),
+                    Workstation("202", "202", "Pallet_Local_B")
+                },
+                new[]
+                {
+                    Task(0f, "Pallet_Decoy", "321", "RegretDecoyTrap_Decoy"),
+                    Task(0f, "Pallet_Local_A", "103", "RegretDecoyTrap_LocalA"),
+                    Task(0f, "Pallet_Local_B", "202", "RegretDecoyTrap_LocalB")
+                });
+        }
+
+        public static TaskPlanningScenario GlobalAssignmentTrap()
+        {
+            var nearestTrapGraph = LongCorridorWithBays(length: 42);
+            var regretTrapGraph = OffsetGraph(
+                TBranchWithBays(verticalLength: 30, horizontalLength: 4),
+                idOffset: 1000,
+                xOffset: 120f,
+                yOffset: 0f);
+            var nodes = new List<TaskPlanningScenarioNode>();
+            var edges = new List<TaskPlanningScenarioEdge>();
+            nodes.AddRange(nearestTrapGraph.Nodes);
+            nodes.AddRange(regretTrapGraph.Nodes);
+            edges.AddRange(nearestTrapGraph.Edges);
+            edges.AddRange(regretTrapGraph.Edges);
+            edges.Add(Edge("42", "1000"));
+
+            return new TaskPlanningScenario(
+                "Global Assignment Trap",
+                nodes,
+                edges,
+                new[]
+                {
+                    Amr("AMR_H_Key", 0, "211"),
+                    Amr("AMR_H_Backup", 1, "230"),
+                    Amr("AMR_H_Right", 2, "240"),
+                    Amr("AMR_R_Key", 3, "1200"),
+                    Amr("AMR_R_Shared", 4, "1104"),
+                    Amr("AMR_R_Far", 5, "1339")
+                },
+                new[]
+                {
+                    Pallet("Pallet_H_Scarce", "100", "102", attach: 1f, detach: 1f, load: 1f, unload: 1f),
+                    Pallet("Pallet_H_Flexible", "120", "122", attach: 1f, detach: 1f, load: 1f, unload: 1f),
+                    Pallet("Pallet_H_Right", "140", "138", attach: 1f, detach: 1f, load: 1f, unload: 1f),
+                    Pallet("Pallet_R_Decoy", "1319", "1321", attach: 1f, detach: 1f, load: 1f, unload: 1f),
+                    Pallet("Pallet_R_Local_A", "1102", "1103", attach: 1f, detach: 1f, load: 1f, unload: 1f),
+                    Pallet("Pallet_R_Local_B", "1203", "1202", attach: 1f, detach: 1f, load: 1f, unload: 1f)
+                },
+                new[]
+                {
+                    LoadingPoint("101", "101", "Pallet_H_Scarce"),
+                    LoadingPoint("121", "121", "Pallet_H_Flexible"),
+                    LoadingPoint("139", "139", "Pallet_H_Right"),
+                    LoadingPoint("1320", "1320", "Pallet_R_Decoy"),
+                    LoadingPoint("1101", "1101", "Pallet_R_Local_A"),
+                    LoadingPoint("1204", "1204", "Pallet_R_Local_B")
+                },
+                new[]
+                {
+                    Workstation("102", "102", "Pallet_H_Scarce"),
+                    Workstation("122", "122", "Pallet_H_Flexible"),
+                    Workstation("138", "138", "Pallet_H_Right"),
+                    Workstation("1321", "1321", "Pallet_R_Decoy"),
+                    Workstation("1103", "1103", "Pallet_R_Local_A"),
+                    Workstation("1202", "1202", "Pallet_R_Local_B")
+                },
+                new[]
+                {
+                    Task(0f, "Pallet_H_Flexible", "122", "GlobalTrap_H_Flexible"),
+                    Task(0f, "Pallet_H_Scarce", "102", "GlobalTrap_H_Scarce"),
+                    Task(0f, "Pallet_H_Right", "138", "GlobalTrap_H_Right"),
+                    Task(0f, "Pallet_R_Decoy", "1321", "GlobalTrap_R_Decoy"),
+                    Task(0f, "Pallet_R_Local_A", "1103", "GlobalTrap_R_LocalA"),
+                    Task(0f, "Pallet_R_Local_B", "1202", "GlobalTrap_R_LocalB")
+                });
+        }
+
         public static TaskPlanningScenario RollingHorizonCapacitySaturation()
         {
             var graph = LongCorridorWithBays(length: 70);
@@ -256,6 +409,71 @@ namespace TaskPlanning
                 nodes.Add(Node(south, i, -1));
                 edges.Add(Edge(i.ToString(), north));
                 edges.Add(Edge(i.ToString(), south));
+            }
+
+            return new CorridorGraph(nodes, edges);
+        }
+
+        private static CorridorGraph OffsetGraph(
+            CorridorGraph graph,
+            int idOffset,
+            float xOffset,
+            float yOffset)
+        {
+            var nodes = new List<TaskPlanningScenarioNode>();
+            var edges = new List<TaskPlanningScenarioEdge>();
+            foreach (var node in graph.Nodes)
+            {
+                if (!int.TryParse(node.NodeId, out var numericId))
+                    continue;
+
+                nodes.Add(Node(
+                    (numericId + idOffset).ToString(),
+                    node.Position.x + xOffset,
+                    node.Position.y + yOffset));
+            }
+
+            foreach (var edge in graph.Edges)
+            {
+                if (!int.TryParse(edge.ANodeId, out var a) ||
+                    !int.TryParse(edge.BNodeId, out var b))
+                    continue;
+
+                edges.Add(Edge((a + idOffset).ToString(), (b + idOffset).ToString()));
+            }
+
+            return new CorridorGraph(nodes, edges);
+        }
+
+        private static CorridorGraph TBranchWithBays(int verticalLength, int horizontalLength)
+        {
+            var nodes = new List<TaskPlanningScenarioNode>();
+            var edges = new List<TaskPlanningScenarioEdge>();
+
+            for (var i = 0; i <= horizontalLength; i++)
+            {
+                var id = i.ToString();
+                nodes.Add(Node(id, i, 0));
+                if (i > 0)
+                    edges.Add(Edge((i - 1).ToString(), id));
+
+                var north = (100 + i).ToString();
+                var south = (200 + i).ToString();
+                nodes.Add(Node(north, i, 1));
+                nodes.Add(Node(south, i, -1));
+                edges.Add(Edge(id, north));
+                edges.Add(Edge(id, south));
+            }
+
+            for (var y = 1; y <= verticalLength; y++)
+            {
+                var id = (9 + y).ToString();
+                nodes.Add(Node(id, 0, y));
+                edges.Add(Edge(y == 1 ? "0" : (8 + y).ToString(), id));
+
+                var side = (300 + 9 + y).ToString();
+                nodes.Add(Node(side, -1, y));
+                edges.Add(Edge(id, side));
             }
 
             return new CorridorGraph(nodes, edges);

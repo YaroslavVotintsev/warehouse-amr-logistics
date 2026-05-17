@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f50ab45e1c3e46029eebd7c87689e9c7, type: 3}
+  m_Name: Global_Assignment_Trap
+  m_EditorClassIdentifier: TaskPlanning::TaskPlanning.TaskPlanningMesScheduledScenarioAsset
+  scheduledTasks:
+  - timestampSeconds: 0
+    taskId: GlobalTrap_H_Flexible
+    palletId: Pallet_H_Flexible
+    workstationId: 122
+  - timestampSeconds: 0
+    taskId: GlobalTrap_H_Scarce
+    palletId: Pallet_H_Scarce
+    workstationId: 102
+  - timestampSeconds: 0
+    taskId: GlobalTrap_H_Right
+    palletId: Pallet_H_Right
+    workstationId: 138
+  - timestampSeconds: 0
+    taskId: GlobalTrap_R_Decoy
+    palletId: Pallet_R_Decoy
+    workstationId: 1321
+  - timestampSeconds: 0
+    taskId: GlobalTrap_R_LocalA
+    palletId: Pallet_R_Local_A
+    workstationId: 1103
+  - timestampSeconds: 0
+    taskId: GlobalTrap_R_LocalB
+    palletId: Pallet_R_Local_B
+    workstationId: 1202

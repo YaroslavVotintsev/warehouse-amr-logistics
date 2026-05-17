@@ -1,0 +1,495 @@
+﻿TaskPlanning Scenario Configuration
+Run: Global_Assignment_Trap_HungarianDispatching_ImmediateOnly_001
+Start timestamp: 2026-05-17 07:02:31
+Scenario name: Global_Assignment_Trap
+
+MES
+  Automation mode: ScheduledScenario
+  Scheduled scenario: Global_Assignment_Trap
+  Start scheduled scenario on play: yes
+  Submit same timestamp as batch: yes
+  Scheduled scenario start delay: 0 s
+  Scheduled tasks:
+    0 s | GlobalTrap_H_Flexible | pallet=Pallet_H_Flexible | workstation=122
+    0 s | GlobalTrap_H_Scarce | pallet=Pallet_H_Scarce | workstation=102
+    0 s | GlobalTrap_H_Right | pallet=Pallet_H_Right | workstation=138
+    0 s | GlobalTrap_R_Decoy | pallet=Pallet_R_Decoy | workstation=1321
+    0 s | GlobalTrap_R_LocalA | pallet=Pallet_R_Local_A | workstation=1103
+    0 s | GlobalTrap_R_LocalB | pallet=Pallet_R_Local_B | workstation=1202
+
+Scheduler
+  Dispatcher algorithm: HungarianDispatching
+  Future handling policy: ImmediateOnly
+  Soft AMR reservations: no
+  Reassignment improvement threshold: 10%
+  Wait-for-future improvement threshold: 10%
+  AMR speed: 1
+  Pending retry interval: 0.5 s
+  Arrival distance: 0.08 units
+  Rolling Horizon:
+    Horizon seconds: 30 s
+    Max waves: 4
+    Wait improvement percent: 10%
+  Cost weights:
+    Delivery:
+      priorAssignmentEta: 1
+      amrToPalletEta: 1
+      attachTime: 1
+      loadingQueueEta: 1
+      palletToLoadingEta: 1
+      loadTime: 1
+      loadingToWorkstationEta: 1
+      detachTime: 1
+      blockedDeliveryBias: 100
+      agingWeight: 0
+      maxAgingBonus: 0
+    Removal:
+      priorAssignmentEta: 1
+      amrToPalletEta: 1
+      attachTime: 1
+      palletToParkingEta: 1
+      detachTime: 1
+      blocksPendingDeliveryMultiplier: 0.5
+      agingWeight: 0
+      maxAgingBonus: 0
+
+Scene Objects
+  AMRs:
+    AMR_H_Backup | startPosition=(30, -1, -0.1)
+    AMR_H_Key | startPosition=(11, -1, -0.1)
+    AMR_H_Right | startPosition=(40, -1, -0.1)
+    AMR_R_Far | startPosition=(119, 30, -0.1)
+    AMR_R_Key | startPosition=(120, -1, -0.1)
+    AMR_R_Shared | startPosition=(124, 1, -0.1)
+  Pallets / Kits:
+    Pallet_H_Flexible | currentNode=120 | parkingNode=122 | attach=1 s | detach=1 s | load=1 s | unload=1 s
+    Pallet_H_Right | currentNode=140 | parkingNode=138 | attach=1 s | detach=1 s | load=1 s | unload=1 s
+    Pallet_H_Scarce | currentNode=100 | parkingNode=102 | attach=1 s | detach=1 s | load=1 s | unload=1 s
+    Pallet_R_Decoy | currentNode=1319 | parkingNode=1321 | attach=1 s | detach=1 s | load=1 s | unload=1 s
+    Pallet_R_Local_A | currentNode=1102 | parkingNode=1103 | attach=1 s | detach=1 s | load=1 s | unload=1 s
+    Pallet_R_Local_B | currentNode=1203 | parkingNode=1202 | attach=1 s | detach=1 s | load=1 s | unload=1 s
+  Loading Points:
+    101 | node=101 | acceptedPallets=Pallet_H_Scarce
+    1101 | node=1101 | acceptedPallets=Pallet_R_Local_A
+    1204 | node=1204 | acceptedPallets=Pallet_R_Local_B
+    121 | node=121 | acceptedPallets=Pallet_H_Flexible
+    1320 | node=1320 | acceptedPallets=Pallet_R_Decoy
+    139 | node=139 | acceptedPallets=Pallet_H_Right
+  Workstations:
+    102 | node=102 | acceptedPallets=Pallet_H_Scarce
+    1103 | node=1103 | acceptedPallets=Pallet_R_Local_A
+    1202 | node=1202 | acceptedPallets=Pallet_R_Local_B
+    122 | node=122 | acceptedPallets=Pallet_H_Flexible
+    1321 | node=1321 | acceptedPallets=Pallet_R_Decoy
+    138 | node=138 | acceptedPallets=Pallet_H_Right
+
+Roadmap Graph
+  Nodes:
+    id=0 | position=(0, 0, 0)
+    id=1 | position=(1, 0, 0)
+    id=10 | position=(10, 0, 0)
+    id=100 | position=(0, 1, 0)
+    id=1000 | position=(120, 0, 0)
+    id=1001 | position=(121, 0, 0)
+    id=1002 | position=(122, 0, 0)
+    id=1003 | position=(123, 0, 0)
+    id=1004 | position=(124, 0, 0)
+    id=101 | position=(1, 1, 0)
+    id=1010 | position=(120, 1, 0)
+    id=1011 | position=(120, 2, 0)
+    id=1012 | position=(120, 3, 0)
+    id=1013 | position=(120, 4, 0)
+    id=1014 | position=(120, 5, 0)
+    id=1015 | position=(120, 6, 0)
+    id=1016 | position=(120, 7, 0)
+    id=1017 | position=(120, 8, 0)
+    id=1018 | position=(120, 9, 0)
+    id=1019 | position=(120, 10, 0)
+    id=102 | position=(2, 1, 0)
+    id=1020 | position=(120, 11, 0)
+    id=1021 | position=(120, 12, 0)
+    id=1022 | position=(120, 13, 0)
+    id=1023 | position=(120, 14, 0)
+    id=1024 | position=(120, 15, 0)
+    id=1025 | position=(120, 16, 0)
+    id=1026 | position=(120, 17, 0)
+    id=1027 | position=(120, 18, 0)
+    id=1028 | position=(120, 19, 0)
+    id=1029 | position=(120, 20, 0)
+    id=103 | position=(3, 1, 0)
+    id=1030 | position=(120, 21, 0)
+    id=1031 | position=(120, 22, 0)
+    id=1032 | position=(120, 23, 0)
+    id=1033 | position=(120, 24, 0)
+    id=1034 | position=(120, 25, 0)
+    id=1035 | position=(120, 26, 0)
+    id=1036 | position=(120, 27, 0)
+    id=1037 | position=(120, 28, 0)
+    id=1038 | position=(120, 29, 0)
+    id=1039 | position=(120, 30, 0)
+    id=104 | position=(4, 1, 0)
+    id=105 | position=(5, 1, 0)
+    id=106 | position=(6, 1, 0)
+    id=107 | position=(7, 1, 0)
+    id=108 | position=(8, 1, 0)
+    id=109 | position=(9, 1, 0)
+    id=11 | position=(11, 0, 0)
+    id=110 | position=(10, 1, 0)
+    id=1100 | position=(120, 1, 0)
+    id=1101 | position=(121, 1, 0)
+    id=1102 | position=(122, 1, 0)
+    id=1103 | position=(123, 1, 0)
+    id=1104 | position=(124, 1, 0)
+    id=111 | position=(11, 1, 0)
+    id=112 | position=(12, 1, 0)
+    id=113 | position=(13, 1, 0)
+    id=114 | position=(14, 1, 0)
+    id=115 | position=(15, 1, 0)
+    id=116 | position=(16, 1, 0)
+    id=117 | position=(17, 1, 0)
+    id=118 | position=(18, 1, 0)
+    id=119 | position=(19, 1, 0)
+    id=12 | position=(12, 0, 0)
+    id=120 | position=(20, 1, 0)
+    id=1200 | position=(120, -1, 0)
+    id=1201 | position=(121, -1, 0)
+    id=1202 | position=(122, -1, 0)
+    id=1203 | position=(123, -1, 0)
+    id=1204 | position=(124, -1, 0)
+    id=121 | position=(21, 1, 0)
+    id=122 | position=(22, 1, 0)
+    id=123 | position=(23, 1, 0)
+    id=124 | position=(24, 1, 0)
+    id=125 | position=(25, 1, 0)
+    id=126 | position=(26, 1, 0)
+    id=127 | position=(27, 1, 0)
+    id=128 | position=(28, 1, 0)
+    id=129 | position=(29, 1, 0)
+    id=13 | position=(13, 0, 0)
+    id=130 | position=(30, 1, 0)
+    id=131 | position=(31, 1, 0)
+    id=1310 | position=(119, 1, 0)
+    id=1311 | position=(119, 2, 0)
+    id=1312 | position=(119, 3, 0)
+    id=1313 | position=(119, 4, 0)
+    id=1314 | position=(119, 5, 0)
+    id=1315 | position=(119, 6, 0)
+    id=1316 | position=(119, 7, 0)
+    id=1317 | position=(119, 8, 0)
+    id=1318 | position=(119, 9, 0)
+    id=1319 | position=(119, 10, 0)
+    id=132 | position=(32, 1, 0)
+    id=1320 | position=(119, 11, 0)
+    id=1321 | position=(119, 12, 0)
+    id=1322 | position=(119, 13, 0)
+    id=1323 | position=(119, 14, 0)
+    id=1324 | position=(119, 15, 0)
+    id=1325 | position=(119, 16, 0)
+    id=1326 | position=(119, 17, 0)
+    id=1327 | position=(119, 18, 0)
+    id=1328 | position=(119, 19, 0)
+    id=1329 | position=(119, 20, 0)
+    id=133 | position=(33, 1, 0)
+    id=1330 | position=(119, 21, 0)
+    id=1331 | position=(119, 22, 0)
+    id=1332 | position=(119, 23, 0)
+    id=1333 | position=(119, 24, 0)
+    id=1334 | position=(119, 25, 0)
+    id=1335 | position=(119, 26, 0)
+    id=1336 | position=(119, 27, 0)
+    id=1337 | position=(119, 28, 0)
+    id=1338 | position=(119, 29, 0)
+    id=1339 | position=(119, 30, 0)
+    id=134 | position=(34, 1, 0)
+    id=135 | position=(35, 1, 0)
+    id=136 | position=(36, 1, 0)
+    id=137 | position=(37, 1, 0)
+    id=138 | position=(38, 1, 0)
+    id=139 | position=(39, 1, 0)
+    id=14 | position=(14, 0, 0)
+    id=140 | position=(40, 1, 0)
+    id=141 | position=(41, 1, 0)
+    id=142 | position=(42, 1, 0)
+    id=15 | position=(15, 0, 0)
+    id=16 | position=(16, 0, 0)
+    id=17 | position=(17, 0, 0)
+    id=18 | position=(18, 0, 0)
+    id=19 | position=(19, 0, 0)
+    id=2 | position=(2, 0, 0)
+    id=20 | position=(20, 0, 0)
+    id=200 | position=(0, -1, 0)
+    id=201 | position=(1, -1, 0)
+    id=202 | position=(2, -1, 0)
+    id=203 | position=(3, -1, 0)
+    id=204 | position=(4, -1, 0)
+    id=205 | position=(5, -1, 0)
+    id=206 | position=(6, -1, 0)
+    id=207 | position=(7, -1, 0)
+    id=208 | position=(8, -1, 0)
+    id=209 | position=(9, -1, 0)
+    id=21 | position=(21, 0, 0)
+    id=210 | position=(10, -1, 0)
+    id=211 | position=(11, -1, 0)
+    id=212 | position=(12, -1, 0)
+    id=213 | position=(13, -1, 0)
+    id=214 | position=(14, -1, 0)
+    id=215 | position=(15, -1, 0)
+    id=216 | position=(16, -1, 0)
+    id=217 | position=(17, -1, 0)
+    id=218 | position=(18, -1, 0)
+    id=219 | position=(19, -1, 0)
+    id=22 | position=(22, 0, 0)
+    id=220 | position=(20, -1, 0)
+    id=221 | position=(21, -1, 0)
+    id=222 | position=(22, -1, 0)
+    id=223 | position=(23, -1, 0)
+    id=224 | position=(24, -1, 0)
+    id=225 | position=(25, -1, 0)
+    id=226 | position=(26, -1, 0)
+    id=227 | position=(27, -1, 0)
+    id=228 | position=(28, -1, 0)
+    id=229 | position=(29, -1, 0)
+    id=23 | position=(23, 0, 0)
+    id=230 | position=(30, -1, 0)
+    id=231 | position=(31, -1, 0)
+    id=232 | position=(32, -1, 0)
+    id=233 | position=(33, -1, 0)
+    id=234 | position=(34, -1, 0)
+    id=235 | position=(35, -1, 0)
+    id=236 | position=(36, -1, 0)
+    id=237 | position=(37, -1, 0)
+    id=238 | position=(38, -1, 0)
+    id=239 | position=(39, -1, 0)
+    id=24 | position=(24, 0, 0)
+    id=240 | position=(40, -1, 0)
+    id=241 | position=(41, -1, 0)
+    id=242 | position=(42, -1, 0)
+    id=25 | position=(25, 0, 0)
+    id=26 | position=(26, 0, 0)
+    id=27 | position=(27, 0, 0)
+    id=28 | position=(28, 0, 0)
+    id=29 | position=(29, 0, 0)
+    id=3 | position=(3, 0, 0)
+    id=30 | position=(30, 0, 0)
+    id=31 | position=(31, 0, 0)
+    id=32 | position=(32, 0, 0)
+    id=33 | position=(33, 0, 0)
+    id=34 | position=(34, 0, 0)
+    id=35 | position=(35, 0, 0)
+    id=36 | position=(36, 0, 0)
+    id=37 | position=(37, 0, 0)
+    id=38 | position=(38, 0, 0)
+    id=39 | position=(39, 0, 0)
+    id=4 | position=(4, 0, 0)
+    id=40 | position=(40, 0, 0)
+    id=41 | position=(41, 0, 0)
+    id=42 | position=(42, 0, 0)
+    id=5 | position=(5, 0, 0)
+    id=6 | position=(6, 0, 0)
+    id=7 | position=(7, 0, 0)
+    id=8 | position=(8, 0, 0)
+    id=9 | position=(9, 0, 0)
+  Edges:
+    from=0 | to=1
+    from=0 | to=100
+    from=0 | to=200
+    from=1 | to=101
+    from=1 | to=2
+    from=1 | to=201
+    from=10 | to=11
+    from=10 | to=110
+    from=10 | to=210
+    from=10 | to=9
+    from=1000 | to=1001
+    from=1000 | to=1010
+    from=1000 | to=1100
+    from=1000 | to=1200
+    from=1000 | to=42
+    from=1001 | to=1002
+    from=1001 | to=1101
+    from=1001 | to=1201
+    from=1002 | to=1003
+    from=1002 | to=1102
+    from=1002 | to=1202
+    from=1003 | to=1004
+    from=1003 | to=1103
+    from=1003 | to=1203
+    from=1004 | to=1104
+    from=1004 | to=1204
+    from=1010 | to=1011
+    from=1010 | to=1310
+    from=1011 | to=1012
+    from=1011 | to=1311
+    from=1012 | to=1013
+    from=1012 | to=1312
+    from=1013 | to=1014
+    from=1013 | to=1313
+    from=1014 | to=1015
+    from=1014 | to=1314
+    from=1015 | to=1016
+    from=1015 | to=1315
+    from=1016 | to=1017
+    from=1016 | to=1316
+    from=1017 | to=1018
+    from=1017 | to=1317
+    from=1018 | to=1019
+    from=1018 | to=1318
+    from=1019 | to=1020
+    from=1019 | to=1319
+    from=102 | to=2
+    from=1020 | to=1021
+    from=1020 | to=1320
+    from=1021 | to=1022
+    from=1021 | to=1321
+    from=1022 | to=1023
+    from=1022 | to=1322
+    from=1023 | to=1024
+    from=1023 | to=1323
+    from=1024 | to=1025
+    from=1024 | to=1324
+    from=1025 | to=1026
+    from=1025 | to=1325
+    from=1026 | to=1027
+    from=1026 | to=1326
+    from=1027 | to=1028
+    from=1027 | to=1327
+    from=1028 | to=1029
+    from=1028 | to=1328
+    from=1029 | to=1030
+    from=1029 | to=1329
+    from=103 | to=3
+    from=1030 | to=1031
+    from=1030 | to=1330
+    from=1031 | to=1032
+    from=1031 | to=1331
+    from=1032 | to=1033
+    from=1032 | to=1332
+    from=1033 | to=1034
+    from=1033 | to=1333
+    from=1034 | to=1035
+    from=1034 | to=1334
+    from=1035 | to=1036
+    from=1035 | to=1335
+    from=1036 | to=1037
+    from=1036 | to=1336
+    from=1037 | to=1038
+    from=1037 | to=1337
+    from=1038 | to=1039
+    from=1038 | to=1338
+    from=1039 | to=1339
+    from=104 | to=4
+    from=105 | to=5
+    from=106 | to=6
+    from=107 | to=7
+    from=108 | to=8
+    from=109 | to=9
+    from=11 | to=111
+    from=11 | to=12
+    from=11 | to=211
+    from=112 | to=12
+    from=113 | to=13
+    from=114 | to=14
+    from=115 | to=15
+    from=116 | to=16
+    from=117 | to=17
+    from=118 | to=18
+    from=119 | to=19
+    from=12 | to=13
+    from=12 | to=212
+    from=120 | to=20
+    from=121 | to=21
+    from=122 | to=22
+    from=123 | to=23
+    from=124 | to=24
+    from=125 | to=25
+    from=126 | to=26
+    from=127 | to=27
+    from=128 | to=28
+    from=129 | to=29
+    from=13 | to=14
+    from=13 | to=213
+    from=130 | to=30
+    from=131 | to=31
+    from=132 | to=32
+    from=133 | to=33
+    from=134 | to=34
+    from=135 | to=35
+    from=136 | to=36
+    from=137 | to=37
+    from=138 | to=38
+    from=139 | to=39
+    from=14 | to=15
+    from=14 | to=214
+    from=140 | to=40
+    from=141 | to=41
+    from=142 | to=42
+    from=15 | to=16
+    from=15 | to=215
+    from=16 | to=17
+    from=16 | to=216
+    from=17 | to=18
+    from=17 | to=217
+    from=18 | to=19
+    from=18 | to=218
+    from=19 | to=20
+    from=19 | to=219
+    from=2 | to=202
+    from=2 | to=3
+    from=20 | to=21
+    from=20 | to=220
+    from=203 | to=3
+    from=204 | to=4
+    from=205 | to=5
+    from=206 | to=6
+    from=207 | to=7
+    from=208 | to=8
+    from=209 | to=9
+    from=21 | to=22
+    from=21 | to=221
+    from=22 | to=222
+    from=22 | to=23
+    from=223 | to=23
+    from=224 | to=24
+    from=225 | to=25
+    from=226 | to=26
+    from=227 | to=27
+    from=228 | to=28
+    from=229 | to=29
+    from=23 | to=24
+    from=230 | to=30
+    from=231 | to=31
+    from=232 | to=32
+    from=233 | to=33
+    from=234 | to=34
+    from=235 | to=35
+    from=236 | to=36
+    from=237 | to=37
+    from=238 | to=38
+    from=239 | to=39
+    from=24 | to=25
+    from=240 | to=40
+    from=241 | to=41
+    from=242 | to=42
+    from=25 | to=26
+    from=26 | to=27
+    from=27 | to=28
+    from=28 | to=29
+    from=29 | to=30
+    from=3 | to=4
+    from=30 | to=31
+    from=31 | to=32
+    from=32 | to=33
+    from=33 | to=34
+    from=34 | to=35
+    from=35 | to=36
+    from=36 | to=37
+    from=37 | to=38
+    from=38 | to=39
+    from=39 | to=40
+    from=4 | to=5
+    from=40 | to=41
+    from=41 | to=42
+    from=5 | to=6
+    from=6 | to=7
+    from=7 | to=8
+    from=8 | to=9

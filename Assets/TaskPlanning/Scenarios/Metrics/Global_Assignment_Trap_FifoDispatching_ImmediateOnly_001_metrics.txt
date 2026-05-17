@@ -1,0 +1,103 @@
+﻿TaskPlanning Scenario Metrics
+Run: Global_Assignment_Trap_FifoDispatching_ImmediateOnly_001
+Start timestamp: 2026-05-17 07:03:38
+Scenario name: Global_Assignment_Trap
+Total MES tasks: 6
+Completed MES tasks: 6
+Makespan: 45.867 s
+Average task completion time: 26.648 s
+Average loading-point queue wait: 0 s
+Average workstation queue wait: 0 s
+Soft reassignments: 0
+
+All AMRs total:
+Total:
+  Travel distance: 133.975 units
+  Busy/assigned time: 153.881 s
+  Idle/unassigned time: 121.319 s
+  Action time: 18 s
+  Loading-point queue wait time: 0 s
+  Workstation blocking wait time: 0 s
+  Utilization: 55.213%
+  Completed delivery assignments: 6
+  Completed removal assignments: 0
+
+All AMRs average:
+Average:
+  Travel distance: 22.329 units
+  Busy/assigned time: 25.647 s
+  Idle/unassigned time: 20.22 s
+  Action time: 3 s
+  Loading-point queue wait time: 0 s
+  Workstation blocking wait time: 0 s
+  Utilization: 55.213%
+  Completed delivery assignments: 1
+  Completed removal assignments: 0
+
+Per AMR
+AMR AMR_H_Backup:
+  Travel distance: 37.997 units
+  Busy/assigned time: 40.854 s
+  Idle/unassigned time: 5.012 s
+  Action time: 3 s
+  Loading-point queue wait time: 0 s
+  Workstation blocking wait time: 0 s
+  Utilization: 89.362%
+  Completed delivery assignments: 1
+  Completed removal assignments: 0
+
+AMR AMR_H_Key:
+  Travel distance: 16.994 units
+  Busy/assigned time: 19.882 s
+  Idle/unassigned time: 25.984 s
+  Action time: 3 s
+  Loading-point queue wait time: 0 s
+  Workstation blocking wait time: 0 s
+  Utilization: 43.532%
+  Completed delivery assignments: 1
+  Completed removal assignments: 0
+
+AMR AMR_H_Right:
+  Travel distance: 7.997 units
+  Busy/assigned time: 10.853 s
+  Idle/unassigned time: 35.014 s
+  Action time: 3 s
+  Loading-point queue wait time: 0 s
+  Workstation blocking wait time: 0 s
+  Utilization: 23.977%
+  Completed delivery assignments: 1
+  Completed removal assignments: 0
+
+AMR AMR_R_Far:
+  Travel distance: 41.995 units
+  Busy/assigned time: 44.859 s
+  Idle/unassigned time: 1.008 s
+  Action time: 3 s
+  Loading-point queue wait time: 0 s
+  Workstation blocking wait time: 0 s
+  Utilization: 98.078%
+  Completed delivery assignments: 1
+  Completed removal assignments: 0
+
+AMR AMR_R_Key:
+  Travel distance: 17.996 units
+  Busy/assigned time: 23.571 s
+  Idle/unassigned time: 22.295 s
+  Action time: 3 s
+  Loading-point queue wait time: 0 s
+  Workstation blocking wait time: 0 s
+  Utilization: 45.82%
+  Completed delivery assignments: 1
+  Completed removal assignments: 0
+
+AMR AMR_R_Shared:
+  Travel distance: 10.995 units
+  Busy/assigned time: 13.862 s
+  Idle/unassigned time: 32.005 s
+  Action time: 3 s
+  Loading-point queue wait time: 0 s
+  Workstation blocking wait time: 0 s
+  Utilization: 30.511%
+  Completed delivery assignments: 1
+  Completed removal assignments: 0
+

@@ -1,0 +1,529 @@
+﻿TaskPlanning Dispatch Trace
+Run: Global_Assignment_Trap_HungarianDispatching_ImmediateOnly_001
+Scenario name: Global_Assignment_Trap
+
+Chronological Events
+[0s] SCENARIO_STARTED
+  Scenario: Global_Assignment_Trap
+  Total MES tasks: 6
+[0s] MES_SUBMISSION_COMPLETED
+  Scenario: Global_Assignment_Trap
+[0s] MES_BATCH_RECEIVED
+  Task: GlobalTrap_H_Flexible | pallet=Pallet_H_Flexible | workstation=122
+  Task: GlobalTrap_H_Scarce | pallet=Pallet_H_Scarce | workstation=102
+  Task: GlobalTrap_H_Right | pallet=Pallet_H_Right | workstation=138
+  Task: GlobalTrap_R_Decoy | pallet=Pallet_R_Decoy | workstation=1321
+  Task: GlobalTrap_R_LocalA | pallet=Pallet_R_Local_A | workstation=1103
+  Task: GlobalTrap_R_LocalB | pallet=Pallet_R_Local_B | workstation=1202
+[0s] DISPATCH_CYCLE #1
+  Algorithm: HungarianDispatching
+  Future policy: ImmediateOnly
+  Pending tasks: GlobalTrap_H_Flexible, GlobalTrap_H_Scarce, GlobalTrap_H_Right, GlobalTrap_R_Decoy, GlobalTrap_R_LocalA, GlobalTrap_R_LocalB
+  Free AMRs: AMR_H_Backup, AMR_H_Key, AMR_H_Right, AMR_R_Far, AMR_R_Key, AMR_R_Shared
+  Active interruptible AMRs: none
+  Soft reassignment candidates: none
+  Candidate costs:
+    AMR_H_Right -> GlobalTrap_H_Right | pallet=Pallet_H_Right | loading=139 | workstation=138 | cost=11 | softReassignment=no
+    AMR_R_Shared -> GlobalTrap_R_LocalB | pallet=Pallet_R_Local_B | loading=1204 | workstation=1202 | cost=13 | softReassignment=no
+    AMR_R_Key -> GlobalTrap_R_LocalA | pallet=Pallet_R_Local_A | loading=1101 | workstation=1103 | cost=14 | softReassignment=no
+    AMR_R_Shared -> GlobalTrap_R_LocalA | pallet=Pallet_R_Local_A | loading=1101 | workstation=1103 | cost=14 | softReassignment=no
+    AMR_R_Key -> GlobalTrap_R_LocalB | pallet=Pallet_R_Local_B | loading=1204 | workstation=1202 | cost=15 | softReassignment=no
+    AMR_H_Key -> GlobalTrap_H_Flexible | pallet=Pallet_H_Flexible | loading=121 | workstation=122 | cost=20 | softReassignment=no
+    AMR_H_Backup -> GlobalTrap_H_Flexible | pallet=Pallet_H_Flexible | loading=121 | workstation=122 | cost=21 | softReassignment=no
+    AMR_H_Backup -> GlobalTrap_H_Right | pallet=Pallet_H_Right | loading=139 | workstation=138 | cost=21 | softReassignment=no
+    AMR_R_Key -> GlobalTrap_R_Decoy | pallet=Pallet_R_Decoy | loading=1320 | workstation=1321 | cost=21 | softReassignment=no
+    AMR_H_Key -> GlobalTrap_H_Scarce | pallet=Pallet_H_Scarce | loading=101 | workstation=102 | cost=22 | softReassignment=no
+    AMR_R_Shared -> GlobalTrap_R_Decoy | pallet=Pallet_R_Decoy | loading=1320 | workstation=1321 | cost=25 | softReassignment=no
+    AMR_H_Right -> GlobalTrap_H_Flexible | pallet=Pallet_H_Flexible | loading=121 | workstation=122 | cost=31 | softReassignment=no
+    AMR_R_Far -> GlobalTrap_R_Decoy | pallet=Pallet_R_Decoy | loading=1320 | workstation=1321 | cost=31 | softReassignment=no
+    AMR_H_Key -> GlobalTrap_H_Right | pallet=Pallet_H_Right | loading=139 | workstation=138 | cost=40 | softReassignment=no
+    AMR_H_Backup -> GlobalTrap_H_Scarce | pallet=Pallet_H_Scarce | loading=101 | workstation=102 | cost=41 | softReassignment=no
+    AMR_R_Far -> GlobalTrap_R_LocalA | pallet=Pallet_R_Local_A | loading=1101 | workstation=1103 | cost=44 | softReassignment=no
+    AMR_R_Far -> GlobalTrap_R_LocalB | pallet=Pallet_R_Local_B | loading=1204 | workstation=1202 | cost=45 | softReassignment=no
+    AMR_H_Right -> GlobalTrap_H_Scarce | pallet=Pallet_H_Scarce | loading=101 | workstation=102 | cost=51 | softReassignment=no
+    AMR_R_Key -> GlobalTrap_H_Right | pallet=Pallet_H_Right | loading=139 | workstation=138 | cost=91 | softReassignment=no
+    AMR_H_Right -> GlobalTrap_R_LocalA | pallet=Pallet_R_Local_A | loading=1101 | workstation=1103 | cost=94 | softReassignment=no
+    AMR_R_Shared -> GlobalTrap_H_Right | pallet=Pallet_H_Right | loading=139 | workstation=138 | cost=95 | softReassignment=no
+    AMR_H_Right -> GlobalTrap_R_LocalB | pallet=Pallet_R_Local_B | loading=1204 | workstation=1202 | cost=95 | softReassignment=no
+    AMR_H_Right -> GlobalTrap_R_Decoy | pallet=Pallet_R_Decoy | loading=1320 | workstation=1321 | cost=101 | softReassignment=no
+    AMR_H_Backup -> GlobalTrap_R_LocalA | pallet=Pallet_R_Local_A | loading=1101 | workstation=1103 | cost=104 | softReassignment=no
+    AMR_H_Backup -> GlobalTrap_R_LocalB | pallet=Pallet_R_Local_B | loading=1204 | workstation=1202 | cost=105 | softReassignment=no
+    AMR_R_Key -> GlobalTrap_H_Flexible | pallet=Pallet_H_Flexible | loading=121 | workstation=122 | cost=111 | softReassignment=no
+    AMR_H_Backup -> GlobalTrap_R_Decoy | pallet=Pallet_R_Decoy | loading=1320 | workstation=1321 | cost=111 | softReassignment=no
+    AMR_R_Shared -> GlobalTrap_H_Flexible | pallet=Pallet_H_Flexible | loading=121 | workstation=122 | cost=115 | softReassignment=no
+    AMR_R_Far -> GlobalTrap_H_Right | pallet=Pallet_H_Right | loading=139 | workstation=138 | cost=121 | softReassignment=no
+    AMR_H_Key -> GlobalTrap_R_LocalA | pallet=Pallet_R_Local_A | loading=1101 | workstation=1103 | cost=123 | softReassignment=no
+    AMR_H_Key -> GlobalTrap_R_LocalB | pallet=Pallet_R_Local_B | loading=1204 | workstation=1202 | cost=124 | softReassignment=no
+    AMR_H_Key -> GlobalTrap_R_Decoy | pallet=Pallet_R_Decoy | loading=1320 | workstation=1321 | cost=130 | softReassignment=no
+    AMR_R_Key -> GlobalTrap_H_Scarce | pallet=Pallet_H_Scarce | loading=101 | workstation=102 | cost=131 | softReassignment=no
+    AMR_R_Shared -> GlobalTrap_H_Scarce | pallet=Pallet_H_Scarce | loading=101 | workstation=102 | cost=135 | softReassignment=no
+    AMR_R_Far -> GlobalTrap_H_Flexible | pallet=Pallet_H_Flexible | loading=121 | workstation=122 | cost=141 | softReassignment=no
+    AMR_R_Far -> GlobalTrap_H_Scarce | pallet=Pallet_H_Scarce | loading=101 | workstation=102 | cost=161 | softReassignment=no
+  Selected:
+    AMR_H_Backup -> GlobalTrap_H_Flexible | cost=21 | softReassignment=no | replaces=-
+    AMR_H_Right -> GlobalTrap_H_Right | cost=11 | softReassignment=no | replaces=-
+    AMR_H_Key -> GlobalTrap_H_Scarce | cost=22 | softReassignment=no | replaces=-
+    AMR_R_Far -> GlobalTrap_R_Decoy | cost=31 | softReassignment=no | replaces=-
+    AMR_R_Key -> GlobalTrap_R_LocalA | cost=14 | softReassignment=no | replaces=-
+    AMR_R_Shared -> GlobalTrap_R_LocalB | cost=13 | softReassignment=no | replaces=-
+[0s] ASSIGNMENT_STARTED
+  Assignment: A-001
+  Type: Delivery
+  Task: GlobalTrap_H_Flexible
+  AMR: AMR_H_Backup
+  Pallet: Pallet_H_Flexible
+  Loading point: 121
+  Workstation: 122
+  Removal target: -
+  Cost: 21
+  Soft reassignment: no
+  Replaced task: -
+[0s] ASSIGNMENT_STARTED
+  Assignment: A-002
+  Type: Delivery
+  Task: GlobalTrap_H_Right
+  AMR: AMR_H_Right
+  Pallet: Pallet_H_Right
+  Loading point: 139
+  Workstation: 138
+  Removal target: -
+  Cost: 11
+  Soft reassignment: no
+  Replaced task: -
+[0s] ASSIGNMENT_STARTED
+  Assignment: A-003
+  Type: Delivery
+  Task: GlobalTrap_H_Scarce
+  AMR: AMR_H_Key
+  Pallet: Pallet_H_Scarce
+  Loading point: 101
+  Workstation: 102
+  Removal target: -
+  Cost: 22
+  Soft reassignment: no
+  Replaced task: -
+[0s] ASSIGNMENT_STARTED
+  Assignment: A-004
+  Type: Delivery
+  Task: GlobalTrap_R_Decoy
+  AMR: AMR_R_Far
+  Pallet: Pallet_R_Decoy
+  Loading point: 1320
+  Workstation: 1321
+  Removal target: -
+  Cost: 31
+  Soft reassignment: no
+  Replaced task: -
+[0s] ASSIGNMENT_STARTED
+  Assignment: A-005
+  Type: Delivery
+  Task: GlobalTrap_R_LocalA
+  AMR: AMR_R_Key
+  Pallet: Pallet_R_Local_A
+  Loading point: 1101
+  Workstation: 1103
+  Removal target: -
+  Cost: 14
+  Soft reassignment: no
+  Replaced task: -
+[0s] ASSIGNMENT_STARTED
+  Assignment: A-006
+  Type: Delivery
+  Task: GlobalTrap_R_LocalB
+  AMR: AMR_R_Shared
+  Pallet: Pallet_R_Local_B
+  Loading point: 1204
+  Workstation: 1202
+  Removal target: -
+  Cost: 13
+  Soft reassignment: no
+  Replaced task: -
+[1.982s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_H_Right
+  AMR: AMR_H_Right
+  MovingToPallet -> Attaching
+[2.983s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_R_LocalB
+  AMR: AMR_R_Shared
+  MovingToPallet -> Attaching
+[2.983s] ASSIGNMENT_ACTION
+  Task: GlobalTrap_H_Right
+  AMR: AMR_H_Right
+  Action: Attach
+  Duration: 1 s
+[2.983s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_H_Right
+  AMR: AMR_H_Right
+  Attaching -> WaitingForLoadingAndWorkstationTurn
+[2.983s] ASSIGNMENT_QUEUE_WAIT
+  Task: GlobalTrap_H_Right
+  AMR: AMR_H_Right
+  Loading-point wait: 0 s
+  Workstation wait: 0 s
+[2.987s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_H_Right
+  AMR: AMR_H_Right
+  WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+[3.983s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_R_LocalA
+  AMR: AMR_R_Key
+  MovingToPallet -> Attaching
+[3.983s] ASSIGNMENT_ACTION
+  Task: GlobalTrap_R_LocalB
+  AMR: AMR_R_Shared
+  Action: Attach
+  Duration: 1 s
+[3.983s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_R_LocalB
+  AMR: AMR_R_Shared
+  Attaching -> WaitingForLoadingAndWorkstationTurn
+[3.983s] ASSIGNMENT_QUEUE_WAIT
+  Task: GlobalTrap_R_LocalB
+  AMR: AMR_R_Shared
+  Loading-point wait: 0 s
+  Workstation wait: 0 s
+[3.987s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_R_LocalB
+  AMR: AMR_R_Shared
+  WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+[4.986s] ASSIGNMENT_ACTION
+  Task: GlobalTrap_R_LocalA
+  AMR: AMR_R_Key
+  Action: Attach
+  Duration: 1 s
+[4.986s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_R_LocalA
+  AMR: AMR_R_Key
+  Attaching -> WaitingForLoadingAndWorkstationTurn
+[4.986s] ASSIGNMENT_QUEUE_WAIT
+  Task: GlobalTrap_R_LocalA
+  AMR: AMR_R_Key
+  Loading-point wait: 0 s
+  Workstation wait: 0 s
+[4.991s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_R_LocalA
+  AMR: AMR_R_Key
+  WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+[5.919s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_H_Right
+  AMR: AMR_H_Right
+  MovingToLoading -> Loading
+[6.935s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_R_LocalB
+  AMR: AMR_R_Shared
+  MovingToLoading -> Loading
+[6.935s] ASSIGNMENT_ACTION
+  Task: GlobalTrap_H_Right
+  AMR: AMR_H_Right
+  Action: Load
+  Duration: 1 s
+[6.935s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_H_Right
+  AMR: AMR_H_Right
+  Loading -> MovingToWorkstation
+[7.924s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_R_LocalA
+  AMR: AMR_R_Key
+  MovingToLoading -> Loading
+[7.936s] ASSIGNMENT_ACTION
+  Task: GlobalTrap_R_LocalB
+  AMR: AMR_R_Shared
+  Action: Load
+  Duration: 1 s
+[7.936s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_R_LocalB
+  AMR: AMR_R_Shared
+  Loading -> MovingToWorkstation
+[8.94s] ASSIGNMENT_ACTION
+  Task: GlobalTrap_R_LocalA
+  AMR: AMR_R_Key
+  Action: Load
+  Duration: 1 s
+[8.94s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_R_LocalA
+  AMR: AMR_R_Key
+  Loading -> MovingToWorkstation
+[9.892s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_H_Right
+  AMR: AMR_H_Right
+  MovingToWorkstation -> DetachingAtWorkstation
+[10.892s] ASSIGNMENT_ACTION
+  Task: GlobalTrap_H_Right
+  AMR: AMR_H_Right
+  Action: Detach
+  Duration: 1 s
+[10.892s] ASSIGNMENT_COMPLETED
+  Task: GlobalTrap_H_Right
+  AMR: AMR_H_Right
+  Pallet: Pallet_H_Right
+[11.87s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_R_LocalB
+  AMR: AMR_R_Shared
+  MovingToWorkstation -> DetachingAtWorkstation
+[11.892s] MES_TASK_COMPLETED
+  Task: GlobalTrap_H_Right
+  AMR: AMR_H_Right
+  Pallet: Pallet_H_Right
+[11.982s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_H_Flexible
+  AMR: AMR_H_Backup
+  MovingToPallet -> Attaching
+[12.87s] ASSIGNMENT_ACTION
+  Task: GlobalTrap_R_LocalB
+  AMR: AMR_R_Shared
+  Action: Detach
+  Duration: 1 s
+[12.87s] ASSIGNMENT_COMPLETED
+  Task: GlobalTrap_R_LocalB
+  AMR: AMR_R_Shared
+  Pallet: Pallet_R_Local_B
+[12.982s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_H_Scarce
+  AMR: AMR_H_Key
+  MovingToPallet -> Attaching
+[12.982s] ASSIGNMENT_ACTION
+  Task: GlobalTrap_H_Flexible
+  AMR: AMR_H_Backup
+  Action: Attach
+  Duration: 1 s
+[12.982s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_H_Flexible
+  AMR: AMR_H_Backup
+  Attaching -> WaitingForLoadingAndWorkstationTurn
+[12.982s] ASSIGNMENT_QUEUE_WAIT
+  Task: GlobalTrap_H_Flexible
+  AMR: AMR_H_Backup
+  Loading-point wait: 0 s
+  Workstation wait: 0 s
+[12.986s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_H_Flexible
+  AMR: AMR_H_Backup
+  WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+[13.465s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_R_LocalA
+  AMR: AMR_R_Key
+  MovingToWorkstation -> DetachingAtWorkstation
+[13.87s] MES_TASK_COMPLETED
+  Task: GlobalTrap_R_LocalB
+  AMR: AMR_R_Shared
+  Pallet: Pallet_R_Local_B
+[13.986s] ASSIGNMENT_ACTION
+  Task: GlobalTrap_H_Scarce
+  AMR: AMR_H_Key
+  Action: Attach
+  Duration: 1 s
+[13.986s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_H_Scarce
+  AMR: AMR_H_Key
+  Attaching -> WaitingForLoadingAndWorkstationTurn
+[13.986s] ASSIGNMENT_QUEUE_WAIT
+  Task: GlobalTrap_H_Scarce
+  AMR: AMR_H_Key
+  Loading-point wait: 0 s
+  Workstation wait: 0 s
+[13.992s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_H_Scarce
+  AMR: AMR_H_Key
+  WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+[14.465s] ASSIGNMENT_ACTION
+  Task: GlobalTrap_R_LocalA
+  AMR: AMR_R_Key
+  Action: Detach
+  Duration: 1 s
+[14.465s] ASSIGNMENT_COMPLETED
+  Task: GlobalTrap_R_LocalA
+  AMR: AMR_R_Key
+  Pallet: Pallet_R_Local_A
+[15.479s] MES_TASK_COMPLETED
+  Task: GlobalTrap_R_LocalA
+  AMR: AMR_R_Key
+  Pallet: Pallet_R_Local_A
+[15.916s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_H_Flexible
+  AMR: AMR_H_Backup
+  MovingToLoading -> Loading
+[16.92s] ASSIGNMENT_ACTION
+  Task: GlobalTrap_H_Flexible
+  AMR: AMR_H_Backup
+  Action: Load
+  Duration: 1 s
+[16.92s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_H_Flexible
+  AMR: AMR_H_Backup
+  Loading -> MovingToWorkstation
+[16.924s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_H_Scarce
+  AMR: AMR_H_Key
+  MovingToLoading -> Loading
+[17.929s] ASSIGNMENT_ACTION
+  Task: GlobalTrap_H_Scarce
+  AMR: AMR_H_Key
+  Action: Load
+  Duration: 1 s
+[17.929s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_H_Scarce
+  AMR: AMR_H_Key
+  Loading -> MovingToWorkstation
+[19.863s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_H_Flexible
+  AMR: AMR_H_Backup
+  MovingToWorkstation -> DetachingAtWorkstation
+[20.859s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_H_Scarce
+  AMR: AMR_H_Key
+  MovingToWorkstation -> DetachingAtWorkstation
+[20.866s] ASSIGNMENT_ACTION
+  Task: GlobalTrap_H_Flexible
+  AMR: AMR_H_Backup
+  Action: Detach
+  Duration: 1 s
+[20.866s] ASSIGNMENT_COMPLETED
+  Task: GlobalTrap_H_Flexible
+  AMR: AMR_H_Backup
+  Pallet: Pallet_H_Flexible
+[21.871s] ASSIGNMENT_ACTION
+  Task: GlobalTrap_H_Scarce
+  AMR: AMR_H_Key
+  Action: Detach
+  Duration: 1 s
+[21.871s] ASSIGNMENT_COMPLETED
+  Task: GlobalTrap_H_Scarce
+  AMR: AMR_H_Key
+  Pallet: Pallet_H_Scarce
+[21.871s] MES_TASK_COMPLETED
+  Task: GlobalTrap_H_Flexible
+  AMR: AMR_H_Backup
+  Pallet: Pallet_H_Flexible
+[21.982s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_R_Decoy
+  AMR: AMR_R_Far
+  MovingToPallet -> Attaching
+[22.875s] MES_TASK_COMPLETED
+  Task: GlobalTrap_H_Scarce
+  AMR: AMR_H_Key
+  Pallet: Pallet_H_Scarce
+[22.982s] ASSIGNMENT_ACTION
+  Task: GlobalTrap_R_Decoy
+  AMR: AMR_R_Far
+  Action: Attach
+  Duration: 1 s
+[22.982s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_R_Decoy
+  AMR: AMR_R_Far
+  Attaching -> WaitingForLoadingAndWorkstationTurn
+[22.982s] ASSIGNMENT_QUEUE_WAIT
+  Task: GlobalTrap_R_Decoy
+  AMR: AMR_R_Far
+  Loading-point wait: 0 s
+  Workstation wait: 0 s
+[22.987s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_R_Decoy
+  AMR: AMR_R_Far
+  WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+[25.917s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_R_Decoy
+  AMR: AMR_R_Far
+  MovingToLoading -> Loading
+[26.921s] ASSIGNMENT_ACTION
+  Task: GlobalTrap_R_Decoy
+  AMR: AMR_R_Far
+  Action: Load
+  Duration: 1 s
+[26.921s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_R_Decoy
+  AMR: AMR_R_Far
+  Loading -> MovingToWorkstation
+[29.85s] ASSIGNMENT_PHASE
+  Task: GlobalTrap_R_Decoy
+  AMR: AMR_R_Far
+  MovingToWorkstation -> DetachingAtWorkstation
+[30.851s] ASSIGNMENT_ACTION
+  Task: GlobalTrap_R_Decoy
+  AMR: AMR_R_Far
+  Action: Detach
+  Duration: 1 s
+[30.851s] ASSIGNMENT_COMPLETED
+  Task: GlobalTrap_R_Decoy
+  AMR: AMR_R_Far
+  Pallet: Pallet_R_Decoy
+[31.854s] MES_TASK_COMPLETED
+  Task: GlobalTrap_R_Decoy
+  AMR: AMR_R_Far
+  Pallet: Pallet_R_Decoy
+
+Assignment Trace Summary
+# | type | task | pallet | amr | replaced task | replaced by | soft reassigned | enqueued | assigned | completed | total time | cost | loading wait | workstation wait | action time | travel distance | outcome
+1 | Delivery | GlobalTrap_H_Flexible | Pallet_H_Flexible | AMR_H_Backup | - | - | no | 0 | 0 | 20.866 | 20.866 s | 21 | 0 s | 0 s | 3 s | 17.997 units | completed
+2 | Delivery | GlobalTrap_H_Right | Pallet_H_Right | AMR_H_Right | - | - | no | 0 | 0 | 10.892 | 10.892 s | 11 | 0 s | 0 s | 3 s | 7.992 units | completed
+3 | Delivery | GlobalTrap_H_Scarce | Pallet_H_Scarce | AMR_H_Key | - | - | no | 0 | 0 | 21.871 | 21.871 s | 22 | 0 s | 0 s | 3 s | 18.995 units | completed
+4 | Delivery | GlobalTrap_R_Decoy | Pallet_R_Decoy | AMR_R_Far | - | - | no | 0 | 0 | 30.851 | 30.851 s | 31 | 0 s | 0 s | 3 s | 27.996 units | completed
+5 | Delivery | GlobalTrap_R_LocalA | Pallet_R_Local_A | AMR_R_Key | - | - | no | 0 | 0 | 14.465 | 14.465 s | 14 | 0 s | 0 s | 3 s | 10.992 units | completed
+6 | Delivery | GlobalTrap_R_LocalB | Pallet_R_Local_B | AMR_R_Shared | - | - | no | 0 | 0 | 12.87 | 12.87 s | 13 | 0 s | 0 s | 3 s | 9.991 units | completed
+
+Assignment Phase Details
+A-001 / GlobalTrap_H_Flexible / AMR_H_Backup
+  11.982s: MovingToPallet -> Attaching
+  Action Attach: 1 s
+  12.982s: Attaching -> WaitingForLoadingAndWorkstationTurn
+  Queue wait: loading=0 s, workstation=0 s
+  12.986s: WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+  15.916s: MovingToLoading -> Loading
+  Action Load: 1 s
+  16.92s: Loading -> MovingToWorkstation
+  19.863s: MovingToWorkstation -> DetachingAtWorkstation
+  Action Detach: 1 s
+A-002 / GlobalTrap_H_Right / AMR_H_Right
+  1.982s: MovingToPallet -> Attaching
+  Action Attach: 1 s
+  2.983s: Attaching -> WaitingForLoadingAndWorkstationTurn
+  Queue wait: loading=0 s, workstation=0 s
+  2.987s: WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+  5.919s: MovingToLoading -> Loading
+  Action Load: 1 s
+  6.935s: Loading -> MovingToWorkstation
+  9.892s: MovingToWorkstation -> DetachingAtWorkstation
+  Action Detach: 1 s
+A-003 / GlobalTrap_H_Scarce / AMR_H_Key
+  12.982s: MovingToPallet -> Attaching
+  Action Attach: 1 s
+  13.986s: Attaching -> WaitingForLoadingAndWorkstationTurn
+  Queue wait: loading=0 s, workstation=0 s
+  13.992s: WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+  16.924s: MovingToLoading -> Loading
+  Action Load: 1 s
+  17.929s: Loading -> MovingToWorkstation
+  20.859s: MovingToWorkstation -> DetachingAtWorkstation
+  Action Detach: 1 s
+A-004 / GlobalTrap_R_Decoy / AMR_R_Far
+  21.982s: MovingToPallet -> Attaching
+  Action Attach: 1 s
+  22.982s: Attaching -> WaitingForLoadingAndWorkstationTurn
+  Queue wait: loading=0 s, workstation=0 s
+  22.987s: WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+  25.917s: MovingToLoading -> Loading
+  Action Load: 1 s
+  26.921s: Loading -> MovingToWorkstation
+  29.85s: MovingToWorkstation -> DetachingAtWorkstation
+  Action Detach: 1 s
+A-005 / GlobalTrap_R_LocalA / AMR_R_Key
+  3.983s: MovingToPallet -> Attaching
+  Action Attach: 1 s
+  4.986s: Attaching -> WaitingForLoadingAndWorkstationTurn
+  Queue wait: loading=0 s, workstation=0 s
+  4.991s: WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+  7.924s: MovingToLoading -> Loading
+  Action Load: 1 s
+  8.94s: Loading -> MovingToWorkstation
+  13.465s: MovingToWorkstation -> DetachingAtWorkstation
+  Action Detach: 1 s
+A-006 / GlobalTrap_R_LocalB / AMR_R_Shared
+  2.983s: MovingToPallet -> Attaching
+  Action Attach: 1 s
+  3.983s: Attaching -> WaitingForLoadingAndWorkstationTurn
+  Queue wait: loading=0 s, workstation=0 s
+  3.987s: WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+  6.935s: MovingToLoading -> Loading
+  Action Load: 1 s
+  7.936s: Loading -> MovingToWorkstation
+  11.87s: MovingToWorkstation -> DetachingAtWorkstation
+  Action Detach: 1 s
