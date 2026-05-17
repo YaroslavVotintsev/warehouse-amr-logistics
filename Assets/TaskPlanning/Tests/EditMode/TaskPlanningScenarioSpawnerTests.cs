@@ -13,6 +13,7 @@ namespace TaskPlanning.Tests
         [TestCase(TaskPlanningScenarioPreset.FutureWaitTrap)]
         [TestCase(TaskPlanningScenarioPreset.FutureCapacityTrap)]
         [TestCase(TaskPlanningScenarioPreset.RollingHorizonCapacitySaturation)]
+        [TestCase(TaskPlanningScenarioPreset.RegretAssignmentTrap)]
         public void SpawnerCreatesCompleteScenarioUnderSpawner(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerTest");
@@ -67,6 +68,7 @@ namespace TaskPlanning.Tests
         [TestCase(TaskPlanningScenarioPreset.FutureWaitTrap)]
         [TestCase(TaskPlanningScenarioPreset.FutureCapacityTrap)]
         [TestCase(TaskPlanningScenarioPreset.RollingHorizonCapacitySaturation)]
+        [TestCase(TaskPlanningScenarioPreset.RegretAssignmentTrap)]
         public void SpawnerWiresScheduledMesScenario(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerMesTest");
@@ -97,6 +99,7 @@ namespace TaskPlanning.Tests
         [TestCase(TaskPlanningScenarioPreset.FutureWaitTrap)]
         [TestCase(TaskPlanningScenarioPreset.FutureCapacityTrap)]
         [TestCase(TaskPlanningScenarioPreset.RollingHorizonCapacitySaturation)]
+        [TestCase(TaskPlanningScenarioPreset.RegretAssignmentTrap)]
         public void SpawnedPalletsResolveExactlyOneLoadingPoint(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerCompatibilityTest");
@@ -128,6 +131,7 @@ namespace TaskPlanning.Tests
         [TestCase(TaskPlanningScenarioPreset.FutureWaitTrap)]
         [TestCase(TaskPlanningScenarioPreset.FutureCapacityTrap)]
         [TestCase(TaskPlanningScenarioPreset.RollingHorizonCapacitySaturation)]
+        [TestCase(TaskPlanningScenarioPreset.RegretAssignmentTrap)]
         public void SpawnerConfiguresSchedulerWithSpawnedObjects(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerSchedulerTest");
@@ -161,6 +165,7 @@ namespace TaskPlanning.Tests
         [TestCase(TaskPlanningScenarioPreset.FutureWaitTrap)]
         [TestCase(TaskPlanningScenarioPreset.FutureCapacityTrap)]
         [TestCase(TaskPlanningScenarioPreset.RollingHorizonCapacitySaturation)]
+        [TestCase(TaskPlanningScenarioPreset.RegretAssignmentTrap)]
         public void SpawnerNamesNodesAndPointsByTheirNumericIds(TaskPlanningScenarioPreset preset)
         {
             var root = new GameObject("TaskPlanningScenarioSpawnerNamesTest");
@@ -203,6 +208,7 @@ namespace TaskPlanning.Tests
         [TestCase(TaskPlanningScenarioPreset.FutureWaitTrap)]
         [TestCase(TaskPlanningScenarioPreset.FutureCapacityTrap)]
         [TestCase(TaskPlanningScenarioPreset.RollingHorizonCapacitySaturation)]
+        [TestCase(TaskPlanningScenarioPreset.RegretAssignmentTrap)]
         public void ScenarioPalletsDoNotSpawnOnLoadingOrWorkstationNodes(TaskPlanningScenarioPreset preset)
         {
             var scenario = TaskPlanningScenarioLibrary.Get(preset);
@@ -219,6 +225,68 @@ namespace TaskPlanning.Tests
                     workstationNodeIds.Contains(pallet.CurrentNodeId),
                     Is.False,
                     $"{scenario.Name}: pallet '{pallet.PalletId}' should not spawn on workstation node '{pallet.CurrentNodeId}'.");
+            }
+        }
+
+        [Test]
+        public void RegretAssignmentTrapMakesDifferentDecisionThanNearest()
+        {
+            var root = new GameObject("TaskPlanningScenarioSpawnerRegretTrapTest");
+            var spawner = root.AddComponent<TaskPlanningScenarioSpawner>();
+            TaskPlanningTestHelpers.SetField(spawner, "preset", TaskPlanningScenarioPreset.RegretAssignmentTrap);
+            TaskPlanningTestHelpers.SetField(spawner, "saveMesScheduledScenarioAssetInProject", false);
+
+            try
+            {
+                spawner.Spawn();
+
+                var scenario = TaskPlanningScenarioLibrary.RegretAssignmentTrap();
+                var graph = root.GetComponentInChildren<MapfSceneGraph>();
+                var distances = new RoadmapDistanceService(graph);
+                var loadingPoints = root.GetComponentsInChildren<PalletLoadingPoint>();
+                var pallets = root.GetComponentsInChildren<PalletMarker>().ToDictionary(pallet => pallet.PalletId);
+                var workstations = root.GetComponentsInChildren<WorkstationDeliveryPoint>().ToDictionary(workstation => workstation.WorkstationId);
+                var amrs = root.GetComponentsInChildren<TaskPlanningAmr>().ToDictionary(amr => amr.AmrId);
+                var tasks = scenario.ScheduledTasks
+                    .OrderBy(task => task.taskId)
+                    .Select(task => new DeliveryPlanningTask(task.taskId, pallets[task.palletId], workstations[task.workstationId], 0f))
+                    .Cast<ITaskPlanningTask>()
+                    .ToArray();
+                var evaluator = new TaskPlanningCostEvaluator(
+                    distances,
+                    CreateNoAgingWeights(),
+                    0f,
+                    tasks,
+                    1f);
+                var problem = new DispatchProblem(
+                    tasks,
+                    amrs.Values.ToArray(),
+                    loadingPoints,
+                    distances,
+                    evaluator,
+                    0f);
+
+                var nearestPlan = new NearestDispatching().Solve(problem);
+                var regretPlan = new RegretDispatching().Solve(problem);
+                var nearestByTask = nearestPlan.Assignments.ToDictionary(assignment => assignment.Task.TaskId);
+                var regretByTask = regretPlan.Assignments.ToDictionary(assignment => assignment.Task.TaskId);
+
+                Assert.That(nearestPlan.Assignments, Has.Count.EqualTo(2));
+                Assert.That(regretPlan.Assignments, Has.Count.EqualTo(2));
+                Assert.That(nearestByTask["RegretTrap_Flexible"].Amr, Is.SameAs(amrs["AMR_Key"]));
+                Assert.That(nearestByTask["RegretTrap_Scarce"].Amr, Is.SameAs(amrs["AMR_Backup"]));
+                Assert.That(regretByTask["RegretTrap_Flexible"].Amr, Is.SameAs(amrs["AMR_Backup"]));
+                Assert.That(regretByTask["RegretTrap_Scarce"].Amr, Is.SameAs(amrs["AMR_Key"]));
+                Assert.That(
+                    regretPlan.Assignments.Sum(assignment => assignment.Score),
+                    Is.LessThan(nearestPlan.Assignments.Sum(assignment => assignment.Score)));
+            }
+            finally
+            {
+                var mes = FindMes(root);
+                var generatedScenario = mes != null ? mes.ScheduledScenario : null;
+                TaskPlanningTestHelpers.Destroy(root);
+                TaskPlanningTestHelpers.Destroy(generatedScenario);
             }
         }
 

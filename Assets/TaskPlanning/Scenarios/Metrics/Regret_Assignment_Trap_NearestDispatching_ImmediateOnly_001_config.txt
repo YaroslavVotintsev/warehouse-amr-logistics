@@ -1,0 +1,205 @@
+﻿TaskPlanning Scenario Configuration
+Run: Regret_Assignment_Trap_NearestDispatching_ImmediateOnly_001
+Start timestamp: 2026-05-17 05:45:59
+Scenario name: Regret_Assignment_Trap
+
+MES
+  Automation mode: ScheduledScenario
+  Scheduled scenario: Regret_Assignment_Trap
+  Start scheduled scenario on play: yes
+  Submit same timestamp as batch: yes
+  Scheduled scenario start delay: 0 s
+  Scheduled tasks:
+    0 s | RegretTrap_Flexible | pallet=Pallet_Flexible | workstation=113
+    0 s | RegretTrap_Scarce | pallet=Pallet_Scarce | workstation=106
+
+Scheduler
+  Dispatcher algorithm: NearestDispatching
+  Future handling policy: ImmediateOnly
+  Soft AMR reservations: no
+  Reassignment improvement threshold: 10%
+  Wait-for-future improvement threshold: 10%
+  AMR speed: 1
+  Pending retry interval: 0.5 s
+  Arrival distance: 0.08 units
+  Rolling Horizon:
+    Horizon seconds: 30 s
+    Max waves: 4
+    Wait improvement percent: 10%
+  Cost weights:
+    Delivery:
+      priorAssignmentEta: 1
+      amrToPalletEta: 1
+      attachTime: 1
+      loadingQueueEta: 1
+      palletToLoadingEta: 1
+      loadTime: 1
+      loadingToWorkstationEta: 1
+      detachTime: 1
+      blockedDeliveryBias: 100
+      agingWeight: 0
+      maxAgingBonus: 0
+    Removal:
+      priorAssignmentEta: 1
+      amrToPalletEta: 1
+      attachTime: 1
+      palletToParkingEta: 1
+      detachTime: 1
+      blocksPendingDeliveryMultiplier: 0.5
+      agingWeight: 0
+      maxAgingBonus: 0
+
+Scene Objects
+  AMRs:
+    AMR_Backup | startPosition=(16, -1, -0.1)
+    AMR_Key | startPosition=(10, -1, -0.1)
+  Pallets / Kits:
+    Pallet_Flexible | currentNode=111 | parkingNode=113 | attach=1 s | detach=1 s | load=1 s | unload=1 s
+    Pallet_Scarce | currentNode=108 | parkingNode=106 | attach=1 s | detach=1 s | load=1 s | unload=1 s
+  Loading Points:
+    107 | node=107 | acceptedPallets=Pallet_Scarce
+    112 | node=112 | acceptedPallets=Pallet_Flexible
+  Workstations:
+    106 | node=106 | acceptedPallets=Pallet_Scarce
+    113 | node=113 | acceptedPallets=Pallet_Flexible
+
+Roadmap Graph
+  Nodes:
+    id=0 | position=(0, 0, 0)
+    id=1 | position=(1, 0, 0)
+    id=10 | position=(10, 0, 0)
+    id=100 | position=(0, 1, 0)
+    id=101 | position=(1, 1, 0)
+    id=102 | position=(2, 1, 0)
+    id=103 | position=(3, 1, 0)
+    id=104 | position=(4, 1, 0)
+    id=105 | position=(5, 1, 0)
+    id=106 | position=(6, 1, 0)
+    id=107 | position=(7, 1, 0)
+    id=108 | position=(8, 1, 0)
+    id=109 | position=(9, 1, 0)
+    id=11 | position=(11, 0, 0)
+    id=110 | position=(10, 1, 0)
+    id=111 | position=(11, 1, 0)
+    id=112 | position=(12, 1, 0)
+    id=113 | position=(13, 1, 0)
+    id=114 | position=(14, 1, 0)
+    id=115 | position=(15, 1, 0)
+    id=116 | position=(16, 1, 0)
+    id=117 | position=(17, 1, 0)
+    id=118 | position=(18, 1, 0)
+    id=119 | position=(19, 1, 0)
+    id=12 | position=(12, 0, 0)
+    id=120 | position=(20, 1, 0)
+    id=121 | position=(21, 1, 0)
+    id=122 | position=(22, 1, 0)
+    id=13 | position=(13, 0, 0)
+    id=14 | position=(14, 0, 0)
+    id=15 | position=(15, 0, 0)
+    id=16 | position=(16, 0, 0)
+    id=17 | position=(17, 0, 0)
+    id=18 | position=(18, 0, 0)
+    id=19 | position=(19, 0, 0)
+    id=2 | position=(2, 0, 0)
+    id=20 | position=(20, 0, 0)
+    id=200 | position=(0, -1, 0)
+    id=201 | position=(1, -1, 0)
+    id=202 | position=(2, -1, 0)
+    id=203 | position=(3, -1, 0)
+    id=204 | position=(4, -1, 0)
+    id=205 | position=(5, -1, 0)
+    id=206 | position=(6, -1, 0)
+    id=207 | position=(7, -1, 0)
+    id=208 | position=(8, -1, 0)
+    id=209 | position=(9, -1, 0)
+    id=21 | position=(21, 0, 0)
+    id=210 | position=(10, -1, 0)
+    id=211 | position=(11, -1, 0)
+    id=212 | position=(12, -1, 0)
+    id=213 | position=(13, -1, 0)
+    id=214 | position=(14, -1, 0)
+    id=215 | position=(15, -1, 0)
+    id=216 | position=(16, -1, 0)
+    id=217 | position=(17, -1, 0)
+    id=218 | position=(18, -1, 0)
+    id=219 | position=(19, -1, 0)
+    id=22 | position=(22, 0, 0)
+    id=220 | position=(20, -1, 0)
+    id=221 | position=(21, -1, 0)
+    id=222 | position=(22, -1, 0)
+    id=3 | position=(3, 0, 0)
+    id=4 | position=(4, 0, 0)
+    id=5 | position=(5, 0, 0)
+    id=6 | position=(6, 0, 0)
+    id=7 | position=(7, 0, 0)
+    id=8 | position=(8, 0, 0)
+    id=9 | position=(9, 0, 0)
+  Edges:
+    from=0 | to=1
+    from=0 | to=100
+    from=0 | to=200
+    from=1 | to=101
+    from=1 | to=2
+    from=1 | to=201
+    from=10 | to=11
+    from=10 | to=110
+    from=10 | to=210
+    from=10 | to=9
+    from=102 | to=2
+    from=103 | to=3
+    from=104 | to=4
+    from=105 | to=5
+    from=106 | to=6
+    from=107 | to=7
+    from=108 | to=8
+    from=109 | to=9
+    from=11 | to=111
+    from=11 | to=12
+    from=11 | to=211
+    from=112 | to=12
+    from=113 | to=13
+    from=114 | to=14
+    from=115 | to=15
+    from=116 | to=16
+    from=117 | to=17
+    from=118 | to=18
+    from=119 | to=19
+    from=12 | to=13
+    from=12 | to=212
+    from=120 | to=20
+    from=121 | to=21
+    from=122 | to=22
+    from=13 | to=14
+    from=13 | to=213
+    from=14 | to=15
+    from=14 | to=214
+    from=15 | to=16
+    from=15 | to=215
+    from=16 | to=17
+    from=16 | to=216
+    from=17 | to=18
+    from=17 | to=217
+    from=18 | to=19
+    from=18 | to=218
+    from=19 | to=20
+    from=19 | to=219
+    from=2 | to=202
+    from=2 | to=3
+    from=20 | to=21
+    from=20 | to=220
+    from=203 | to=3
+    from=204 | to=4
+    from=205 | to=5
+    from=206 | to=6
+    from=207 | to=7
+    from=208 | to=8
+    from=209 | to=9
+    from=21 | to=22
+    from=21 | to=221
+    from=22 | to=222
+    from=3 | to=4
+    from=4 | to=5
+    from=5 | to=6
+    from=6 | to=7
+    from=7 | to=8
+    from=8 | to=9

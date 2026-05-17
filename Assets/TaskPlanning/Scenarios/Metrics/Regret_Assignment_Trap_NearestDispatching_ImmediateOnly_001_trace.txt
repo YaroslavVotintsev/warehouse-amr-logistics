@@ -1,0 +1,185 @@
+﻿TaskPlanning Dispatch Trace
+Run: Regret_Assignment_Trap_NearestDispatching_ImmediateOnly_001
+Scenario name: Regret_Assignment_Trap
+
+Chronological Events
+[0s] SCENARIO_STARTED
+  Scenario: Regret_Assignment_Trap
+  Total MES tasks: 2
+[0s] MES_SUBMISSION_COMPLETED
+  Scenario: Regret_Assignment_Trap
+[0s] MES_BATCH_RECEIVED
+  Task: RegretTrap_Flexible | pallet=Pallet_Flexible | workstation=113
+  Task: RegretTrap_Scarce | pallet=Pallet_Scarce | workstation=106
+[0s] DISPATCH_CYCLE #1
+  Algorithm: NearestDispatching
+  Future policy: ImmediateOnly
+  Pending tasks: RegretTrap_Flexible, RegretTrap_Scarce
+  Free AMRs: AMR_Backup, AMR_Key
+  Active interruptible AMRs: none
+  Soft reassignment candidates: none
+  Candidate costs:
+    AMR_Key -> RegretTrap_Flexible | pallet=Pallet_Flexible | loading=112 | workstation=113 | cost=12 | softReassignment=no
+    AMR_Key -> RegretTrap_Scarce | pallet=Pallet_Scarce | loading=107 | workstation=106 | cost=13 | softReassignment=no
+    AMR_Backup -> RegretTrap_Flexible | pallet=Pallet_Flexible | loading=112 | workstation=113 | cost=16 | softReassignment=no
+    AMR_Backup -> RegretTrap_Scarce | pallet=Pallet_Scarce | loading=107 | workstation=106 | cost=19 | softReassignment=no
+  Selected:
+    AMR_Key -> RegretTrap_Flexible | cost=12 | softReassignment=no | replaces=-
+    AMR_Backup -> RegretTrap_Scarce | cost=19 | softReassignment=no | replaces=-
+[0s] ASSIGNMENT_STARTED
+  Assignment: A-001
+  Type: Delivery
+  Task: RegretTrap_Flexible
+  AMR: AMR_Key
+  Pallet: Pallet_Flexible
+  Loading point: 112
+  Workstation: 113
+  Removal target: -
+  Cost: 12
+  Soft reassignment: no
+  Replaced task: -
+[0s] ASSIGNMENT_STARTED
+  Assignment: A-002
+  Type: Delivery
+  Task: RegretTrap_Scarce
+  AMR: AMR_Backup
+  Pallet: Pallet_Scarce
+  Loading point: 107
+  Workstation: 106
+  Removal target: -
+  Cost: 19
+  Soft reassignment: no
+  Replaced task: -
+[2.994s] ASSIGNMENT_PHASE
+  Task: RegretTrap_Flexible
+  AMR: AMR_Key
+  MovingToPallet -> Attaching
+[3.998s] ASSIGNMENT_ACTION
+  Task: RegretTrap_Flexible
+  AMR: AMR_Key
+  Action: Attach
+  Duration: 1 s
+[3.998s] ASSIGNMENT_PHASE
+  Task: RegretTrap_Flexible
+  AMR: AMR_Key
+  Attaching -> WaitingForLoadingAndWorkstationTurn
+[3.998s] ASSIGNMENT_QUEUE_WAIT
+  Task: RegretTrap_Flexible
+  AMR: AMR_Key
+  Loading-point wait: 0 s
+  Workstation wait: 0 s
+[4.002s] ASSIGNMENT_PHASE
+  Task: RegretTrap_Flexible
+  AMR: AMR_Key
+  WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+[8.565s] ASSIGNMENT_PHASE
+  Task: RegretTrap_Flexible
+  AMR: AMR_Key
+  MovingToLoading -> Loading
+[9.577s] ASSIGNMENT_ACTION
+  Task: RegretTrap_Flexible
+  AMR: AMR_Key
+  Action: Load
+  Duration: 1 s
+[9.577s] ASSIGNMENT_PHASE
+  Task: RegretTrap_Flexible
+  AMR: AMR_Key
+  Loading -> MovingToWorkstation
+[9.994s] ASSIGNMENT_PHASE
+  Task: RegretTrap_Scarce
+  AMR: AMR_Backup
+  MovingToPallet -> Attaching
+[10.999s] ASSIGNMENT_ACTION
+  Task: RegretTrap_Scarce
+  AMR: AMR_Backup
+  Action: Attach
+  Duration: 1 s
+[10.999s] ASSIGNMENT_PHASE
+  Task: RegretTrap_Scarce
+  AMR: AMR_Backup
+  Attaching -> WaitingForLoadingAndWorkstationTurn
+[10.999s] ASSIGNMENT_QUEUE_WAIT
+  Task: RegretTrap_Scarce
+  AMR: AMR_Backup
+  Loading-point wait: 0 s
+  Workstation wait: 0 s
+[11.003s] ASSIGNMENT_PHASE
+  Task: RegretTrap_Scarce
+  AMR: AMR_Backup
+  WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+[12.555s] ASSIGNMENT_PHASE
+  Task: RegretTrap_Flexible
+  AMR: AMR_Key
+  MovingToWorkstation -> DetachingAtWorkstation
+[13.557s] ASSIGNMENT_ACTION
+  Task: RegretTrap_Flexible
+  AMR: AMR_Key
+  Action: Detach
+  Duration: 1 s
+[13.557s] ASSIGNMENT_COMPLETED
+  Task: RegretTrap_Flexible
+  AMR: AMR_Key
+  Pallet: Pallet_Flexible
+[13.935s] ASSIGNMENT_PHASE
+  Task: RegretTrap_Scarce
+  AMR: AMR_Backup
+  MovingToLoading -> Loading
+[14.559s] MES_TASK_COMPLETED
+  Task: RegretTrap_Flexible
+  AMR: AMR_Key
+  Pallet: Pallet_Flexible
+[14.936s] ASSIGNMENT_ACTION
+  Task: RegretTrap_Scarce
+  AMR: AMR_Backup
+  Action: Load
+  Duration: 1 s
+[14.936s] ASSIGNMENT_PHASE
+  Task: RegretTrap_Scarce
+  AMR: AMR_Backup
+  Loading -> MovingToWorkstation
+[17.866s] ASSIGNMENT_PHASE
+  Task: RegretTrap_Scarce
+  AMR: AMR_Backup
+  MovingToWorkstation -> DetachingAtWorkstation
+[18.87s] ASSIGNMENT_ACTION
+  Task: RegretTrap_Scarce
+  AMR: AMR_Backup
+  Action: Detach
+  Duration: 1 s
+[18.87s] ASSIGNMENT_COMPLETED
+  Task: RegretTrap_Scarce
+  AMR: AMR_Backup
+  Pallet: Pallet_Scarce
+[19.87s] MES_TASK_COMPLETED
+  Task: RegretTrap_Scarce
+  AMR: AMR_Backup
+  Pallet: Pallet_Scarce
+
+Assignment Trace Summary
+# | type | task | pallet | amr | replaced task | replaced by | soft reassigned | enqueued | assigned | completed | total time | cost | loading wait | workstation wait | action time | travel distance | outcome
+1 | Delivery | RegretTrap_Flexible | Pallet_Flexible | AMR_Key | - | - | no | 0 | 0 | 13.557 | 13.557 s | 12 | 0 s | 0 s | 3 s | 8.995 units | completed
+2 | Delivery | RegretTrap_Scarce | Pallet_Scarce | AMR_Backup | - | - | no | 0 | 0 | 18.87 | 18.87 s | 19 | 0 s | 0 s | 3 s | 15.989 units | completed
+
+Assignment Phase Details
+A-001 / RegretTrap_Flexible / AMR_Key
+  2.994s: MovingToPallet -> Attaching
+  Action Attach: 1 s
+  3.998s: Attaching -> WaitingForLoadingAndWorkstationTurn
+  Queue wait: loading=0 s, workstation=0 s
+  4.002s: WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+  8.565s: MovingToLoading -> Loading
+  Action Load: 1 s
+  9.577s: Loading -> MovingToWorkstation
+  12.555s: MovingToWorkstation -> DetachingAtWorkstation
+  Action Detach: 1 s
+A-002 / RegretTrap_Scarce / AMR_Backup
+  9.994s: MovingToPallet -> Attaching
+  Action Attach: 1 s
+  10.999s: Attaching -> WaitingForLoadingAndWorkstationTurn
+  Queue wait: loading=0 s, workstation=0 s
+  11.003s: WaitingForLoadingAndWorkstationTurn -> MovingToLoading
+  13.935s: MovingToLoading -> Loading
+  Action Load: 1 s
+  14.936s: Loading -> MovingToWorkstation
+  17.866s: MovingToWorkstation -> DetachingAtWorkstation
+  Action Detach: 1 s

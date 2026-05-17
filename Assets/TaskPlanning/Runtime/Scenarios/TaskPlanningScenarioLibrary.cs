@@ -12,7 +12,8 @@ namespace TaskPlanning
                 FifoAssignmentTrap(),
                 FutureWaitTrap(),
                 FutureCapacityTrap(),
-                RollingHorizonCapacitySaturation()
+                RollingHorizonCapacitySaturation(),
+                RegretAssignmentTrap()
             };
         }
 
@@ -24,6 +25,7 @@ namespace TaskPlanning
                 TaskPlanningScenarioPreset.FutureWaitTrap => FutureWaitTrap(),
                 TaskPlanningScenarioPreset.FutureCapacityTrap => FutureCapacityTrap(),
                 TaskPlanningScenarioPreset.RollingHorizonCapacitySaturation => RollingHorizonCapacitySaturation(),
+                TaskPlanningScenarioPreset.RegretAssignmentTrap => RegretAssignmentTrap(),
                 _ => FifoAssignmentTrap()
             };
         }
@@ -147,6 +149,41 @@ namespace TaskPlanning
                     Task(1f, "Pallet_Target_B", "229", "CapacityTargetB"),
                     Task(1f, "Pallet_Target_C", "232", "CapacityTargetC"),
                     Task(1f, "Pallet_Target_D", "236", "CapacityTargetD")
+                });
+        }
+
+        public static TaskPlanningScenario RegretAssignmentTrap()
+        {
+            var graph = LongCorridorWithBays(length: 22);
+
+            return new TaskPlanningScenario(
+                "Regret Assignment Trap",
+                graph.Nodes,
+                graph.Edges,
+                new[]
+                {
+                    Amr("AMR_Key", 0, "210"),
+                    Amr("AMR_Backup", 1, "216")
+                },
+                new[]
+                {
+                    Pallet("Pallet_Flexible", "111", "113", attach: 1f, detach: 1f, load: 1f, unload: 1f),
+                    Pallet("Pallet_Scarce", "108", "106", attach: 1f, detach: 1f, load: 1f, unload: 1f)
+                },
+                new[]
+                {
+                    LoadingPoint("112", "112", "Pallet_Flexible"),
+                    LoadingPoint("107", "107", "Pallet_Scarce")
+                },
+                new[]
+                {
+                    Workstation("113", "113", "Pallet_Flexible"),
+                    Workstation("106", "106", "Pallet_Scarce")
+                },
+                new[]
+                {
+                    Task(0f, "Pallet_Flexible", "113", "RegretTrap_Flexible"),
+                    Task(0f, "Pallet_Scarce", "106", "RegretTrap_Scarce")
                 });
         }
 
