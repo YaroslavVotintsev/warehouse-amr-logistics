@@ -4,5 +4,6 @@ namespace TaskPlanning
     {
         FifoDispatching = 0,
         NearestDispatching = 1,
+        RegretDispatching = 2,
     }
 }

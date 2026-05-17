@@ -801,6 +801,8 @@ namespace TaskPlanning
             {
                 case TaskPlanningAlgorithmType.FifoDispatching:
                     return new FifoDispatching();
+                case TaskPlanningAlgorithmType.RegretDispatching:
+                    return new RegretDispatching();
                 case TaskPlanningAlgorithmType.NearestDispatching:
                 default:
                     return new NearestDispatching();

@@ -1,0 +1,81 @@
+﻿TaskPlanning Scenario Metrics
+Run: Rolling_Horizon_Capacity_Saturation_RegretDispatching_RollingHorizon_001
+Start timestamp: 2026-05-17 05:14:00
+Scenario name: Rolling_Horizon_Capacity_Saturation
+Total MES tasks: 5
+Completed MES tasks: 5
+Makespan: 75.834 s
+Average task completion time: 50.266 s
+Average loading-point queue wait: 0 s
+Average workstation queue wait: 0 s
+Soft reassignments: 0
+
+All AMRs total:
+Total:
+  Travel distance: 203.973 units
+  Busy/assigned time: 234.443 s
+  Idle/unassigned time: 68.893 s
+  Action time: 30 s
+  Loading-point queue wait time: 0 s
+  Workstation blocking wait time: 0 s
+  Utilization: 77.152%
+  Completed delivery assignments: 5
+  Completed removal assignments: 0
+
+All AMRs average:
+Average:
+  Travel distance: 50.993 units
+  Busy/assigned time: 58.611 s
+  Idle/unassigned time: 17.223 s
+  Action time: 7.5 s
+  Loading-point queue wait time: 0 s
+  Workstation blocking wait time: 0 s
+  Utilization: 77.152%
+  Completed delivery assignments: 1.25
+  Completed removal assignments: 0
+
+Per AMR
+AMR AMR_Future:
+  Travel distance: 14.991 units
+  Busy/assigned time: 26.694 s
+  Idle/unassigned time: 49.139 s
+  Action time: 12 s
+  Loading-point queue wait time: 0 s
+  Workstation blocking wait time: 0 s
+  Utilization: 35.611%
+  Completed delivery assignments: 2
+  Completed removal assignments: 0
+
+AMR AMR_Remote_A:
+  Travel distance: 67.996 units
+  Busy/assigned time: 73.827 s
+  Idle/unassigned time: 2.006 s
+  Action time: 6 s
+  Loading-point queue wait time: 0 s
+  Workstation blocking wait time: 0 s
+  Utilization: 97.563%
+  Completed delivery assignments: 1
+  Completed removal assignments: 0
+
+AMR AMR_Remote_B:
+  Travel distance: 62.99 units
+  Busy/assigned time: 69.456 s
+  Idle/unassigned time: 6.377 s
+  Action time: 6 s
+  Loading-point queue wait time: 0 s
+  Workstation blocking wait time: 0 s
+  Utilization: 91.003%
+  Completed delivery assignments: 1
+  Completed removal assignments: 0
+
+AMR AMR_Remote_C:
+  Travel distance: 57.995 units
+  Busy/assigned time: 64.464 s
+  Idle/unassigned time: 11.37 s
+  Action time: 6 s
+  Loading-point queue wait time: 0 s
+  Workstation blocking wait time: 0 s
+  Utilization: 84.432%
+  Completed delivery assignments: 1
+  Completed removal assignments: 0
+

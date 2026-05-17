@@ -8372,8 +8372,8 @@ MonoBehaviour:
       blocksPendingDeliveryMultiplier: 0.5
       agingWeight: 0
       maxAgingBonus: 0
-  enableSoftAmrReservations: 0
-  reassignmentCostImprovementPercent: 10
+  enableSoftAmrReservations: 1
+  reassignmentCostImprovementPercent: 25
   waitForFutureImprovementPercent: 10
   autoDiscoverSceneObjects: 1
   amrs:
