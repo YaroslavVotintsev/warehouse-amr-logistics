@@ -1,0 +1,135 @@
+﻿TaskPlanning Scenario Metrics
+Run: GridThroughputBenchmark_HungarianDispatching_RollingHorizon_SR_001
+Start timestamp: 2026-05-18 01:05:53
+Scenario name: Grid_Throughput_Benchmark
+Total MES tasks: 56
+Completed MES tasks: 56
+Makespan: 718.635 s
+Average task completion time: 236.069 s
+Average loading-point queue wait: 3.232 s
+Average workstation queue wait: 5.447 s
+Soft reassignments: 50
+
+All AMRs total:
+Total:
+  Travel distance: 3998.988 units
+  Busy/assigned time: 5022.767 s
+  Idle/unassigned time: 726.312 s
+  Action time: 361 s
+  Productive time: 4375.809 s
+  Loading-point queue wait time: 181.009 s
+  Workstation blocking wait time: 305.011 s
+  Utilization: 76.113%
+  Completed delivery assignments: 56
+  Completed removal assignments: 56
+
+All AMRs average:
+Average:
+  Travel distance: 499.874 units
+  Busy/assigned time: 627.846 s
+  Idle/unassigned time: 90.789 s
+  Action time: 45.125 s
+  Productive time: 546.976 s
+  Loading-point queue wait time: 22.626 s
+  Workstation blocking wait time: 38.126 s
+  Utilization: 76.113%
+  Completed delivery assignments: 7
+  Completed removal assignments: 7
+
+Per AMR
+AMR AMR_E1:
+  Travel distance: 433.039 units
+  Busy/assigned time: 621.743 s
+  Idle/unassigned time: 96.892 s
+  Action time: 32 s
+  Productive time: 417.919 s
+  Loading-point queue wait time: 18.869 s
+  Workstation blocking wait time: 108.851 s
+  Utilization: 58.155%
+  Completed delivery assignments: 5
+  Completed removal assignments: 6
+
+AMR AMR_E2:
+  Travel distance: 454.401 units
+  Busy/assigned time: 518.68 s
+  Idle/unassigned time: 199.955 s
+  Action time: 49 s
+  Productive time: 512.158 s
+  Loading-point queue wait time: 1.905 s
+  Workstation blocking wait time: 0 s
+  Utilization: 71.268%
+  Completed delivery assignments: 7
+  Completed removal assignments: 7
+
+AMR AMR_E3:
+  Travel distance: 530.714 units
+  Busy/assigned time: 618.492 s
+  Idle/unassigned time: 100.143 s
+  Action time: 42 s
+  Productive time: 580.165 s
+  Loading-point queue wait time: 10.721 s
+  Workstation blocking wait time: 14.582 s
+  Utilization: 80.732%
+  Completed delivery assignments: 7
+  Completed removal assignments: 7
+
+AMR AMR_E4:
+  Travel distance: 424.171 units
+  Busy/assigned time: 555.275 s
+  Idle/unassigned time: 163.36 s
+  Action time: 37 s
+  Productive time: 467.823 s
+  Loading-point queue wait time: 75.862 s
+  Workstation blocking wait time: 0 s
+  Utilization: 65.099%
+  Completed delivery assignments: 6
+  Completed removal assignments: 6
+
+AMR AMR_W1:
+  Travel distance: 519.363 units
+  Busy/assigned time: 668.471 s
+  Idle/unassigned time: 50.163 s
+  Action time: 49 s
+  Productive time: 581.022 s
+  Loading-point queue wait time: 17.943 s
+  Workstation blocking wait time: 75.772 s
+  Utilization: 80.851%
+  Completed delivery assignments: 8
+  Completed removal assignments: 7
+
+AMR AMR_W2:
+  Travel distance: 555.278 units
+  Busy/assigned time: 686.902 s
+  Idle/unassigned time: 31.733 s
+  Action time: 56 s
+  Productive time: 621.505 s
+  Loading-point queue wait time: 8.37 s
+  Workstation blocking wait time: 47.033 s
+  Utilization: 86.484%
+  Completed delivery assignments: 8
+  Completed removal assignments: 8
+
+AMR AMR_W3:
+  Travel distance: 528.798 units
+  Busy/assigned time: 676.511 s
+  Idle/unassigned time: 42.124 s
+  Action time: 51 s
+  Productive time: 588.181 s
+  Loading-point queue wait time: 35.468 s
+  Workstation blocking wait time: 13.034 s
+  Utilization: 81.847%
+  Completed delivery assignments: 8
+  Completed removal assignments: 8
+
+AMR AMR_W4:
+  Travel distance: 553.224 units
+  Busy/assigned time: 676.693 s
+  Idle/unassigned time: 41.942 s
+  Action time: 45 s
+  Productive time: 607.036 s
+  Loading-point queue wait time: 11.871 s
+  Workstation blocking wait time: 45.738 s
+  Utilization: 84.471%
+  Completed delivery assignments: 7
+  Completed removal assignments: 7
+

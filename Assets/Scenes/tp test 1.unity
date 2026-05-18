@@ -8008,8 +8008,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c857a05f5717449abb5f70f0c282a218, type: 3}
   m_Name: 
   m_EditorClassIdentifier: TaskPlanning::TaskPlanning.TaskScheduler
-  algorithm: 0
-  futureHandling: 0
+  algorithm: 3
+  futureHandling: 2
   rollingHorizon:
     horizonSeconds: 30
     maxWaves: 4
@@ -8017,7 +8017,7 @@ MonoBehaviour:
   coordinator: {fileID: 653921593}
   sceneGraph: {fileID: 653921591}
   arrivalDistance: 0.08
-  pendingRetryIntervalSeconds: 0.5
+  pendingRetryIntervalSeconds: 0.1
   costAmrSpeed: 1
   costWeights:
     serializedVersion: 1
@@ -8035,31 +8035,31 @@ MonoBehaviour:
     agingWeight: 1
     maxAgingBonus: 300
     delivery:
-      priorAssignmentEta: 1
-      amrToPalletEta: 1
+      priorAssignmentEta: 1.5
+      amrToPalletEta: 1.1
       attachTime: 1
-      loadingQueueEta: 1.5
-      palletToLoadingEta: 1
+      loadingQueueEta: 2
+      palletToLoadingEta: 1.1
       loadTime: 1
-      loadingToWorkstationEta: 1
+      loadingToWorkstationEta: 1.1
       detachTime: 1
-      blockedDeliveryBias: 100
-      agingWeight: 1
+      blockedDeliveryBias: 500
+      agingWeight: 0
       maxAgingBonus: 100
     removal:
-      priorAssignmentEta: 1
-      amrToPalletEta: 1
+      priorAssignmentEta: 1.5
+      amrToPalletEta: 1.1
       attachTime: 1
-      palletToParkingEta: 1
+      palletToParkingEta: 1.1
       detachTime: 1
       blocksPendingDeliveryMultiplier: 0.5
-      agingWeight: 1
+      agingWeight: 0
       maxAgingBonus: 300
-  enableSoftAmrReservations: 0
-  reassignmentCostImprovementPercent: 10
+  enableSoftAmrReservations: 1
+  reassignmentCostImprovementPercent: 5
   reassignmentTravelPenaltyWeight: 1
   waitForFutureImprovementPercent: 10
-  autoDiscoverSceneObjects: 0
+  autoDiscoverSceneObjects: 1
   amrs:
   - {fileID: 1969272485}
   - {fileID: 596316903}
@@ -8087,13 +8087,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: TaskPlanning::TaskPlanning.TaskPlanningDebugGizmos
   showAmrs: 1
-  showPallets: 0
+  showPallets: 1
   showLoadingPoints: 1
   showWorkstations: 1
-  amrLabelOffset: {x: 0, y: 0.28}
-  palletLabelOffset: {x: 0, y: 0.24}
-  loadingPointLabelOffset: {x: 0, y: 0.24}
-  workstationLabelOffset: {x: 0, y: 0.24}
+  amrLabelOffset: {x: 0.5, y: 0.2}
+  palletLabelOffset: {x: 0.5, y: -0.5}
+  loadingPointLabelOffset: {x: -1, y: 0.24}
+  workstationLabelOffset: {x: -1, y: 0.24}
 --- !u!4 &654918927
 Transform:
   m_ObjectHideFlags: 0

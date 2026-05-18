@@ -164,10 +164,14 @@ namespace TaskPlanning
 
             var taskSnapshot = _pendingTasks.ToArray();
             ReportInvalidDeliveryTaskConfigurations(taskSnapshot);
+            var dispatchableTasks = BuildDispatchableTaskSnapshot(taskSnapshot);
+            if (dispatchableTasks.Count == 0)
+                return;
+
             var evaluator = new TaskPlanningCostEvaluator(_distances, costWeights, costAmrSpeed, taskSnapshot, Time.time);
             var candidateAmrs = GetFreeDispatchCandidateAmrs();
             var softReassignmentOptions = BuildSoftReassignmentOptions(
-                taskSnapshot,
+                dispatchableTasks,
                 evaluator,
                 allowSoftReservations: algorithm != TaskPlanningAlgorithmType.FifoDispatching);
             if (candidateAmrs.Count == 0 && softReassignmentOptions.Count == 0)
@@ -175,7 +179,7 @@ namespace TaskPlanning
 
             var futureAvailabilities = GetFutureAvailabilities();
             var problem = new DispatchProblem(
-                taskSnapshot,
+                dispatchableTasks,
                 candidateAmrs,
                 loadingPoints,
                 _distances,
@@ -612,6 +616,30 @@ namespace TaskPlanning
             }
 
             return total;
+        }
+
+        private IReadOnlyList<ITaskPlanningTask> BuildDispatchableTaskSnapshot(
+            IReadOnlyList<ITaskPlanningTask> taskSnapshot)
+        {
+            var dispatchable = new List<ITaskPlanningTask>();
+            foreach (var task in taskSnapshot)
+            {
+                if (task == null)
+                    continue;
+
+                if (task is DeliveryPlanningTask delivery && IsDeliveryBlockedByWorkstationPallet(delivery))
+                    continue;
+
+                dispatchable.Add(task);
+            }
+
+            return dispatchable;
+        }
+
+        private static bool IsDeliveryBlockedByWorkstationPallet(DeliveryPlanningTask delivery)
+        {
+            return delivery?.Workstation != null &&
+                delivery.Workstation.HasBlockingPalletFor(delivery.Pallet);
         }
 
         private List<TaskPlanningAmr> GetFreeDispatchCandidateAmrs()

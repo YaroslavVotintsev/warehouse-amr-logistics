@@ -122,9 +122,91 @@ namespace TaskPlanning.Tests
             }
         }
 
+        [Test]
+        public void SchedulerDoesNotDispatchDeliveryWhileTargetWorkstationIsPhysicallyBlocked()
+        {
+            var scheduler = TaskPlanningTestHelpers.CreateComponent<TaskScheduler>("BlockedDelivery_Scheduler");
+            var workstationNode = TaskPlanningTestHelpers.CreateNode("BlockedDelivery_WorkstationNode", Vector2.zero);
+            var parkingNode = TaskPlanningTestHelpers.CreateNode("BlockedDelivery_ParkingNode", new Vector2(2f, 0f));
+            var incoming = TaskPlanningTestHelpers.CreatePallet("BlockedDelivery_Incoming");
+            var blocking = TaskPlanningTestHelpers.CreatePallet("BlockedDelivery_Blocking", workstationNode);
+            var workstation = TaskPlanningTestHelpers.CreateWorkstation("BlockedDelivery_Workstation", workstationNode, incoming);
+            var delivery = new DeliveryPlanningTask("D-Blocked", incoming, workstation, 0f);
+
+            try
+            {
+                TaskPlanningTestHelpers.SetParkingNode(blocking, parkingNode);
+                blocking.MarkAwaitingRemoval();
+
+                var blockedSnapshot = DispatchableTasks(scheduler, delivery);
+                Assert.That(blockedSnapshot, Is.Empty);
+
+                blocking.DetachAt(parkingNode);
+                blocking.MarkUnloadedAvailable();
+
+                var unblockedSnapshot = DispatchableTasks(scheduler, delivery);
+                Assert.That(unblockedSnapshot.Count, Is.EqualTo(1));
+                Assert.That(unblockedSnapshot[0], Is.SameAs(delivery));
+            }
+            finally
+            {
+                TaskPlanningTestHelpers.Destroy(
+                    workstation.gameObject,
+                    blocking.gameObject,
+                    incoming.gameObject,
+                    parkingNode.gameObject,
+                    workstationNode.gameObject,
+                    scheduler.gameObject);
+            }
+        }
+
+        [Test]
+        public void SchedulerKeepsRemovalDispatchableWhenDeliveryToSameWorkstationIsBlocked()
+        {
+            var scheduler = TaskPlanningTestHelpers.CreateComponent<TaskScheduler>("BlockedDeliveryRemoval_Scheduler");
+            var workstationNode = TaskPlanningTestHelpers.CreateNode("BlockedDeliveryRemoval_WorkstationNode", Vector2.zero);
+            var parkingNode = TaskPlanningTestHelpers.CreateNode("BlockedDeliveryRemoval_ParkingNode", new Vector2(2f, 0f));
+            var incoming = TaskPlanningTestHelpers.CreatePallet("BlockedDeliveryRemoval_Incoming");
+            var blocking = TaskPlanningTestHelpers.CreatePallet("BlockedDeliveryRemoval_Blocking", workstationNode);
+            var workstation = TaskPlanningTestHelpers.CreateWorkstation("BlockedDeliveryRemoval_Workstation", workstationNode, incoming);
+            var delivery = new DeliveryPlanningTask("D-Blocked", incoming, workstation, 0f);
+            var removal = new PalletRemovalPlanningTask("R-Blocking", blocking, workstation, 0f);
+
+            try
+            {
+                TaskPlanningTestHelpers.SetParkingNode(blocking, parkingNode);
+                blocking.MarkAwaitingRemoval();
+
+                var dispatchable = DispatchableTasks(scheduler, delivery, removal);
+
+                Assert.That(dispatchable.Count, Is.EqualTo(1));
+                Assert.That(dispatchable[0], Is.SameAs(removal));
+            }
+            finally
+            {
+                TaskPlanningTestHelpers.Destroy(
+                    workstation.gameObject,
+                    blocking.gameObject,
+                    incoming.gameObject,
+                    parkingNode.gameObject,
+                    workstationNode.gameObject,
+                    scheduler.gameObject);
+            }
+        }
+
         private static List<ITaskPlanningTask> PendingTasks(TaskScheduler scheduler)
         {
             return TaskPlanningTestHelpers.GetField<List<ITaskPlanningTask>>(scheduler, "_pendingTasks");
+        }
+
+        private static IReadOnlyList<ITaskPlanningTask> DispatchableTasks(
+            TaskScheduler scheduler,
+            params ITaskPlanningTask[] tasks)
+        {
+            return (IReadOnlyList<ITaskPlanningTask>)TaskPlanningTestHelpers.InvokePrivate(
+                scheduler,
+                "BuildDispatchableTaskSnapshot",
+                new object[] { tasks });
         }
     }
 }

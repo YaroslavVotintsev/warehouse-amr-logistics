@@ -1,0 +1,572 @@
+﻿TaskPlanning Scenario Configuration
+Run: GridThroughputBenchmark_NearestDispatching_ImmediateOnly_SR_001
+Start timestamp: 2026-05-18 00:45:16
+Scenario name: Grid_Throughput_Benchmark
+
+MES
+  Automation mode: ScheduledScenario
+  Scheduled scenario: Grid_Throughput_Benchmark
+  Start scheduled scenario on play: yes
+  Submit same timestamp as batch: yes
+  Scheduled scenario start delay: 0 s
+  Scheduled tasks:
+    0 s | GridWave00_A1_E0 | pallet=Pallet_A1 | workstation=9300
+    0 s | GridWave00_B1_W1 | pallet=Pallet_B1 | workstation=9201
+    0 s | GridWave00_C1_E2 | pallet=Pallet_C1 | workstation=9302
+    0 s | GridWave00_D1_W3 | pallet=Pallet_D1 | workstation=9203
+    0 s | GridWave00_A2_N6 | pallet=Pallet_A2 | workstation=9006
+    0 s | GridWave00_D2_S6 | pallet=Pallet_D2 | workstation=9106
+    15 s | GridWave15_B2_W5 | pallet=Pallet_B2 | workstation=9205
+    15 s | GridWave15_C2_E4 | pallet=Pallet_C2 | workstation=9304
+    15 s | GridWave15_A3_E6 | pallet=Pallet_A3 | workstation=9306
+    15 s | GridWave15_D3_W7 | pallet=Pallet_D3 | workstation=9207
+    28 s | GridWave28_A4_E8 | pallet=Pallet_A4 | workstation=9308
+    28 s | GridWave28_B3_W8 | pallet=Pallet_B3 | workstation=9208
+    28 s | GridWave28_C3_N6 | pallet=Pallet_C3 | workstation=9006
+    28 s | GridWave28_D4_S6 | pallet=Pallet_D4 | workstation=9106
+    28 s | GridWave28_B4_W1 | pallet=Pallet_B4 | workstation=9201
+    45 s | GridWave45_A1_E4 | pallet=Pallet_A1 | workstation=9304
+    45 s | GridWave45_C4_E6 | pallet=Pallet_C4 | workstation=9306
+    45 s | GridWave45_B1_W5 | pallet=Pallet_B1 | workstation=9205
+    45 s | GridWave45_D1_W8 | pallet=Pallet_D1 | workstation=9208
+    45 s | GridWave45_C1_E8 | pallet=Pallet_C1 | workstation=9308
+    45 s | GridWave45_A2_W3 | pallet=Pallet_A2 | workstation=9203
+    65 s | GridWave65_B2_E0 | pallet=Pallet_B2 | workstation=9300
+    65 s | GridWave65_D2_W1 | pallet=Pallet_D2 | workstation=9201
+    65 s | GridWave65_A3_E2 | pallet=Pallet_A3 | workstation=9302
+    65 s | GridWave65_C2_W7 | pallet=Pallet_C2 | workstation=9207
+    82 s | GridWave82_C3_E4 | pallet=Pallet_C3 | workstation=9304
+    82 s | GridWave82_A4_W5 | pallet=Pallet_A4 | workstation=9205
+    82 s | GridWave82_B3_E6 | pallet=Pallet_B3 | workstation=9306
+    82 s | GridWave82_D3_W3 | pallet=Pallet_D3 | workstation=9203
+    82 s | GridWave82_C4_E8 | pallet=Pallet_C4 | workstation=9308
+    82 s | GridWave82_B4_N6 | pallet=Pallet_B4 | workstation=9006
+    105 s | GridWave105_A1_S6 | pallet=Pallet_A1 | workstation=9106
+    105 s | GridWave105_B1_W8 | pallet=Pallet_B1 | workstation=9208
+    105 s | GridWave105_D4_E2 | pallet=Pallet_D4 | workstation=9302
+    105 s | GridWave105_C1_W1 | pallet=Pallet_C1 | workstation=9201
+    105 s | GridWave105_A2_E0 | pallet=Pallet_A2 | workstation=9300
+    128 s | GridWave128_D1_N6 | pallet=Pallet_D1 | workstation=9006
+    128 s | GridWave128_C2_E4 | pallet=Pallet_C2 | workstation=9304
+    128 s | GridWave128_B2_W3 | pallet=Pallet_B2 | workstation=9203
+    128 s | GridWave128_A3_E8 | pallet=Pallet_A3 | workstation=9308
+    128 s | GridWave128_D2_W5 | pallet=Pallet_D2 | workstation=9205
+    128 s | GridWave128_C3_S6 | pallet=Pallet_C3 | workstation=9106
+    150 s | GridWave150_B3_E0 | pallet=Pallet_B3 | workstation=9300
+    150 s | GridWave150_A4_W7 | pallet=Pallet_A4 | workstation=9207
+    150 s | GridWave150_C4_E6 | pallet=Pallet_C4 | workstation=9306
+    150 s | GridWave150_D3_W8 | pallet=Pallet_D3 | workstation=9208
+    172 s | GridWave172_A1_E2 | pallet=Pallet_A1 | workstation=9302
+    172 s | GridWave172_B4_W1 | pallet=Pallet_B4 | workstation=9201
+    172 s | GridWave172_C1_E4 | pallet=Pallet_C1 | workstation=9304
+    172 s | GridWave172_D4_W5 | pallet=Pallet_D4 | workstation=9205
+    172 s | GridWave172_B1_S6 | pallet=Pallet_B1 | workstation=9106
+    200 s | GridWave200_A2_E8 | pallet=Pallet_A2 | workstation=9308
+    200 s | GridWave200_C2_W3 | pallet=Pallet_C2 | workstation=9203
+    200 s | GridWave200_D1_N6 | pallet=Pallet_D1 | workstation=9006
+    200 s | GridWave200_A3_E0 | pallet=Pallet_A3 | workstation=9300
+    200 s | GridWave200_B2_W7 | pallet=Pallet_B2 | workstation=9207
+
+Scheduler
+  Dispatcher algorithm: NearestDispatching
+  Future handling policy: ImmediateOnly
+  Soft AMR reservations: yes
+  Reassignment improvement threshold: 5%
+  Reassignment travel penalty weight: 1
+  Wait-for-future improvement threshold: 10%
+  AMR speed: 1
+  Pending retry interval: 0.1 s
+  Arrival distance: 0.08 units
+  Rolling Horizon:
+    Horizon seconds: 30 s
+    Max waves: 4
+    Wait improvement percent: 10%
+  Cost weights:
+    Delivery:
+      priorAssignmentEta: 1
+      amrToPalletEta: 1
+      attachTime: 1
+      loadingQueueEta: 1.5
+      palletToLoadingEta: 1
+      loadTime: 1
+      loadingToWorkstationEta: 1
+      detachTime: 1
+      blockedDeliveryBias: 500
+      agingWeight: 1
+      maxAgingBonus: 100
+    Removal:
+      priorAssignmentEta: 1
+      amrToPalletEta: 1
+      attachTime: 1
+      palletToParkingEta: 1
+      detachTime: 1
+      blocksPendingDeliveryMultiplier: 0.1
+      agingWeight: 1
+      maxAgingBonus: 300
+
+Scene Objects
+  AMRs:
+    AMR_E1 | startPosition=(25.5, 2, -0.1)
+    AMR_E2 | startPosition=(25.5, 6, -0.1)
+    AMR_E3 | startPosition=(25.5, 10, -0.1)
+    AMR_E4 | startPosition=(25.5, 14, -0.1)
+    AMR_W1 | startPosition=(-1.5, 0, -0.1)
+    AMR_W2 | startPosition=(-1.5, 4, -0.1)
+    AMR_W3 | startPosition=(-1.5, 8, -0.1)
+    AMR_W4 | startPosition=(-1.5, 12, -0.1)
+  Pallets / Kits:
+    Pallet_A1 | currentNode=9000 | parkingNode=9000 | attach=1 s | detach=1 s | load=2 s | unload=2 s
+    Pallet_A2 | currentNode=9002 | parkingNode=9002 | attach=1 s | detach=1 s | load=2 s | unload=2 s
+    Pallet_A3 | currentNode=9003 | parkingNode=9003 | attach=1 s | detach=1 s | load=3 s | unload=2 s
+    Pallet_A4 | currentNode=9004 | parkingNode=9004 | attach=1 s | detach=1 s | load=2 s | unload=3 s
+    Pallet_B1 | currentNode=9008 | parkingNode=9008 | attach=1 s | detach=1 s | load=3 s | unload=2 s
+    Pallet_B2 | currentNode=9009 | parkingNode=9009 | attach=1 s | detach=1 s | load=2 s | unload=2 s
+    Pallet_B3 | currentNode=9010 | parkingNode=9010 | attach=1 s | detach=1 s | load=3 s | unload=3 s
+    Pallet_B4 | currentNode=9012 | parkingNode=9012 | attach=1 s | detach=1 s | load=2 s | unload=2 s
+    Pallet_C1 | currentNode=9100 | parkingNode=9100 | attach=1 s | detach=1 s | load=2 s | unload=2 s
+    Pallet_C2 | currentNode=9102 | parkingNode=9102 | attach=1 s | detach=1 s | load=3 s | unload=2 s
+    Pallet_C3 | currentNode=9103 | parkingNode=9103 | attach=1 s | detach=1 s | load=2 s | unload=3 s
+    Pallet_C4 | currentNode=9104 | parkingNode=9104 | attach=1 s | detach=1 s | load=3 s | unload=2 s
+    Pallet_D1 | currentNode=9108 | parkingNode=9108 | attach=1 s | detach=1 s | load=3 s | unload=3 s
+    Pallet_D2 | currentNode=9109 | parkingNode=9109 | attach=1 s | detach=1 s | load=2 s | unload=2 s
+    Pallet_D3 | currentNode=9110 | parkingNode=9110 | attach=1 s | detach=1 s | load=3 s | unload=2 s
+    Pallet_D4 | currentNode=9112 | parkingNode=9112 | attach=1 s | detach=1 s | load=2 s | unload=3 s
+  Loading Points:
+    9001 | node=9001 | acceptedPallets=Pallet_A1, Pallet_A2, Pallet_A3, Pallet_A4
+    9011 | node=9011 | acceptedPallets=Pallet_B1, Pallet_B2, Pallet_B3, Pallet_B4
+    9101 | node=9101 | acceptedPallets=Pallet_C1, Pallet_C2, Pallet_C3, Pallet_C4
+    9111 | node=9111 | acceptedPallets=Pallet_D1, Pallet_D2, Pallet_D3, Pallet_D4
+  Workstations:
+    9006 | node=9006 | acceptedPallets=Pallet_A1, Pallet_A2, Pallet_A3, Pallet_A4, Pallet_B1, Pallet_B2, Pallet_B3, Pallet_B4, Pallet_C1, Pallet_C2, Pallet_C3, Pallet_C4, Pallet_D1, Pallet_D2, Pallet_D3, Pallet_D4
+    9106 | node=9106 | acceptedPallets=Pallet_A1, Pallet_A2, Pallet_A3, Pallet_A4, Pallet_B1, Pallet_B2, Pallet_B3, Pallet_B4, Pallet_C1, Pallet_C2, Pallet_C3, Pallet_C4, Pallet_D1, Pallet_D2, Pallet_D3, Pallet_D4
+    9201 | node=9201 | acceptedPallets=Pallet_A1, Pallet_A2, Pallet_A3, Pallet_A4, Pallet_B1, Pallet_B2, Pallet_B3, Pallet_B4, Pallet_C1, Pallet_C2, Pallet_C3, Pallet_C4, Pallet_D1, Pallet_D2, Pallet_D3, Pallet_D4
+    9203 | node=9203 | acceptedPallets=Pallet_A1, Pallet_A2, Pallet_A3, Pallet_A4, Pallet_B1, Pallet_B2, Pallet_B3, Pallet_B4, Pallet_C1, Pallet_C2, Pallet_C3, Pallet_C4, Pallet_D1, Pallet_D2, Pallet_D3, Pallet_D4
+    9205 | node=9205 | acceptedPallets=Pallet_A1, Pallet_A2, Pallet_A3, Pallet_A4, Pallet_B1, Pallet_B2, Pallet_B3, Pallet_B4, Pallet_C1, Pallet_C2, Pallet_C3, Pallet_C4, Pallet_D1, Pallet_D2, Pallet_D3, Pallet_D4
+    9207 | node=9207 | acceptedPallets=Pallet_A1, Pallet_A2, Pallet_A3, Pallet_A4, Pallet_B1, Pallet_B2, Pallet_B3, Pallet_B4, Pallet_C1, Pallet_C2, Pallet_C3, Pallet_C4, Pallet_D1, Pallet_D2, Pallet_D3, Pallet_D4
+    9208 | node=9208 | acceptedPallets=Pallet_A1, Pallet_A2, Pallet_A3, Pallet_A4, Pallet_B1, Pallet_B2, Pallet_B3, Pallet_B4, Pallet_C1, Pallet_C2, Pallet_C3, Pallet_C4, Pallet_D1, Pallet_D2, Pallet_D3, Pallet_D4
+    9300 | node=9300 | acceptedPallets=Pallet_A1, Pallet_A2, Pallet_A3, Pallet_A4, Pallet_B1, Pallet_B2, Pallet_B3, Pallet_B4, Pallet_C1, Pallet_C2, Pallet_C3, Pallet_C4, Pallet_D1, Pallet_D2, Pallet_D3, Pallet_D4
+    9302 | node=9302 | acceptedPallets=Pallet_A1, Pallet_A2, Pallet_A3, Pallet_A4, Pallet_B1, Pallet_B2, Pallet_B3, Pallet_B4, Pallet_C1, Pallet_C2, Pallet_C3, Pallet_C4, Pallet_D1, Pallet_D2, Pallet_D3, Pallet_D4
+    9304 | node=9304 | acceptedPallets=Pallet_A1, Pallet_A2, Pallet_A3, Pallet_A4, Pallet_B1, Pallet_B2, Pallet_B3, Pallet_B4, Pallet_C1, Pallet_C2, Pallet_C3, Pallet_C4, Pallet_D1, Pallet_D2, Pallet_D3, Pallet_D4
+    9306 | node=9306 | acceptedPallets=Pallet_A1, Pallet_A2, Pallet_A3, Pallet_A4, Pallet_B1, Pallet_B2, Pallet_B3, Pallet_B4, Pallet_C1, Pallet_C2, Pallet_C3, Pallet_C4, Pallet_D1, Pallet_D2, Pallet_D3, Pallet_D4
+    9308 | node=9308 | acceptedPallets=Pallet_A1, Pallet_A2, Pallet_A3, Pallet_A4, Pallet_B1, Pallet_B2, Pallet_B3, Pallet_B4, Pallet_C1, Pallet_C2, Pallet_C3, Pallet_C4, Pallet_D1, Pallet_D2, Pallet_D3, Pallet_D4
+
+Roadmap Graph
+  Nodes:
+    id=0 | position=(0, 0, 0)
+    id=1 | position=(2, 0, 0)
+    id=10 | position=(20, 0, 0)
+    id=100 | position=(0, 2, 0)
+    id=101 | position=(2, 2, 0)
+    id=102 | position=(4, 2, 0)
+    id=103 | position=(6, 2, 0)
+    id=104 | position=(8, 2, 0)
+    id=105 | position=(10, 2, 0)
+    id=106 | position=(12, 2, 0)
+    id=107 | position=(14, 2, 0)
+    id=108 | position=(16, 2, 0)
+    id=109 | position=(18, 2, 0)
+    id=11 | position=(22, 0, 0)
+    id=110 | position=(20, 2, 0)
+    id=111 | position=(22, 2, 0)
+    id=112 | position=(24, 2, 0)
+    id=12 | position=(24, 0, 0)
+    id=2 | position=(4, 0, 0)
+    id=200 | position=(0, 4, 0)
+    id=201 | position=(2, 4, 0)
+    id=202 | position=(4, 4, 0)
+    id=203 | position=(6, 4, 0)
+    id=204 | position=(8, 4, 0)
+    id=205 | position=(10, 4, 0)
+    id=206 | position=(12, 4, 0)
+    id=207 | position=(14, 4, 0)
+    id=208 | position=(16, 4, 0)
+    id=209 | position=(18, 4, 0)
+    id=210 | position=(20, 4, 0)
+    id=211 | position=(22, 4, 0)
+    id=212 | position=(24, 4, 0)
+    id=3 | position=(6, 0, 0)
+    id=300 | position=(0, 6, 0)
+    id=301 | position=(2, 6, 0)
+    id=302 | position=(4, 6, 0)
+    id=303 | position=(6, 6, 0)
+    id=304 | position=(8, 6, 0)
+    id=305 | position=(10, 6, 0)
+    id=306 | position=(12, 6, 0)
+    id=307 | position=(14, 6, 0)
+    id=308 | position=(16, 6, 0)
+    id=309 | position=(18, 6, 0)
+    id=310 | position=(20, 6, 0)
+    id=311 | position=(22, 6, 0)
+    id=312 | position=(24, 6, 0)
+    id=4 | position=(8, 0, 0)
+    id=400 | position=(0, 8, 0)
+    id=401 | position=(2, 8, 0)
+    id=402 | position=(4, 8, 0)
+    id=403 | position=(6, 8, 0)
+    id=404 | position=(8, 8, 0)
+    id=405 | position=(10, 8, 0)
+    id=406 | position=(12, 8, 0)
+    id=407 | position=(14, 8, 0)
+    id=408 | position=(16, 8, 0)
+    id=409 | position=(18, 8, 0)
+    id=410 | position=(20, 8, 0)
+    id=411 | position=(22, 8, 0)
+    id=412 | position=(24, 8, 0)
+    id=5 | position=(10, 0, 0)
+    id=500 | position=(0, 10, 0)
+    id=501 | position=(2, 10, 0)
+    id=502 | position=(4, 10, 0)
+    id=503 | position=(6, 10, 0)
+    id=504 | position=(8, 10, 0)
+    id=505 | position=(10, 10, 0)
+    id=506 | position=(12, 10, 0)
+    id=507 | position=(14, 10, 0)
+    id=508 | position=(16, 10, 0)
+    id=509 | position=(18, 10, 0)
+    id=510 | position=(20, 10, 0)
+    id=511 | position=(22, 10, 0)
+    id=512 | position=(24, 10, 0)
+    id=6 | position=(12, 0, 0)
+    id=600 | position=(0, 12, 0)
+    id=601 | position=(2, 12, 0)
+    id=602 | position=(4, 12, 0)
+    id=603 | position=(6, 12, 0)
+    id=604 | position=(8, 12, 0)
+    id=605 | position=(10, 12, 0)
+    id=606 | position=(12, 12, 0)
+    id=607 | position=(14, 12, 0)
+    id=608 | position=(16, 12, 0)
+    id=609 | position=(18, 12, 0)
+    id=610 | position=(20, 12, 0)
+    id=611 | position=(22, 12, 0)
+    id=612 | position=(24, 12, 0)
+    id=7 | position=(14, 0, 0)
+    id=700 | position=(0, 14, 0)
+    id=701 | position=(2, 14, 0)
+    id=702 | position=(4, 14, 0)
+    id=703 | position=(6, 14, 0)
+    id=704 | position=(8, 14, 0)
+    id=705 | position=(10, 14, 0)
+    id=706 | position=(12, 14, 0)
+    id=707 | position=(14, 14, 0)
+    id=708 | position=(16, 14, 0)
+    id=709 | position=(18, 14, 0)
+    id=710 | position=(20, 14, 0)
+    id=711 | position=(22, 14, 0)
+    id=712 | position=(24, 14, 0)
+    id=8 | position=(16, 0, 0)
+    id=800 | position=(0, 16, 0)
+    id=801 | position=(2, 16, 0)
+    id=802 | position=(4, 16, 0)
+    id=803 | position=(6, 16, 0)
+    id=804 | position=(8, 16, 0)
+    id=805 | position=(10, 16, 0)
+    id=806 | position=(12, 16, 0)
+    id=807 | position=(14, 16, 0)
+    id=808 | position=(16, 16, 0)
+    id=809 | position=(18, 16, 0)
+    id=810 | position=(20, 16, 0)
+    id=811 | position=(22, 16, 0)
+    id=812 | position=(24, 16, 0)
+    id=9 | position=(18, 0, 0)
+    id=9000 | position=(0, 17.5, 0)
+    id=9001 | position=(2, 17.5, 0)
+    id=9002 | position=(4, 17.5, 0)
+    id=9003 | position=(6, 17.5, 0)
+    id=9004 | position=(8, 17.5, 0)
+    id=9005 | position=(10, 17.5, 0)
+    id=9006 | position=(12, 17.5, 0)
+    id=9007 | position=(14, 17.5, 0)
+    id=9008 | position=(16, 17.5, 0)
+    id=9009 | position=(18, 17.5, 0)
+    id=9010 | position=(20, 17.5, 0)
+    id=9011 | position=(22, 17.5, 0)
+    id=9012 | position=(24, 17.5, 0)
+    id=9100 | position=(0, -1.5, 0)
+    id=9101 | position=(2, -1.5, 0)
+    id=9102 | position=(4, -1.5, 0)
+    id=9103 | position=(6, -1.5, 0)
+    id=9104 | position=(8, -1.5, 0)
+    id=9105 | position=(10, -1.5, 0)
+    id=9106 | position=(12, -1.5, 0)
+    id=9107 | position=(14, -1.5, 0)
+    id=9108 | position=(16, -1.5, 0)
+    id=9109 | position=(18, -1.5, 0)
+    id=9110 | position=(20, -1.5, 0)
+    id=9111 | position=(22, -1.5, 0)
+    id=9112 | position=(24, -1.5, 0)
+    id=9200 | position=(-1.5, 0, 0)
+    id=9201 | position=(-1.5, 2, 0)
+    id=9202 | position=(-1.5, 4, 0)
+    id=9203 | position=(-1.5, 6, 0)
+    id=9204 | position=(-1.5, 8, 0)
+    id=9205 | position=(-1.5, 10, 0)
+    id=9206 | position=(-1.5, 12, 0)
+    id=9207 | position=(-1.5, 14, 0)
+    id=9208 | position=(-1.5, 16, 0)
+    id=9300 | position=(25.5, 0, 0)
+    id=9301 | position=(25.5, 2, 0)
+    id=9302 | position=(25.5, 4, 0)
+    id=9303 | position=(25.5, 6, 0)
+    id=9304 | position=(25.5, 8, 0)
+    id=9305 | position=(25.5, 10, 0)
+    id=9306 | position=(25.5, 12, 0)
+    id=9307 | position=(25.5, 14, 0)
+    id=9308 | position=(25.5, 16, 0)
+  Edges:
+    from=0 | to=1
+    from=0 | to=100
+    from=0 | to=9100
+    from=0 | to=9200
+    from=1 | to=101
+    from=1 | to=2
+    from=1 | to=9101
+    from=10 | to=11
+    from=10 | to=110
+    from=10 | to=9
+    from=10 | to=9110
+    from=100 | to=101
+    from=100 | to=200
+    from=100 | to=9201
+    from=101 | to=102
+    from=101 | to=201
+    from=102 | to=103
+    from=102 | to=2
+    from=102 | to=202
+    from=103 | to=104
+    from=103 | to=203
+    from=103 | to=3
+    from=104 | to=105
+    from=104 | to=204
+    from=104 | to=4
+    from=105 | to=106
+    from=105 | to=205
+    from=105 | to=5
+    from=106 | to=107
+    from=106 | to=206
+    from=106 | to=6
+    from=107 | to=108
+    from=107 | to=207
+    from=107 | to=7
+    from=108 | to=109
+    from=108 | to=208
+    from=108 | to=8
+    from=109 | to=110
+    from=109 | to=209
+    from=109 | to=9
+    from=11 | to=111
+    from=11 | to=12
+    from=11 | to=9111
+    from=110 | to=111
+    from=110 | to=210
+    from=111 | to=112
+    from=111 | to=211
+    from=112 | to=12
+    from=112 | to=212
+    from=112 | to=9301
+    from=12 | to=9112
+    from=12 | to=9300
+    from=2 | to=3
+    from=2 | to=9102
+    from=200 | to=201
+    from=200 | to=300
+    from=200 | to=9202
+    from=201 | to=202
+    from=201 | to=301
+    from=202 | to=203
+    from=202 | to=302
+    from=203 | to=204
+    from=203 | to=303
+    from=204 | to=205
+    from=204 | to=304
+    from=205 | to=206
+    from=205 | to=305
+    from=206 | to=207
+    from=206 | to=306
+    from=207 | to=208
+    from=207 | to=307
+    from=208 | to=209
+    from=208 | to=308
+    from=209 | to=210
+    from=209 | to=309
+    from=210 | to=211
+    from=210 | to=310
+    from=211 | to=212
+    from=211 | to=311
+    from=212 | to=312
+    from=212 | to=9302
+    from=3 | to=4
+    from=3 | to=9103
+    from=300 | to=301
+    from=300 | to=400
+    from=300 | to=9203
+    from=301 | to=302
+    from=301 | to=401
+    from=302 | to=303
+    from=302 | to=402
+    from=303 | to=304
+    from=303 | to=403
+    from=304 | to=305
+    from=304 | to=404
+    from=305 | to=306
+    from=305 | to=405
+    from=306 | to=307
+    from=306 | to=406
+    from=307 | to=308
+    from=307 | to=407
+    from=308 | to=309
+    from=308 | to=408
+    from=309 | to=310
+    from=309 | to=409
+    from=310 | to=311
+    from=310 | to=410
+    from=311 | to=312
+    from=311 | to=411
+    from=312 | to=412
+    from=312 | to=9303
+    from=4 | to=5
+    from=4 | to=9104
+    from=400 | to=401
+    from=400 | to=500
+    from=400 | to=9204
+    from=401 | to=402
+    from=401 | to=501
+    from=402 | to=403
+    from=402 | to=502
+    from=403 | to=404
+    from=403 | to=503
+    from=404 | to=405
+    from=404 | to=504
+    from=405 | to=406
+    from=405 | to=505
+    from=406 | to=407
+    from=406 | to=506
+    from=407 | to=408
+    from=407 | to=507
+    from=408 | to=409
+    from=408 | to=508
+    from=409 | to=410
+    from=409 | to=509
+    from=410 | to=411
+    from=410 | to=510
+    from=411 | to=412
+    from=411 | to=511
+    from=412 | to=512
+    from=412 | to=9304
+    from=5 | to=6
+    from=5 | to=9105
+    from=500 | to=501
+    from=500 | to=600
+    from=500 | to=9205
+    from=501 | to=502
+    from=501 | to=601
+    from=502 | to=503
+    from=502 | to=602
+    from=503 | to=504
+    from=503 | to=603
+    from=504 | to=505
+    from=504 | to=604
+    from=505 | to=506
+    from=505 | to=605
+    from=506 | to=507
+    from=506 | to=606
+    from=507 | to=508
+    from=507 | to=607
+    from=508 | to=509
+    from=508 | to=608
+    from=509 | to=510
+    from=509 | to=609
+    from=510 | to=511
+    from=510 | to=610
+    from=511 | to=512
+    from=511 | to=611
+    from=512 | to=612
+    from=512 | to=9305
+    from=6 | to=7
+    from=6 | to=9106
+    from=600 | to=601
+    from=600 | to=700
+    from=600 | to=9206
+    from=601 | to=602
+    from=601 | to=701
+    from=602 | to=603
+    from=602 | to=702
+    from=603 | to=604
+    from=603 | to=703
+    from=604 | to=605
+    from=604 | to=704
+    from=605 | to=606
+    from=605 | to=705
+    from=606 | to=607
+    from=606 | to=706
+    from=607 | to=608
+    from=607 | to=707
+    from=608 | to=609
+    from=608 | to=708
+    from=609 | to=610
+    from=609 | to=709
+    from=610 | to=611
+    from=610 | to=710
+    from=611 | to=612
+    from=611 | to=711
+    from=612 | to=712
+    from=612 | to=9306
+    from=7 | to=8
+    from=7 | to=9107
+    from=700 | to=701
+    from=700 | to=800
+    from=700 | to=9207
+    from=701 | to=702
+    from=701 | to=801
+    from=702 | to=703
+    from=702 | to=802
+    from=703 | to=704
+    from=703 | to=803
+    from=704 | to=705
+    from=704 | to=804
+    from=705 | to=706
+    from=705 | to=805
+    from=706 | to=707
+    from=706 | to=806
+    from=707 | to=708
+    from=707 | to=807
+    from=708 | to=709
+    from=708 | to=808
+    from=709 | to=710
+    from=709 | to=809
+    from=710 | to=711
+    from=710 | to=810
+    from=711 | to=712
+    from=711 | to=811
+    from=712 | to=812
+    from=712 | to=9307
+    from=8 | to=9
+    from=8 | to=9108
+    from=800 | to=801
+    from=800 | to=9000
+    from=800 | to=9208
+    from=801 | to=802
+    from=801 | to=9001
+    from=802 | to=803
+    from=802 | to=9002
+    from=803 | to=804
+    from=803 | to=9003
+    from=804 | to=805
+    from=804 | to=9004
+    from=805 | to=806
+    from=805 | to=9005
+    from=806 | to=807
+    from=806 | to=9006
+    from=807 | to=808
+    from=807 | to=9007
+    from=808 | to=809
+    from=808 | to=9008
+    from=809 | to=810
+    from=809 | to=9009
+    from=810 | to=811
+    from=810 | to=9010
+    from=811 | to=812
+    from=811 | to=9011
+    from=812 | to=9012
+    from=812 | to=9308
+    from=9 | to=9109
